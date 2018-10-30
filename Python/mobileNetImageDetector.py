@@ -11,7 +11,17 @@ _CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 	"sofa", "train", "tvmonitor"]
 
-_MOBILE_NET_FOLDER = ".\\MobileNet\\"
+AZURE_DEF = True
+
+
+if AZURE_DEF == True:
+    _MOBILE_NET_FOLDER = "./mobileNet/"
+    _IMAGE_SRC_FOLDER = '../data/outputopencv/'
+else:
+    _MOBILE_NET_FOLDER = ".\\mobileNet\\"
+    _IMAGE_SRC_FOLDER = '..\\data\\outputopencv\\'
+
+
 _PROTOTXT = _MOBILE_NET_FOLDER +'MobileNetSSD_deploy.prototxt.txt'
 _MODEL = _MOBILE_NET_FOLDER + 'MobileNetSSD_deploy.caffemodel'
 #common DEFAULTS
@@ -19,7 +29,7 @@ _CONF_THRESHOLD = 0.5
 _SHAPE_WEIGHT = 224
 _SCALE_FACTOR = 1/255
 _NO_OF_ITERATIONS = -1 
-_IMAGE_SRC_FOLDER = '..\\Data\\outputOpenCV\\'
+
 _IMAGE_TAG = "bird"
 
 

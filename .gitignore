@@ -10,6 +10,13 @@ data/
 data/*.jpg
 /data/outputopencv/*.jpg
 
+Python/mobileNet/MobileNetSSD_deploy.caffemodel
+data/
+data/*.jpg
+data/outputopencv/*.jpg
+data/allbirds/*.jpg
+*.pyc
+Python/googleImageDetector.pyc
 
 
 # Byte-compiled / optimized / DLL files

@@ -25,9 +25,19 @@ import os
 #global object
 g_client = None
 
+AZURE_DEF = True
+
+
 _CONF_THRESHOLD = 0.5
 _NO_OF_ITERATIONS = -1 
-_IMAGE_SRC_FOLDER = '..\\Data\\outputOpenCV\\'
+
+
+if AZURE_DEF == True :
+    _IMAGE_SRC_FOLDER = '../data/outputopencv/'
+else:
+    _IMAGE_SRC_FOLDER = '..\\data\\outputopencv\\'
+
+
 _IMAGE_TAG = "bird"
 verbosity = True
 

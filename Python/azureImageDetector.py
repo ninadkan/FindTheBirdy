@@ -14,9 +14,18 @@ _region = 'westeurope' #Here you enter the region of your subscription
 _url = 'https://{}.api.cognitive.microsoft.com/vision/v2.0/tag'.format(_region)
 _maxNumRetries = 10
 
+AZURE_DEF = True
+
 _CONF_THRESHOLD = 0.5
-_NO_OF_ITERATIONS = -1 
-_IMAGE_SRC_FOLDER = '..\\Data\\outputOpenCV\\'
+_NO_OF_ITERATIONS = -1
+
+
+if AZURE_DEF == True :
+    _IMAGE_SRC_FOLDER = '../data/outputopencv/'
+else:
+    _IMAGE_SRC_FOLDER = '..\\data\\outputopencv\\'
+
+    
 _IMAGE_TAG = "bird"
 verbosity = True
 
@@ -28,6 +37,9 @@ def processRequest( json, data, headers, params ):
     data: Used when processing image read from disk. See API Documentation
     headers: Used to pass the key information and the data type request
     """
+
+    
+
     retries = 0
     result = None
     while True:
