@@ -1,5 +1,5 @@
-#from mobileNetImageDetector import processImages
-#Detector = "Mobile Net Detector"
+# from mobileNetImageDetector import processImages
+# Detector = "Mobile Net Detector"
 
 # from yoloBirdImageDetector import processImages, verbosity
 # Detector = "Yolo Detector"

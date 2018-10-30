@@ -9,18 +9,25 @@ import cv2
 import os
 import time
 
-# Global parameters
-fileList = []
-grayMask = colourMask = None
-srcImageFolder = None
-filenameExtension = None
-destinationFolder = None
-verbosity = False
+AZURE_DEF = True
 
-#defaults
-srcImageFolder = _SRCIMAGEFOLDER = '..\\Data\\'
-filenameExtension = _FILENAMEEXTENSION = '.jpg'
-destinationFolder = _DESTINATIONFOLDER = '..\\Data\\outputOpenCV\\'
+
+# Global parameters
+g_fileList = []
+g_grayMask = g_colourMask = None
+g_srcImageFolder = None
+g_filenameExtension = None
+g_destinationFolder = None
+g_verbosity = False
+#defaults - applicable for Windows version only. override these with Linux versions
+if AZURE_DEF == True:
+    g_srcImageFolder = SRCIMAGEFOLDER = '../data/'
+    g_destinationFolder = _DESTINATIONFOLDER = '../data/outputopencv/'
+else:
+    g_srcImageFolder = SRCIMAGEFOLDER = '..\\data\\'
+    g_destinationFolder = _DESTINATIONFOLDER = '..\\data\\outputopencv\\'
+
+g_filenameExtension = _FILENAMEEXTENSION = '.jpg'
 _HISTORYIMAGE = 10
 _VARTHRESHOLD = 25
 _NUMBEROFITERATIONS = -1
@@ -29,6 +36,8 @@ _CONTOURCOUNTTHRESHOLD = 15
 _MASKDIFFTHRESHOLD = 2
 _PARTOFFILENAME = ''
 _WRITEOUTPUT = True
+
+
 
 # https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
 def mse(imageA, imageB):
@@ -43,21 +52,27 @@ def mse(imageA, imageB):
 	return err
 
 def init(partOfFileName=''):
-    global fileList #List containing all the image file name
-    global colourMask
-    global grayMask
+    global g_fileList  
+    global g_colourMask 
+    global g_grayMask 
 
-    for file in os.listdir(srcImageFolder):
-        if os.path.isfile(os.path.join(srcImageFolder,file)) and file.endswith(filenameExtension):
+
+    g_fileList = [] 
+    g_colourMask = None 
+    g_grayMask = None 
+
+
+    for file in os.listdir(g_srcImageFolder):
+        if os.path.isfile(os.path.join(g_srcImageFolder,file)) and file.endswith(g_filenameExtension):
             if (len(partOfFileName) >0):
                 if (partOfFileName in file):
-                    fileList.append(file)
+                    g_fileList.append(file)
             else:
-                fileList.append(file)
+                g_fileList.append(file)
 
-    assert (len(fileList) > 0), "Error Loading file list" 
+    assert (len(g_fileList) > 0), "Error Loading file list" 
     #select the ROI using the first image and use it to create mask
-    filename= srcImageFolder+ fileList[0]
+    filename= g_srcImageFolder+ g_fileList[0]
     imgFirst = cv2.imread(filename)
     assert(imgFirst is not None), "Unable to load " + filename
     gray_image = cv2.cvtColor(imgFirst, cv2.COLOR_BGR2GRAY)
@@ -80,15 +95,15 @@ def init(partOfFileName=''):
                 ]  # (x, y)
 
     #colour mask
-    colourMask = imgFirst[0:height, 0:width]
-    colourMask[:] = (255, 255,255) # change everything to white
+    g_colourMask = imgFirst[0:height, 0:width]
+    g_colourMask[:] = (255, 255,255) # change everything to white
     # Gray mask
-    grayMask = gray_image[0:height, 0:width]
-    grayMask[:] = 255 # change everything to white
+    g_grayMask = gray_image[0:height, 0:width]
+    g_grayMask[:] = 255 # change everything to white
 
     #create the masks
-    cv2.fillPoly(grayMask, [np.array(myROI)],0)
-    cv2.fillPoly(colourMask, [np.array(myROI)],0)
+    cv2.fillPoly(g_grayMask, [np.array(myROI)],0)
+    cv2.fillPoly(g_colourMask, [np.array(myROI)],0)
 
     return
 
@@ -99,19 +114,19 @@ def WriteOutputFile(imgColour, imageFileName, x, y, w, h, Padding=15):
     '''
     imgColour --> The bitwise representation of the coloured image
     imageFileName ; Filename of the image
-    destinationFolder ; Where the images need to be copied
+    g_destinationFolder ; Where the images need to be copied
     x,y,w,h : bounding rectangles. 
     Padding: Required because the contour bounding rectangle is not big 
     enough for the images to be recognised
     '''
-    global colourMask
+    global g_colourMask
     assert(imgColour is not None), "Invalid parameter imgColour"
-    assert(colourMask is not None), "Invalid parameter colourMask"
+    assert(g_colourMask is not None), "Invalid parameter g_colourMask"
     
     ht, wt = imgColour.shape[:2]
 
     # mask not needed bits in the image
-    imCrop = cv2.bitwise_and(imgColour, colourMask)
+    imCrop = cv2.bitwise_and(imgColour, g_colourMask)
     
     # # add padding and manage crop dimensions
     # I think because of the aspect ratio, we need to padd more to height
@@ -122,7 +137,7 @@ def WriteOutputFile(imgColour, imageFileName, x, y, w, h, Padding=15):
     
     #crop the frame
     frame = imCrop[TopY:BottomY, TopX:BottomX]
-    outputFile = destinationFolder + imageFileName
+    outputFile = g_destinationFolder + imageFileName
     cv2.imwrite(outputFile,frame)
     return frame
 
@@ -223,13 +238,13 @@ def processImages(  historyImage = _HISTORYIMAGE,
     init(partOfFileName)
 
     
-    for i, imageFileName in enumerate(fileList):
+    for i, imageFileName in enumerate(g_fileList):
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
 
         print('.', end='', flush=True)
 
-        filename= srcImageFolder+ imageFileName
+        filename= g_srcImageFolder+ imageFileName
         imgColour = cv2.imread(filename)  
         assert(imgColour is not None), "Unable to load " + filename
         imgGray = cv2.cvtColor(imgColour, cv2.COLOR_BGR2GRAY)
@@ -240,11 +255,11 @@ def processImages(  historyImage = _HISTORYIMAGE,
             prevmask = imCrop[0:height, 0:width]
             prevmask[:] = 255 # change everything to white
         else:
-            if (bOpenCVBirdDetected == False): #if the last one was a Bird then we don't move our previous grayMask
+            if (bOpenCVBirdDetected == False): #if the last one was a Bird then we don't move our previous g_grayMask
                 prevmask = currentmask
     
-        # apply the grayMask
-        imCrop = cv2.bitwise_and(imCrop, grayMask)
+        # apply the g_grayMask
+        imCrop = cv2.bitwise_and(imCrop, g_grayMask)
         # apply background subtraction mean algorithm
         tempmask = fgbg.apply(imCrop)
     
@@ -258,7 +273,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
             bOpenCVBirdDetected = False
             bBirdShouldBeDetected = False
 
-            strFileName = imageFileName.replace(filenameExtension,'')
+            strFileName = imageFileName.replace(g_filenameExtension,'')
             if ((strFileName in DataClassification_Good)) :
                 bBirdShouldBeDetected = True
  
@@ -298,13 +313,13 @@ def processImages(  historyImage = _HISTORYIMAGE,
                 if (bOpenCVBirdDetected == True):
                     false_positive = false_positive +1
 
-            if (verbosity == True):
+            if (g_verbosity == True):
                 print("")
                 print(">>> Debugging image = {0}, Contour Length = {1:0.4f}, last boundingRectArea = {2:0.4f}, OpenCVDetected = {3}, diff = {4:0.4f}".format(imageFileName, contour_length, boundingRectArea, bOpenCVBirdDetected, diff))
 
     elapsed_time = time.time() - start_time
 
-    return len(fileList), elapsed_time, true_true, false_positive, false_negative
+    return len(g_fileList), elapsed_time, true_true, false_positive, false_negative
 
 
 
@@ -320,7 +335,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="command")
     process_parser = subparsers.add_parser("processImages", help=processImages.__doc__)
 
-    process_parser.add_argument("srcImageFolder", nargs='?', default=_SRCIMAGEFOLDER, help="Source Folder")
+    process_parser.add_argument("srcImageFolder", nargs='?', default=SRCIMAGEFOLDER, help="Source Folder")
     process_parser.add_argument("filenameExtension", nargs='?',default=_FILENAMEEXTENSION, help="file extension that needs to be copied")
     process_parser.add_argument("destinationFolder", nargs='?', default=_DESTINATIONFOLDER, help="Destination Folder")
     process_parser.add_argument("historyImage", nargs='?', default=_HISTORYIMAGE, help="The amount of images used to construct mean background")
@@ -334,12 +349,12 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     if args.command == "processImages":
-        srcImageFolder = args.srcImageFolder
-        filenameExtension = args.filenameExtension
-        destinationFolder = args.destinationFolder
+        g_srcImageFolder = args.srcImageFolder
+        g_filenameExtension = args.filenameExtension
+        g_destinationFolder = args.destinationFolder
 
         if (args.verbose):
-            verbosity = True
+            g_verbosity = True
 
         l, t, tt, fp, fn = processImages(  historyImage = args.historyImage, 
                             varThreshold=args.varThreshold, 

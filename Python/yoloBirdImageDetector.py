@@ -3,16 +3,25 @@ import cv2
 import os
 import argparse
 
+AZURE_DEF = True
+
 # Initialize DEFAULTS
 _CONF_THRESHOLD = 0.5
 _SHAPE_WEIGHT = 224
-_YOLO_CONFIG_FOLDER = ".\\yolo\\"
+
+if AZURE_DEF == True:
+    _YOLO_CONFIG_FOLDER = "./yolo/"
+    _IMAGE_SRC_FOLDER = '../data/outputopencv/'
+else:
+    _YOLO_CONFIG_FOLDER = ".\\yolo\\"
+    _IMAGE_SRC_FOLDER = '..\\data\\outputopencv\\'
+
 _CLASSESFILE  = _YOLO_CONFIG_FOLDER + "coco.names"
 _MODELCONFIG = _YOLO_CONFIG_FOLDER + "yolov3.cfg"
 _MODEL_WEIGHTS = _YOLO_CONFIG_FOLDER + "yolov3.weights"
 _SCALE_FACTOR = 1/255
 _NO_OF_ITERATIONS = -1 
-_IMAGE_SRC_FOLDER = '..\\Data\\outputOpenCV\\'
+
 _IMAGE_TAG = "bird"
 _NMS_THRESHOLD = 0.4
 

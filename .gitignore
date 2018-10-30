@@ -5,7 +5,12 @@ Data/AllBirds/*.jpg
 Python/__pycache__/
 Python/key.json
 Python/yolo/yolov3.weights
-#Python/mobileNet/MobileNetSSD_deploy.caffemodel
+Python/mobileNet/MobileNetSSD_deploy.caffemodel
+data/
+data/*.jpg
+data/outputopencv/*.jpg
+data/allbirds/*.jpg
+*.pyc
 
 
 # Byte-compiled / optimized / DLL files
