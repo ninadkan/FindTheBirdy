@@ -1,0 +1,8 @@
+Data/
+Data/*.jpg
+Data/outputOpenCV/*.jpg
+Data/AllBirds/*.jpg
+Python/__pycache__/
+Python/key.json
+Python/yolo/yolov3.weights
+Python/mobileNet/MobileNetSSD_deploy.caffemodel
