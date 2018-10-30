@@ -9,8 +9,12 @@ import cv2
 import os
 import time
 
-AZURE_DEF = True
 
+_ixKey = os.environ.get('NIX_SYS')
+if (_ixKey is None ) or (len(_ixKey) == 0):
+    NIX_DEFINED = False
+else:
+    NIX_DEFINED = True
 
 # Global parameters
 g_fileList = []
@@ -20,7 +24,7 @@ g_filenameExtension = None
 g_destinationFolder = None
 g_verbosity = False
 #defaults - applicable for Windows version only. override these with Linux versions
-if AZURE_DEF == True:
+if NIX_DEFINED == True:
     g_srcImageFolder = SRCIMAGEFOLDER = '../data/'
     g_destinationFolder = _DESTINATIONFOLDER = '../data/outputopencv/'
 else:

@@ -11,10 +11,14 @@ _CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 	"sofa", "train", "tvmonitor"]
 
-AZURE_DEF = True
+_ixKey = os.environ.get('NIX_SYS')
+if (_ixKey is None ) or (len(_ixKey) == 0):
+    NIX_DEFINED = False
+else:
+    NIX_DEFINED = True
 
 
-if AZURE_DEF == True:
+if NIX_DEFINED == True:
     _MOBILE_NET_FOLDER = "./mobileNet/"
     _IMAGE_SRC_FOLDER = '../data/outputopencv/'
 else:

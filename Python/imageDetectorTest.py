@@ -1,7 +1,7 @@
 #to use this file, uncomment the required stub and invoke
 
-# from mobileNetImageDetector import processImages
-# Detector = "Mobile Net Detector"
+from mobileNetImageDetector import processImages
+Detector = "Mobile Net Detector"
 
 # from yoloBirdImageDetector import processImages, verbosity
 # Detector = "Yolo Detector"
@@ -14,8 +14,8 @@
 # Need to activate py27 environment
 # set environment key 
 # export GOOGLE_APPLICATION_CREDENTIALS=<path_to_service_account_file>
-from googleImageDetector import processImages, verbosity
-Detector = "Google Detector"
+# from googleImageDetector import processImages, verbosity
+# Detector = "Google Detector"
 
 import time
 

@@ -1,6 +1,6 @@
 #OpenCVPhotoExtractorTest
 import time
-from openCVPhotoExtractor import processImages, _DESTINATIONFOLDER, g_verbosity, AZURE_DEF
+from openCVPhotoExtractor import processImages, _DESTINATIONFOLDER, g_verbosity, NIX_DEFINED
 
 BoundingRectList = [1000] # [2500, 2000, 1500, 1000]
 
@@ -10,7 +10,7 @@ def delete_existing_files():
     for the_file in os.listdir(_DESTINATIONFOLDER):
         file_path = os.path.join(_DESTINATIONFOLDER, the_file)
         try:
-            if (AZURE_DEF == True):
+            if (NIX_DEFINED == True):
                 cpCommand = "rm " + file_path
             else:
                 # this'll be different for UNIX/Linux systems. 

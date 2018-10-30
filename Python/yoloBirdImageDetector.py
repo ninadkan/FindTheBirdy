@@ -3,13 +3,19 @@ import cv2
 import os
 import argparse
 
-AZURE_DEF = True
+
+_ixKey = os.environ.get('NIX_SYS')
+if (_ixKey is None ) or (len(_ixKey) == 0):
+    NIX_DEFINED = False
+else:
+    NIX_DEFINED = True
+
 
 # Initialize DEFAULTS
 _CONF_THRESHOLD = 0.5
 _SHAPE_WEIGHT = 224
 
-if AZURE_DEF == True:
+if NIX_DEFINED == True:
     _YOLO_CONFIG_FOLDER = "./yolo/"
     _IMAGE_SRC_FOLDER = '../data/outputopencv/'
 else:
