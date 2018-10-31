@@ -1,0 +1,4 @@
+Data/
+python/key.json
+python/__pycache__
+python/*.pyc
