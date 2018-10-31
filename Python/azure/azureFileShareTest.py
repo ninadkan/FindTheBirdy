@@ -22,9 +22,6 @@ AZURE_ACN_STRG_KEY = 'AZURE_ACN_STRG_KEY'
 _accountKey = os.environ.get(AZURE_ACN_STRG_KEY)
 exitIfNull(_accountKey, AZURE_ACN_STRG_KEY)
 
-#_accountKey = os.environ.get('AZURE_STRG_ACN')
-#_accountName = 'nkdsvm'
-#_accountKey = 'd19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA=='
 _rootFileShareFolder = 'linuxraspshare' 
 
 # New folder structure for the experiment. 
