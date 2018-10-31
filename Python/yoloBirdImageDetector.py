@@ -2,29 +2,18 @@ import numpy as np
 import cv2
 import os
 import argparse
-
-
-_ixKey = os.environ.get('NIX_SYS')
-if (_ixKey is None ) or (len(_ixKey) == 0):
-    NIX_DEFINED = False
-else:
-    NIX_DEFINED = True
-
+from pathlib import Path
 
 # Initialize DEFAULTS
 _CONF_THRESHOLD = 0.5
 _SHAPE_WEIGHT = 224
 
-if NIX_DEFINED == True:
-    _YOLO_CONFIG_FOLDER = "./yolo/"
-    _IMAGE_SRC_FOLDER = '../data/outputopencv/'
-else:
-    _YOLO_CONFIG_FOLDER = ".\\yolo\\"
-    _IMAGE_SRC_FOLDER = '..\\data\\outputopencv\\'
+_YOLO_CONFIG_FOLDER = Path("./yolo/")
+_IMAGE_SRC_FOLDER = Path('../data/outputopencv/')
 
-_CLASSESFILE  = _YOLO_CONFIG_FOLDER + "coco.names"
-_MODELCONFIG = _YOLO_CONFIG_FOLDER + "yolov3.cfg"
-_MODEL_WEIGHTS = _YOLO_CONFIG_FOLDER + "yolov3.weights"
+_CLASSESFILE  = os.path.join(_YOLO_CONFIG_FOLDER, "coco.names")
+_MODELCONFIG = os.path.join(_YOLO_CONFIG_FOLDER, "yolov3.cfg")
+_MODEL_WEIGHTS = os.path.join(_YOLO_CONFIG_FOLDER,"yolov3.weights")
 _SCALE_FACTOR = 1/255
 _NO_OF_ITERATIONS = -1 
 
@@ -120,7 +109,7 @@ def YoloBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThresh
     
     return bRV
  
-def processImages(  imageSrcFolder = _IMAGE_SRC_FOLDER,
+def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     shapeWeight = _SHAPE_WEIGHT,
                     yoloConfigurationFolder = _YOLO_CONFIG_FOLDER, 
@@ -133,7 +122,7 @@ def processImages(  imageSrcFolder = _IMAGE_SRC_FOLDER,
                     nmsThreshold = _NMS_THRESHOLD):
     '''
     Process the image and output if it has detected any birds in the images
-    imageSrcFolder IMAGE_SRC_FOLDER = Location of image files
+    outputFolder IMAGE_SRC_FOLDER = Location of image files
     confThreshold CONF_THRESHOLD = Minimum confidence threshold
     shapeWeight SHAPE_WEIGHT = Shape weight to be used in DNN blobFromImage fn
     yoloConfigurationFolder YOLO_CONFIG_FOLDER = Yolo folder
@@ -146,7 +135,7 @@ def processImages(  imageSrcFolder = _IMAGE_SRC_FOLDER,
     nmsThreshold _NMS_THRESHOLD nmsThreshold used in the cv2.dnn.NMSBoxes fn
     '''
     FILE_LIST = []
-    for file in os.listdir(imageSrcFolder):
+    for file in os.listdir(outputFolder):
         FILE_LIST.append(file)
     # initialize Yolo client 
     init(classesFile, modelConfiguration, modelWeights)
@@ -157,7 +146,7 @@ def processImages(  imageSrcFolder = _IMAGE_SRC_FOLDER,
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
         print('.', end='', flush=True)
-        pathToFileInDisk= imageSrcFolder+ imageName
+        pathToFileInDisk= os.path.join(outputFolder,imageName)
         imageFrame = cv2.imread(pathToFileInDisk)
         assert(imageFrame is not None), "Unable to load " + pathToFileInDisk
 
@@ -179,7 +168,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="command")
     process_parser = subparsers.add_parser("processImages", help=processImages.__doc__)
 
-    process_parser.add_argument("imageSrcFolder", nargs='?', default=_IMAGE_SRC_FOLDER, help="Location of image files")
+    process_parser.add_argument("outputFolder", nargs='?', default=_IMAGE_SRC_FOLDER, help="Location of image files")
     process_parser.add_argument("confThreshold", nargs='?', default=_CONF_THRESHOLD, help="Minimum confidence threshold")
     process_parser.add_argument("shapeWeight", nargs='?', default=_SHAPE_WEIGHT, help="Shape weight to be used in DNN blobFromImage fn")
     process_parser.add_argument("yoloConfigurationFolder", nargs='?', default=_YOLO_CONFIG_FOLDER, help="Yolo folder")
@@ -199,7 +188,7 @@ if __name__ == "__main__":
         import time
         Detector = "Yolo Detector"
         start_time = time.time()
-        TotalBirdsFound  = processImages(   imageSrcFolder = args.imageSrcFolder,
+        TotalBirdsFound  = processImages(   outputFolder = args.outputFolder,
                                             confThreshold = args.confThreshold,
                                             shapeWeight = args.shapeWeight,
                                             yoloConfigurationFolder = args.yoloConfigurationFolder,

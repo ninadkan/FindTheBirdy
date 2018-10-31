@@ -3,6 +3,7 @@ import requests
 import cv2
 import os
 import sys
+from pathlib import Path
 # https://github.com/Microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Computer%20Vision%20API%20Example.ipynb 
 # https://anaconda.org/conda-forge/requests
 
@@ -14,21 +15,10 @@ _region = 'westeurope' #Here you enter the region of your subscription
 _url = 'https://{}.api.cognitive.microsoft.com/vision/v2.0/tag'.format(_region)
 _maxNumRetries = 10
 
-_ixKey = os.environ.get('NIX_SYS')
-if (_ixKey is None ) or (len(_ixKey) == 0):
-    NIX_DEFINED = False
-else:
-    NIX_DEFINED = True
-
 _CONF_THRESHOLD = 0.5
 _NO_OF_ITERATIONS = -1
 
-
-if NIX_DEFINED == True :
-    _IMAGE_SRC_FOLDER = '../data/outputopencv/'
-else:
-    _IMAGE_SRC_FOLDER = '..\\data\\outputopencv\\'
-
+_OUTPUT_FOLDER = str(Path('../data/outputopencv/'))
     
 _IMAGE_TAG = "bird"
 verbosity = True
@@ -72,13 +62,13 @@ def processRequest( json, data, headers, params ):
     return result
 
 def processImages(  _key = '', 
-                    imageSrcFolder = _IMAGE_SRC_FOLDER,
+                    outputFolder = _OUTPUT_FOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = _IMAGE_TAG):
     '''
     Process the image and output if it has detected any birds in the images
-    imageSrcFolder IMAGE_SRC_FOLDER = Location of image files
+    outputFolder IMAGE_SRC_FOLDER = Location of image files
     confThreshold CONF_THRESHOLD = Minimum confidence threshold
     numberOfIterations NO_OF_ITERATIONS = Maximum number of images to be searched. set to <0 for all
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
@@ -93,7 +83,7 @@ def processImages(  _key = '',
           
 
     FILE_LIST = []
-    for file in os.listdir(imageSrcFolder):
+    for file in os.listdir(outputFolder):
         FILE_LIST.append(file)
     
     TotalBirdsFound = 0
@@ -102,7 +92,7 @@ def processImages(  _key = '',
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
         print('.', end='', flush=True)
-        pathToFileInDisk= imageSrcFolder+ imageName
+        pathToFileInDisk= os.path.join(outputFolder,imageName)
     
         with open( pathToFileInDisk, 'rb' ) as f:
             data = f.read()

@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import cv2
 import os
+from pathlib import Path
 
 # initialize the list of class labels MobileNet SSD was trained to
 # detect, then generate a set of bounding box colors for each class
@@ -11,23 +12,10 @@ _CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 	"sofa", "train", "tvmonitor"]
 
-_ixKey = os.environ.get('NIX_SYS')
-if (_ixKey is None ) or (len(_ixKey) == 0):
-    NIX_DEFINED = False
-else:
-    NIX_DEFINED = True
-
-
-if NIX_DEFINED == True:
-    _MOBILE_NET_FOLDER = "./mobileNet/"
-    _IMAGE_SRC_FOLDER = '../data/outputopencv/'
-else:
-    _MOBILE_NET_FOLDER = ".\\mobileNet\\"
-    _IMAGE_SRC_FOLDER = '..\\data\\outputopencv\\'
-
-
-_PROTOTXT = _MOBILE_NET_FOLDER +'MobileNetSSD_deploy.prototxt.txt'
-_MODEL = _MOBILE_NET_FOLDER + 'MobileNetSSD_deploy.caffemodel'
+_MOBILE_NET_FOLDER = Path("./mobileNet/")
+_OUTPUT_FOLDER = Path('../data/outputopencv/')
+_PROTOTXT = os.path.join(_MOBILE_NET_FOLDER, 'MobileNetSSD_deploy.prototxt.txt')
+_MODEL = os.path.join(_MOBILE_NET_FOLDER,'MobileNetSSD_deploy.caffemodel')
 #common DEFAULTS
 _CONF_THRESHOLD = 0.5
 _SHAPE_WEIGHT = 224
@@ -80,7 +68,7 @@ def MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confT
                 break
     return bRV
 
-def processImages(  imageSrcFolder = _IMAGE_SRC_FOLDER,
+def processImages(  outputFolder = _OUTPUT_FOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     shapeWeight = _SHAPE_WEIGHT,
                     scaleFactor = _SCALE_FACTOR , 
@@ -91,7 +79,7 @@ def processImages(  imageSrcFolder = _IMAGE_SRC_FOLDER,
                     imageTag = _IMAGE_TAG):
     '''
     Process the image and output if it has detected any birds in the images
-    imageSrcFolder IMAGE_SRC_FOLDER = Location of image files
+    outputFolder IMAGE_SRC_FOLDER = Location of image files
     confThreshold CONF_THRESHOLD = Minimum confidence threshold
     shapeWeight SHAPE_WEIGHT = Shape weight to be used in DNN blobFromImage fn
     scaleFactor SCALE_FACTOR = Scale factor to be used in DNN blobFromImage
@@ -102,7 +90,7 @@ def processImages(  imageSrcFolder = _IMAGE_SRC_FOLDER,
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
     FILE_LIST = []
-    for file in os.listdir(imageSrcFolder):
+    for file in os.listdir(outputFolder):
         FILE_LIST.append(file)
     # initialize Yolo client 
     init(prototxt, model)
@@ -113,7 +101,7 @@ def processImages(  imageSrcFolder = _IMAGE_SRC_FOLDER,
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
         print('.', end='', flush=True)
-        pathToFileInDisk= imageSrcFolder+ imageName
+        pathToFileInDisk= os.path.join(outputFolder,imageName)
         imageFrame = cv2.imread(pathToFileInDisk)
         assert(imageFrame is not None), "Unable to load " + pathToFileInDisk
 

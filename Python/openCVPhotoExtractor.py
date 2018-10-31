@@ -10,11 +10,7 @@ import os
 import time
 
 
-_ixKey = os.environ.get('NIX_SYS')
-if (_ixKey is None ) or (len(_ixKey) == 0):
-    NIX_DEFINED = False
-else:
-    NIX_DEFINED = True
+from pathlib import Path
 
 # Global parameters
 g_fileList = []
@@ -24,12 +20,9 @@ g_filenameExtension = None
 g_destinationFolder = None
 g_verbosity = False
 #defaults - applicable for Windows version only. override these with Linux versions
-if NIX_DEFINED == True:
-    g_srcImageFolder = SRCIMAGEFOLDER = '../data/'
-    g_destinationFolder = _DESTINATIONFOLDER = '../data/outputopencv/'
-else:
-    g_srcImageFolder = SRCIMAGEFOLDER = '..\\data\\'
-    g_destinationFolder = _DESTINATIONFOLDER = '..\\data\\outputopencv\\'
+
+g_srcImageFolder = SRCIMAGEFOLDER = str(Path('../data/'))
+g_destinationFolder = _DESTINATIONFOLDER = str(Path('../data/outputopencv/'))
 
 g_filenameExtension = _FILENAMEEXTENSION = '.jpg'
 _HISTORYIMAGE = 10
@@ -76,7 +69,7 @@ def init(partOfFileName=''):
 
     assert (len(g_fileList) > 0), "Error Loading file list" 
     #select the ROI using the first image and use it to create mask
-    filename= g_srcImageFolder+ g_fileList[0]
+    filename= os.path.join(g_srcImageFolder, g_fileList[0])
     imgFirst = cv2.imread(filename)
     assert(imgFirst is not None), "Unable to load " + filename
     gray_image = cv2.cvtColor(imgFirst, cv2.COLOR_BGR2GRAY)
@@ -141,7 +134,8 @@ def WriteOutputFile(imgColour, imageFileName, x, y, w, h, Padding=15):
     
     #crop the frame
     frame = imCrop[TopY:BottomY, TopX:BottomX]
-    outputFile = g_destinationFolder + imageFileName
+
+    outputFile = os.path.join(g_destinationFolder,imageFileName)
     cv2.imwrite(outputFile,frame)
     return frame
 
@@ -248,7 +242,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
 
         print('.', end='', flush=True)
 
-        filename= g_srcImageFolder+ imageFileName
+        filename = os.path.join(g_srcImageFolder, imageFileName)
         imgColour = cv2.imread(filename)  
         assert(imgColour is not None), "Unable to load " + filename
         imgGray = cv2.cvtColor(imgColour, cv2.COLOR_BGR2GRAY)

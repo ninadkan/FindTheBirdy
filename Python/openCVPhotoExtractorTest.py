@@ -1,28 +1,37 @@
 #OpenCVPhotoExtractorTest
 import time
-from openCVPhotoExtractor import processImages, _DESTINATIONFOLDER, g_verbosity, NIX_DEFINED
+from openCVPhotoExtractor import processImages, _DESTINATIONFOLDER, g_verbosity
+import platform 
 
 BoundingRectList = [1000] # [2500, 2000, 1500, 1000]
+
+osString = platform.platform()
+NIX_DEFINED = True
+if ('Windows' in osString):
+    NIX_DEFINED = False
 
 
 def delete_existing_files():
     import os
-    for the_file in os.listdir(_DESTINATIONFOLDER):
-        file_path = os.path.join(_DESTINATIONFOLDER, the_file)
-        try:
-            if (NIX_DEFINED == True):
-                cpCommand = "rm " + file_path
-            else:
-                # this'll be different for UNIX/Linux systems. 
-                cpCommand = "del  " + file_path 
-            os.system(cpCommand)
-        except Exception as e:
-            print(e)
+
+    if NIX_DEFINED:
+        files = os.path.join(_DESTINATIONFOLDER,'*')
+        cpCommand = "rm -r" +  files
+    else:
+        files = os.path.join(_DESTINATIONFOLDER,'*.*')
+        cpCommand = "del /q " + files
+
+    try:
+        print(cpCommand)
+        os.system(cpCommand)
+    except Exception as e:
+        print(e)
     return 
 
 
 for item in BoundingRectList:
         delete_existing_files()
+        # premature end of JPEG was detected with 2018-04-22_0247. Remove that image 
         l, t, tt, fp, fn = processImages()
         print ("")
         print("Bounding Rectangle value = {0}".format(item))                
