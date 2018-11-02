@@ -4,6 +4,7 @@ import argparse
 import cv2
 import os
 from pathlib import Path
+import time
 
 # initialize the list of class labels MobileNet SSD was trained to
 # detect, then generate a set of bounding box colors for each class
@@ -21,8 +22,8 @@ _CONF_THRESHOLD = 0.5
 _SHAPE_WEIGHT = 224
 _SCALE_FACTOR = 1/255
 _NO_OF_ITERATIONS = -1 
-
 _IMAGE_TAG = "bird"
+_LOG_RESULT = True
 
 
 #Global Variable
@@ -76,7 +77,9 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
                     model = _MODEL, 
                     prototxt = _PROTOTXT, 
                     numberOfIterations = _NO_OF_ITERATIONS,
-                    imageTag = _IMAGE_TAG):
+                    imageTag = _IMAGE_TAG,
+                    logResult = _LOG_RESULT):
+    
     '''
     Process the image and output if it has detected any birds in the images
     outputFolder IMAGE_SRC_FOLDER = Location of image files
@@ -89,6 +92,7 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
     numberOfIterations NO_OF_ITERATIONS = Maximum number of images to be searched. set to <0 for all
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
+    start_time = time.time()
     FILE_LIST = []
     for file in os.listdir(outputFolder):
         FILE_LIST.append(file)
@@ -108,6 +112,24 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
         bBirdFound =  MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThreshold, imageTag)
         if (bBirdFound == True):
             TotalBirdsFound = TotalBirdsFound +1
+
+    elapsed_time = time.time() - start_time
+
+    if (logResult == True):
+        import datetime
+        from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
+        obj = clsCosmosWrapper()
+        dictObject ={  'id': str(datetime.datetime.now()),
+                        'elapsedTime': elapsed_time,
+                        'result - totalNumberOfRecords': len(FILE_LIST),
+                        'result - birdFound' : TotalBirdsFound,
+                        'param - confThreshold' : confThreshold, 
+                        'param - shapeWeight' : shapeWeight,
+                        'param - scaleFactor' : scaleFactor , 
+                        'param - numberOfIterations' : numberOfIterations,
+                        'param - imageTag' : imageTag,
+                    }
+        obj.logExperimentResult(collectionName = "mobileNetImageDetector", documentDict= dictObject)
     return TotalBirdsFound                    
 
 

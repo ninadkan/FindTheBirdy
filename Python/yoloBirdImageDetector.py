@@ -3,6 +3,7 @@ import cv2
 import os
 import argparse
 from pathlib import Path
+import time
 
 # Initialize DEFAULTS
 _CONF_THRESHOLD = 0.5
@@ -19,6 +20,7 @@ _NO_OF_ITERATIONS = -1
 
 _IMAGE_TAG = "bird"
 _NMS_THRESHOLD = 0.4
+_LOG_RESULT = True
 
 # specify global objects 
 g_classes = None
@@ -119,7 +121,8 @@ def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
                     scaleFactor = _SCALE_FACTOR , 
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = _IMAGE_TAG,
-                    nmsThreshold = _NMS_THRESHOLD):
+                    nmsThreshold = _NMS_THRESHOLD, 
+                    logResult = _LOG_RESULT):
     '''
     Process the image and output if it has detected any birds in the images
     outputFolder IMAGE_SRC_FOLDER = Location of image files
@@ -134,6 +137,8 @@ def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
     scaleFactor SCALE_FACTOR = Scale factor to be used in DNN blobFromImage
     nmsThreshold _NMS_THRESHOLD nmsThreshold used in the cv2.dnn.NMSBoxes fn
     '''
+    start_time = time.time()
+
     FILE_LIST = []
     for file in os.listdir(outputFolder):
         FILE_LIST.append(file)
@@ -153,6 +158,25 @@ def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
         bBirdFound =  YoloBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThreshold, imageTag, nmsThreshold)
         if (bBirdFound == True):
             TotalBirdsFound = TotalBirdsFound +1
+
+    elapsed_time = time.time() - start_time
+
+    if (logResult == True):
+        import datetime
+        from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
+        obj = clsCosmosWrapper()
+        dictObject ={   'id': str(datetime.datetime.now()),
+                        'elapsedTime': elapsed_time,
+                        'result - totalNumberOfRecords': len(FILE_LIST),
+                        'result - birdFound' : TotalBirdsFound,
+                        'param - confThreshold' : confThreshold, 
+                        'param - shapeWeight' : shapeWeight,
+                        'param - scaleFactor' : scaleFactor , 
+                        'param - numberOfIterations' : numberOfIterations,
+                        'param - imageTag' : imageTag,
+                        'param - nmsThreshold' : nmsThreshold,
+                    }
+        obj.logExperimentResult(collectionName = "yoloImageDetector", documentDict= dictObject)
     return TotalBirdsFound
 
 
@@ -179,6 +203,8 @@ if __name__ == "__main__":
     process_parser.add_argument("imageTag", nargs='?', default=_IMAGE_TAG, help="The tag to be searched for")
     process_parser.add_argument("scaleFactor", nargs='?', default=_SCALE_FACTOR, help="Scale factor to be used in DNN blobFromImage")
     process_parser.add_argument("nmsThreshold", nargs='?', default=_NMS_THRESHOLD, help="Used in the cv2.dnn.NMSBoxes fn")
+    process_parser.add_argument("logResult", nargs='?', default=_LOG_RESULT, help="Log result to cosmos DB")
+    
    
     args = parser.parse_args()
     if args.command == "processImages":
@@ -198,7 +224,8 @@ if __name__ == "__main__":
                                             scaleFactor = args.scaleFactor,
                                             numberOfIterations = args.numberOfIterations,
                                             imageTag = args.imageTag,
-                                            nmsThreshold = args.nmsThreshold)
+                                            nmsThreshold = args.nmsThreshold,
+                                            logResult=args.logResult)
         end_time = time.time() - start_time
 
         print("")

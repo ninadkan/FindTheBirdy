@@ -33,6 +33,7 @@ _CONTOURCOUNTTHRESHOLD = 15
 _MASKDIFFTHRESHOLD = 2
 _PARTOFFILENAME = ''
 _WRITEOUTPUT = True
+_LOGRESULT = False
 
 
 
@@ -146,7 +147,8 @@ def processImages(  historyImage = _HISTORYIMAGE,
                     contourCountThreshold = _CONTOURCOUNTTHRESHOLD,
                     maskDiffThreshold = _MASKDIFFTHRESHOLD,
                     partOfFileName= _PARTOFFILENAME,
-                    writeOutput=_WRITEOUTPUT):
+                    writeOutput=_WRITEOUTPUT,
+                    logResult = _LOGRESULT):
 
     """
     processImages ; Processes photos and those that pass the various threshold tests 
@@ -317,6 +319,26 @@ def processImages(  historyImage = _HISTORYIMAGE,
 
     elapsed_time = time.time() - start_time
 
+    if (logResult == True):
+        import datetime
+        from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
+        obj = clsCosmosWrapper()
+        dictObject = {  'id': str(datetime.datetime.now()),
+                        'elapsedTime': elapsed_time,
+                        'result-totalNumberOfRecords': len(g_fileList),
+                        'result-true_true': true_true,
+                        'result-false_positive': false_positive,
+                        'result-false_negative': false_negative,
+                        'param-historyImage' : historyImage, 
+                        'param-varThreshold' : varThreshold, 
+                        'param-numberOfIterations' : numberOfIterations, 
+                        'param-boundingRectAreaThreshold' : boundingRectAreaThreshold, 
+                        'param-contourCountThreshold' : contourCountThreshold,
+                        'param-maskDiffThreshold' : maskDiffThreshold,
+                        'param-partOfFileName' : partOfFileName
+                        }
+        obj.logExperimentResult(collectionName = "openCVImageExtractor", documentDict= dictObject)
+
     return len(g_fileList), elapsed_time, true_true, false_positive, false_negative
 
 
@@ -344,6 +366,8 @@ if __name__ == "__main__":
     process_parser.add_argument("maskDiffThreshold", nargs='?', default=_MASKDIFFTHRESHOLD, help="Minimum difference between two masks to distinguish the images")
     process_parser.add_argument("partOfFileName", nargs='?',default=_PARTOFFILENAME, help="If you want to subselect file from the images folder, specify the partial name here")
     process_parser.add_argument("writeOutput", nargs='?', default=_WRITEOUTPUT, help="To create the images in the output folder")
+    process_parser.add_argument("logResult", nargs='?', default=_LOGRESULT, help="Log result to Azure cosmos DB")
+    
     
     args = parser.parse_args()
     if args.command == "processImages":
@@ -354,14 +378,15 @@ if __name__ == "__main__":
         if (args.verbose):
             g_verbosity = True
 
-        l, t, tt, fp, fn = processImages(  historyImage = args.historyImage, 
-                            varThreshold=args.varThreshold, 
-                            numberOfIterations=args.numberOfIterations,
-                            boundingRectAreaThreshold=args.boundingRectAreaThreshold, 
-                            contourCountThreshold=args.contourCountThreshold, 
-                            maskDiffThreshold=args.maskDiffThreshold,
-                            partOfFileName=args.partOfFileName, 
-                            writeOutput=args.writeOutput )
+        l, t, tt, fp, fn = processImages(   historyImage = args.historyImage, 
+                                            varThreshold=args.varThreshold, 
+                                            numberOfIterations=args.numberOfIterations,
+                                            boundingRectAreaThreshold=args.boundingRectAreaThreshold, 
+                                            contourCountThreshold=args.contourCountThreshold, 
+                                            maskDiffThreshold=args.maskDiffThreshold,
+                                            partOfFileName=args.partOfFileName, 
+                                            writeOutput=args.writeOutput,
+                                            logResult = args.logResult )
 
         print("")                
         print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}".format(l))
