@@ -33,7 +33,7 @@ import argparse
 # import cosmosDocumentManagement as docMgmt 
 
 # from cosmosDocumentManagement import DocumentManagement as docMgmt 
-# document_client.CosmosClient.DeleteItem()
+# document_client.CosmosClient.
 
 
 def ifNullReadAndAssignFromEnviron(variableName, KEY):

@@ -24,11 +24,13 @@ _SCALE_FACTOR = 1/255
 _NO_OF_ITERATIONS = -1 
 _IMAGE_TAG = "bird"
 _LOG_RESULT = True
+_EXPERIMENTNAME = ''
 
 
 #Global Variable
 g_net = None
 verbosity = True
+detectedImages = []
 
 # load our serialized _MODEL from disk
 def init(prototxt, model):
@@ -42,6 +44,7 @@ def init(prototxt, model):
 # implementation)
 
 def MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThreshold, imageTag):
+    global detectedImages 
     bRV = False
  
     blob = cv2.dnn.blobFromImage(imageFrame, scaleFactor, (shapeWeight, shapeWeight), [0,0,0], 1, crop=False)
@@ -63,6 +66,7 @@ def MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confT
             idx = int(detections[0, 0, i, 1])
             if (_CLASSES[idx] == imageTag):
                 bRV = True
+                detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence))})
                 if (verbosity == True):
                     print("")
                     print("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
@@ -78,7 +82,8 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
                     prototxt = _PROTOTXT, 
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = _IMAGE_TAG,
-                    logResult = _LOG_RESULT):
+                    logResult = _LOG_RESULT,
+                    experimentName = _EXPERIMENTNAME):
     
     '''
     Process the image and output if it has detected any birds in the images
@@ -120,6 +125,7 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
         dictObject ={  'id': str(datetime.datetime.now()),
+                        'provider': 'mobileNetImageDetector',
                         'elapsedTime': elapsed_time,
                         'result - totalNumberOfRecords': len(FILE_LIST),
                         'result - birdFound' : TotalBirdsFound,
@@ -128,8 +134,9 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
                         'param - scaleFactor' : scaleFactor , 
                         'param - numberOfIterations' : numberOfIterations,
                         'param - imageTag' : imageTag,
+                        'detectedItems': detectedImages
                     }
-        obj.logExperimentResult(collectionName = "mobileNetImageDetector", documentDict= dictObject)
+        obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
     return TotalBirdsFound                    
 
 

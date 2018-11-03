@@ -34,6 +34,7 @@ _MASKDIFFTHRESHOLD = 2
 _PARTOFFILENAME = ''
 _WRITEOUTPUT = True
 _LOGRESULT = False
+_EXPERIMENTNAME = ''
 
 
 
@@ -148,7 +149,8 @@ def processImages(  historyImage = _HISTORYIMAGE,
                     maskDiffThreshold = _MASKDIFFTHRESHOLD,
                     partOfFileName= _PARTOFFILENAME,
                     writeOutput=_WRITEOUTPUT,
-                    logResult = _LOGRESULT):
+                    logResult = _LOGRESULT,
+                    experimentName = ''):
 
     """
     processImages ; Processes photos and those that pass the various threshold tests 
@@ -236,7 +238,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
 
     # Get the filelist, and mask images whilst initializing
     init(partOfFileName)
-
+    detectedImages = []
     
     for i, imageFileName in enumerate(g_fileList):
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
@@ -298,6 +300,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
                             if (boundingRectArea > boundingRectAreaThreshold):
                                 # passed the test of minimum bounding area 
                                 bOpenCVBirdDetected = True
+                                detectedImages.append({'openCVDetectedImageName':imageFileName})
                                 if (writeOutput == True):
                                     WriteOutputFile(imgColour, imageFileName, x, y, w, h)
                             else:   # we've already reached the end as we are sorted and 
@@ -335,13 +338,11 @@ def processImages(  historyImage = _HISTORYIMAGE,
                         'param-boundingRectAreaThreshold' : boundingRectAreaThreshold, 
                         'param-contourCountThreshold' : contourCountThreshold,
                         'param-maskDiffThreshold' : maskDiffThreshold,
-                        'param-partOfFileName' : partOfFileName
+                        'param-partOfFileName' : partOfFileName,
+                        'detectedItems': detectedImages
                         }
-        obj.logExperimentResult(collectionName = "openCVImageExtractor", documentDict= dictObject)
-
+        obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
     return len(g_fileList), elapsed_time, true_true, false_positive, false_negative
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -367,6 +368,7 @@ if __name__ == "__main__":
     process_parser.add_argument("partOfFileName", nargs='?',default=_PARTOFFILENAME, help="If you want to subselect file from the images folder, specify the partial name here")
     process_parser.add_argument("writeOutput", nargs='?', default=_WRITEOUTPUT, help="To create the images in the output folder")
     process_parser.add_argument("logResult", nargs='?', default=_LOGRESULT, help="Log result to Azure cosmos DB")
+    process_parser.add_argument("experimentName", nargs='?', default=_EXPERIMENTNAME, help="Log result to Azure cosmos DB")
     
     
     args = parser.parse_args()
@@ -386,7 +388,8 @@ if __name__ == "__main__":
                                             maskDiffThreshold=args.maskDiffThreshold,
                                             partOfFileName=args.partOfFileName, 
                                             writeOutput=args.writeOutput,
-                                            logResult = args.logResult )
+                                            logResult = args.logResult,
+                                            experimentName = args.experimentName )
 
         print("")                
         print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}".format(l))

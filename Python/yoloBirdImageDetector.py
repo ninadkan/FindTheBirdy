@@ -21,11 +21,14 @@ _NO_OF_ITERATIONS = -1
 _IMAGE_TAG = "bird"
 _NMS_THRESHOLD = 0.4
 _LOG_RESULT = True
+_EXPERIMENTNAME = ''
 
 # specify global objects 
 g_classes = None
 g_net = None
 verbosity = False
+
+detectedImages = []
 
 def init(classesFile, modelConfiguration, modelWeights):
     global g_net
@@ -46,6 +49,7 @@ def getOutputsNames():
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
 def postprocess(imageName, imageFrame, outs, confThreshold, imageTag, nmsThreshold):
+    global detectedImages
     bBirdFound = False
     frameHeight = imageFrame.shape[0]
     frameWidth = imageFrame.shape[1]
@@ -90,9 +94,11 @@ def postprocess(imageName, imageFrame, outs, confThreshold, imageTag, nmsThresho
             bird = '%s' % (g_classes[classIds[i]])
             if (bird == imageTag):
                 bBirdFound = True
+                detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidences[i]))})
                 if (verbosity == True):
                     print("")
                     print("Image name = {0}, Bird Found = {1}, Confidence Score = {2}".format(imageName, bBirdFound, confidences[i]))
+
                 break; 
     return bBirdFound
 
@@ -122,7 +128,8 @@ def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = _IMAGE_TAG,
                     nmsThreshold = _NMS_THRESHOLD, 
-                    logResult = _LOG_RESULT):
+                    logResult = _LOG_RESULT,
+                    experimentName = _EXPERIMENTNAME):
     '''
     Process the image and output if it has detected any birds in the images
     outputFolder IMAGE_SRC_FOLDER = Location of image files
@@ -137,6 +144,7 @@ def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
     scaleFactor SCALE_FACTOR = Scale factor to be used in DNN blobFromImage
     nmsThreshold _NMS_THRESHOLD nmsThreshold used in the cv2.dnn.NMSBoxes fn
     '''
+    global detectedImages
     start_time = time.time()
 
     FILE_LIST = []
@@ -166,6 +174,7 @@ def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
         dictObject ={   'id': str(datetime.datetime.now()),
+                        'provider': 'yoloImageDetector',
                         'elapsedTime': elapsed_time,
                         'result - totalNumberOfRecords': len(FILE_LIST),
                         'result - birdFound' : TotalBirdsFound,
@@ -175,8 +184,9 @@ def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
                         'param - numberOfIterations' : numberOfIterations,
                         'param - imageTag' : imageTag,
                         'param - nmsThreshold' : nmsThreshold,
+                        'detectedItems': detectedImages
                     }
-        obj.logExperimentResult(collectionName = "yoloImageDetector", documentDict= dictObject)
+        obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
     return TotalBirdsFound
 
 
@@ -204,7 +214,8 @@ if __name__ == "__main__":
     process_parser.add_argument("scaleFactor", nargs='?', default=_SCALE_FACTOR, help="Scale factor to be used in DNN blobFromImage")
     process_parser.add_argument("nmsThreshold", nargs='?', default=_NMS_THRESHOLD, help="Used in the cv2.dnn.NMSBoxes fn")
     process_parser.add_argument("logResult", nargs='?', default=_LOG_RESULT, help="Log result to cosmos DB")
-    
+    process_parser.add_argument("experimentName", nargs='?', default=_EXPERIMENTNAME, help="Common name of collection under cosmos DB")
+
    
     args = parser.parse_args()
     if args.command == "processImages":
@@ -225,7 +236,8 @@ if __name__ == "__main__":
                                             numberOfIterations = args.numberOfIterations,
                                             imageTag = args.imageTag,
                                             nmsThreshold = args.nmsThreshold,
-                                            logResult=args.logResult)
+                                            logResult=args.logResult,
+                                            experimentName=args.experimentName)
         end_time = time.time() - start_time
 
         print("")

@@ -4,7 +4,7 @@ import cv2
 import os
 import sys
 from pathlib import Path
-import time
+
 # https://github.com/Microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Computer%20Vision%20API%20Example.ipynb 
 # https://anaconda.org/conda-forge/requests
 
@@ -24,6 +24,8 @@ _OUTPUT_FOLDER = str(Path('../data/outputopencv/'))
 _IMAGE_TAG = "bird"
 verbosity = True
 _LOG_RESULT = True
+_EXPERIMENTNAME = ''
+detectedImages = []
 
 def processRequest( json, data, headers, params ):
     """
@@ -66,7 +68,8 @@ def processImages(  _key = '',
                     confThreshold = _CONF_THRESHOLD, 
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = _IMAGE_TAG,
-                    logResult = _LOG_RESULT):
+                    logResult = _LOG_RESULT,
+                    experimentName = _EXPERIMENTNAME):
     '''
     Process the image and output if it has detected any birds in the images
     outputFolder IMAGE_SRC_FOLDER = Location of image files
@@ -74,6 +77,7 @@ def processImages(  _key = '',
     numberOfIterations NO_OF_ITERATIONS = Maximum number of images to be searched. set to <0 for all
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
+    global detectedImages
     start_time = time.time() 
     if (len(_key)== 0):
         # try to load it from the environmental variables
@@ -134,6 +138,7 @@ def processImages(  _key = '',
                             if (tagName == imageTag):
                                 bBirdFound = True
                                 TotalBirdsFound = TotalBirdsFound +1
+                                detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence))})
                                 if (verbosity == True):
                                     print("")
                                     print("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
@@ -145,6 +150,7 @@ def processImages(  _key = '',
                                         bBirdFound = True
                                         TotalBirdsFound = TotalBirdsFound +1
                                         TotalHintBirdScore = TotalHintBirdScore +1
+                                        detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence)), 'Hint': TotalHintBirdScore})
                                         if (verbosity == True):
                                             print("")
                                             print("Image name = {0}, imageTag = {1} , Confidence Score = {2} - Hint Option".format(imageName, imageTag, confidence))
@@ -156,15 +162,17 @@ def processImages(  _key = '',
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
         dictObject ={   'id': str(datetime.datetime.now()),
+                        'provider': 'azureImageDetector',
                         'elapsedTime': elapsed_time,
                         'result - totalNumberOfRecords': len(FILE_LIST),
                         'result - birdFound' : TotalBirdsFound,
                         'result - Hint bird Found' : TotalHintBirdScore, 
                         'param - confThreshold' : confThreshold, 
                         'param - numberOfIterations' : numberOfIterations,
-                        'param - imageTag' : imageTag
+                        'param - imageTag' : imageTag,
+                        'detectedItems': detectedImages
                     }
-        obj.logExperimentResult(collectionName = "azureImageDetector", documentDict= dictObject)
+        obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
     
     return TotalBirdsFound
 

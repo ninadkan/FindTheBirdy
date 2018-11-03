@@ -35,6 +35,8 @@ _OUTPUT_FOLDER = Path('../data/outputopencv/')
 _IMAGE_TAG = "bird"
 verbosity = True
 _LOG_RESULT = True
+_EXPERIMENTNAME = ''
+detectedImages = []
 
 
 def init():
@@ -71,7 +73,8 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = _IMAGE_TAG,
-                    logResult = _LOG_RESULT):
+                    logResult = _LOG_RESULT,
+                    experimentName = _EXPERIMENTNAME):
     '''
     Process the image and output if it has detected any birds in the images
     outputFolder IMAGE_SRC_FOLDER = Location of image files
@@ -79,6 +82,7 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
     numberOfIterations NO_OF_ITERATIONS = Maximum number of images to be searched. set to <0 for all
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
+    global detectedImages
     start_time = time.time() 
     TotalBirdsFound = 0
 
@@ -98,6 +102,7 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
         bBirdFound, description, confidenceScore = DetectBirdInImage(pathToFileInDisk,confThreshold, imageTag )
         if (bBirdFound == True):
             TotalBirdsFound = TotalBirdsFound +1
+            detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidenceScore))})
             if (verbosity == True):
                 print("")
                 print("Image name = {0}, imageTag = {1} , Confidence Score = {2:0.4f}, Description = {3}".format(imageName, imageTag, confidenceScore, description))
@@ -109,14 +114,16 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
         dictObject ={   'id': str(datetime.datetime.now()),
+                        'provider': 'googleImageDetector',
                         'elapsedTime': elapsed_time,
                         'result - totalNumberOfRecords': len(FILE_LIST),
                         'result - birdFound' : TotalBirdsFound,
                         'param - confThreshold' : confThreshold, 
                         'param - numberOfIterations' : numberOfIterations,
-                        'param - imageTag' : imageTag
+                        'param - imageTag' : imageTag,
+                        'detectedItems': detectedImages
                     }
-        obj.logExperimentResult(collectionName = "googleImageDetector", documentDict= dictObject)
+        obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
 
     return TotalBirdsFound 
 
