@@ -109,7 +109,7 @@ def init(partOfFileName=''):
     # ================================= Load Images and Create Mask ===============
     #endregion
 
-def WriteOutputFile(imgColour, imageFileName, x, y, w, h, Padding=15):
+def WriteOutputFile(imgColour, imageFileName, x, y, w, h, detectedImages, Padding=15):
     '''
     imgColour --> The bitwise representation of the coloured image
     imageFileName ; Filename of the image
@@ -134,11 +134,16 @@ def WriteOutputFile(imgColour, imageFileName, x, y, w, h, Padding=15):
     BottomX = x + (3*Padding)  + w if ((x + (3*Padding)  + w)<= wt) else wt
     BottomY = y + (6*Padding) + h if ((y + (6*Padding) + h) <= ht) else ht
     
+    detectedImages.append({'openCVDetectedImageName':imageFileName,
+                            'TopX': TopX, 
+                            'TopY': TopY, 
+                            'BottomX' : BottomX, 
+                            'BottomY' :BottomY  })
     #crop the frame
     frame = imCrop[TopY:BottomY, TopX:BottomX]
 
     outputFile = os.path.join(g_destinationFolder,imageFileName)
-    cv2.imwrite(outputFile,frame)
+    cv2.imwrite(outputFile,frame)           
     return frame
 
 def processImages(  historyImage = _HISTORYIMAGE, 
@@ -171,29 +176,29 @@ def processImages(  historyImage = _HISTORYIMAGE,
 
     #region Data
     # ================================= Data ======================================
-    DataClassification_Good = [ 
-                '2018-04-15_0638',
-                '2018-04-15_0639',
-                '2018-04-15_0654', 
-                '2018-04-15_0803',
-                '2018-04-15_0845',
-                '2018-04-15_0853',
-                '2018-04-15_0854',
-                '2018-04-15_0855',
-                '2018-04-16_0405',
-                '2018-04-16_0406',
-                '2018-04-16_0453',
-                '2018-04-16_0731',
-                '2018-04-16_0746',
-                '2018-04-16_0751',
-                '2018-04-16_1002',
-                '2018-04-16_1003',
-                '2018-04-16_1004',
-                '2018-04-21_0808',
-                '2018-04-21_0809',
-                '2018-04-21_0911',
-                '2018-04-21_0914',
-                ]
+    # DataClassification_Good = [ 
+    #             '2018-04-15_0638',
+    #             '2018-04-15_0639',
+    #             '2018-04-15_0654', 
+    #             '2018-04-15_0803',
+    #             '2018-04-15_0845',
+    #             '2018-04-15_0853',
+    #             '2018-04-15_0854',
+    #             '2018-04-15_0855',
+    #             '2018-04-16_0405',
+    #             '2018-04-16_0406',
+    #             '2018-04-16_0453',
+    #             '2018-04-16_0731',
+    #             '2018-04-16_0746',
+    #             '2018-04-16_0751',
+    #             '2018-04-16_1002',
+    #             '2018-04-16_1003',
+    #             '2018-04-16_1004',
+    #             '2018-04-21_0808',
+    #             '2018-04-21_0809',
+    #             '2018-04-21_0911',
+    #             '2018-04-21_0914',
+    #             ]
     # DataClassification_OK = [
     #                 '2018-04-16_0430', # sitting on porch
     #                 '2018-04-16_0446', # moving along the edges
@@ -227,11 +232,12 @@ def processImages(  historyImage = _HISTORYIMAGE,
 
     prevmask = None
     currentmask = None
+    TotalNumberOfImagesDetected = 0
 
     # Test counters
-    false_positive = 0
-    false_negative = 0
-    true_true = 0 
+    # false_positive = 0
+    # false_negative = 0
+    # true_true = 0 
 
     # Set to true if OpenCV thinks its detected a bird
     bOpenCVBirdDetected = False
@@ -273,11 +279,11 @@ def processImages(  historyImage = _HISTORYIMAGE,
                                     # historyImage number images should only contain the background
             #reset our flags
             bOpenCVBirdDetected = False
-            bBirdShouldBeDetected = False
+            # bBirdShouldBeDetected = False
 
-            strFileName = imageFileName.replace(g_filenameExtension,'')
-            if ((strFileName in DataClassification_Good)) :
-                bBirdShouldBeDetected = True
+            # strFileName = imageFileName.replace(g_filenameExtension,'')
+            # if ((strFileName in DataClassification_Good)) :
+            #     bBirdShouldBeDetected = True
  
             # calculate the difference
             diff = mse(currentmask, prevmask)
@@ -300,21 +306,22 @@ def processImages(  historyImage = _HISTORYIMAGE,
                             if (boundingRectArea > boundingRectAreaThreshold):
                                 # passed the test of minimum bounding area 
                                 bOpenCVBirdDetected = True
-                                detectedImages.append({'openCVDetectedImageName':imageFileName})
+                                TotalNumberOfImagesDetected = TotalNumberOfImagesDetected +1
+                                
                                 if (writeOutput == True):
-                                    WriteOutputFile(imgColour, imageFileName, x, y, w, h)
+                                    WriteOutputFile(imgColour, imageFileName, x, y, w, h, detectedImages)
                             else:   # we've already reached the end as we are sorted and 
                                     # assume that boundingRectArea and boundingRect area are related. 
                                 break 
         
-            if (bBirdShouldBeDetected == True):
-                if (bOpenCVBirdDetected == True):
-                    true_true = true_true + 1
-                else:
-                    false_negative = false_negative +1
-            else: # Now the bird should not be detected
-                if (bOpenCVBirdDetected == True):
-                    false_positive = false_positive +1
+            # if (bBirdShouldBeDetected == True):
+            #     if (bOpenCVBirdDetected == True):
+            #         true_true = true_true + 1
+            #     else:
+            #         false_negative = false_negative +1
+            # else: # Now the bird should not be detected
+            #     if (bOpenCVBirdDetected == True):
+            #         false_positive = false_positive +1
 
             if (g_verbosity == True):
                 print("")
@@ -328,10 +335,12 @@ def processImages(  historyImage = _HISTORYIMAGE,
         obj = clsCosmosWrapper()
         dictObject = {  'id': str(datetime.datetime.now()),
                         'elapsedTime': elapsed_time,
+                        'provider':  __name__,
                         'result-totalNumberOfRecords': len(g_fileList),
-                        'result-true_true': true_true,
-                        'result-false_positive': false_positive,
-                        'result-false_negative': false_negative,
+                        'TotalNumberOfImagesDetected' : TotalNumberOfImagesDetected,
+                        # 'result-true_true': true_true,
+                        # 'result-false_positive': false_positive,
+                        # 'result-false_negative': false_negative,
                         'param-historyImage' : historyImage, 
                         'param-varThreshold' : varThreshold, 
                         'param-numberOfIterations' : numberOfIterations, 
@@ -342,7 +351,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
                         'detectedItems': detectedImages
                         }
         obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
-    return len(g_fileList), elapsed_time, true_true, false_positive, false_negative
+    return len(g_fileList), TotalNumberOfImagesDetected,  elapsed_time  #, true_true, false_positive, false_negative
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

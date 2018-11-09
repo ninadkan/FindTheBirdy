@@ -162,7 +162,7 @@ def processImages(  _key = '',
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
         dictObject ={   'id': str(datetime.datetime.now()),
-                        'provider': 'azureImageDetector',
+                        'provider':  __name__,
                         'elapsedTime': elapsed_time,
                         'result - totalNumberOfRecords': len(FILE_LIST),
                         'result - birdFound' : TotalBirdsFound,

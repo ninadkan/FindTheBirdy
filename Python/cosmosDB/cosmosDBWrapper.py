@@ -26,6 +26,7 @@
 
 #import pydocumentdb.document_client as document_client
 import azure.cosmos.cosmos_client as document_client
+import azure.cosmos.errors as errors
 import argparse
 #from pydocumentdb import document_client
 # import cosmosDatabaseManagement as dbMgmt 
@@ -45,6 +46,9 @@ def ifNullReadAndAssignFromEnviron(variableName, KEY):
 class clsCosmosWrapper:
 
     def __init__(self, host='', key='', databaseId=''):
+
+        self.LISTCONTAININGTRUEIMAGES = 'ListContainingTrueImages'
+        self.LABELLEDIMAGES = 'LabelledImages'
         self.host = ifNullReadAndAssignFromEnviron(host, 'COSMOSDB_HOST')
         assert(self.host is not None), "cosmosDB host not specified"
         self.key =  ifNullReadAndAssignFromEnviron(key, 'COSMOSDB_KEY')
@@ -57,6 +61,20 @@ class clsCosmosWrapper:
         self.client = document_client.CosmosClient(  hostFormat , 
                                                         {'masterKey': self.key})
         assert(self.client is not None), "Unable to create client"
+        #Check existence of database and create it it does not exist
+        self.dbSelfLink = None
+        databases = list(self.client.QueryDatabases({
+            "query": "SELECT * FROM r WHERE r.id=@id",
+            "parameters": [
+                { "name":"@id", "value": self.databaseId }
+            ] }))
+        if len(databases) > 0: # exists, take the first one
+            self.dbSelfLink = databases[0]['_self'] 
+        else:
+            self.dbSelfLink = self.client.CreateDatabase({"id": self.databaseId})['_self']
+        
+        assert (self.dbSelfLink is not None)
+        return
                 
 
     def getClient(self):
@@ -80,36 +98,22 @@ class clsCosmosWrapper:
         
         assert(collectionName is not None), "collectionName parameter is mandatory!"
         assert(documentDict is not None), "documentDict parameter is mandatory!"
-        assert(self.client is not None), "client set to Null"
-
+        assert(self.client is not None), "client set to Null!!!"
+        assert(self.dbSelfLink is not None), "Database self link is set to Null!!!"
         
-        db = None
+        
         coll= None
         if (doChecks == True):
-            # # check databse exists and if not create it 
-            databases = list(self.client.QueryDatabases({
-                "query": "SELECT * FROM r WHERE r.id=@id",
-                "parameters": [
-                    { "name":"@id", "value": self.databaseId }
-                ] }))
-            if len(databases) > 0: # exists
-                db = databases[0] # take the first one
+            # find if any containers exist
+            collections = list(self.client.QueryContainers( self.dbSelfLink,
+                {"query": "SELECT * FROM r WHERE r.id=@id", "parameters": 
+                [{ "name":"@id", "value": collectionName }]}))
+            if len(collections) > 0:
+                coll = collections[0] # take the first item
             else:
-                db = self.client.CreateDatabase({"id": self.databaseId})
-
-
-            if (db is not None):
-                # find if any containers exist
-                collections = list(self.client.QueryContainers( db['_self'],
-                    {"query": "SELECT * FROM r WHERE r.id=@id", "parameters": 
-                    [{ "name":"@id", "value": collectionName }]}))
-                if len(collections) > 0:
-                    coll = collections[0] # take the first item
-                else:
-                    coll = self.client.CreateContainer(db['_self'], {"id": collectionName})
-
-                    
+                coll = self.client.CreateContainer(self.dbSelfLink, {"id": collectionName})
         assert(coll is not None), "Unable to get collection object"
+
         doc_id = self.client.CreateItem(coll['_self'], documentDict)
 
         coll = None
@@ -122,6 +126,95 @@ class clsCosmosWrapper:
         # self.client.DeleteDatabase(db['_self'])
         return 
 
+    
+
+
+    def saveGoodPhotoListToCosmosDB(self, LabelledImagesPassed):
+        assert(self.client is not None), "client set to Null!!!"
+        assert(self.dbSelfLink is not None), "Database self link is set to Null!!!"
+        
+        #print("\n5. List all Collection in a Database")
+        #print('Collections:')
+        collections = list(self.client.ReadContainers(self.dbSelfLink))
+        if not collections:
+            return
+        for collection in collections:
+            #print(collection['id']) 
+            dictObject = {'id': self.LISTCONTAININGTRUEIMAGES,
+                          self.LABELLEDIMAGES : LabelledImagesPassed}
+            doc_id = self.client.CreateItem(collection['_self'], dictObject)
+            # dObj = self.client.ReadItem(doc_id['_self'])
+            collection = None
+        return
+
+
+    # https://github.com/Azure/azure-cosmos-python/blob/master/samples/IndexManagement/Program.py#L152-L169
+    def QueryDocumentsForTrueImages(self, collection_link):
+        documentquery = {
+                "query": "SELECT * FROM r WHERE r.id=@id",
+                "parameters": [ { "name":"@id", "value": self.LISTCONTAININGTRUEIMAGES } ]
+                }
+        try:
+            results = list(self.client.QueryItems(collection_link, documentquery))
+            #print("Document(s) found by query: ")
+            #for doc in results:
+                #print(doc)
+            return results
+        except errors.HTTPFailure as e:
+            if e.status_code == 404:
+                print("Document doesn't exist")
+            elif e.status_code == 400:
+                # Can occur when we are trying to query on excluded paths
+                print("Bad Request exception occured: ", e)
+                pass
+            else:
+                raise
+        finally:
+            print()
+
+    def QueryCollectionsWithQuery(self, experimentName):
+        collectionquery = {
+                "query": "SELECT * FROM r WHERE r.id=@id",
+                "parameters": [ { "name":"@id", "value": experimentName } ]
+                }
+        try:
+            results = list(self.client.QueryContainers(self.dbSelfLink, collectionquery))
+            #print("Collection Found")
+            #for collection in results:
+                #print(collection)
+            return results
+        except errors.HTTPFailure as e:
+            if e.status_code == 404:
+                print("Collection doesn't exist")
+            elif e.status_code == 400:
+                # Can occur when we are trying to query on excluded paths
+                print("Bad Request exception occured: ", e)
+                pass
+            else:
+                raise
+        finally:
+            print()
+        return 
+
+    def savePhotoListToACollection(self, LabelledImagesPassed, experimentName ):
+        collection = self.QueryCollectionsWithQuery(experimentName)
+        for coll in collection: # there should be only one
+            dictObject = {'id': self.LISTCONTAININGTRUEIMAGES,
+                          self.LABELLEDIMAGES : LabelledImagesPassed}
+            doc_id = self.client.CreateItem(coll['_self'], dictObject)
+            coll = None
+            return
+        return 
+
+
+    def returnGoodPhotoList(self, experimentName, doChecks=True):
+        collection = self.QueryCollectionsWithQuery(experimentName)
+        for coll in collection: # there should be only one
+            docs = self.QueryDocumentsForTrueImages(coll['_self'])
+            for document in docs : # there should be only one
+                return document[self.LABELLEDIMAGES]
+
+        return
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
