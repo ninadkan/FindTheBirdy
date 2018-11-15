@@ -85,7 +85,7 @@ googleTest(experimentName=ExperimentName)
 
 # Add our temporary reading of the images that we believe are the correct ones. These are not the 
 # exhaustive list but atleast contain the superflous list. 
-ExperimentName = 'BirdImageDetection-2018-11-09 14:09:51.541986'
+# ExperimentName = 'BirdImageDetection-2018-11-09 14:09:51.541986'
 _FILENAMEEXTENSION = '.jpg'
 FILE_LIST = []
 import os

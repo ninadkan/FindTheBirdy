@@ -113,8 +113,8 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
         import datetime
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
-        dictObject ={   'id': str(datetime.datetime.now()),
-                        'provider':  __name__,
+        dictObject ={   'id': __name__,
+                        'DateTime': str(datetime.datetime.now()),
                         'elapsedTime': elapsed_time,
                         'result - totalNumberOfRecords': len(FILE_LIST),
                         'result - birdFound' : TotalBirdsFound,

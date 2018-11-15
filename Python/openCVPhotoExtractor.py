@@ -333,9 +333,8 @@ def processImages(  historyImage = _HISTORYIMAGE,
         import datetime
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
-        dictObject = {  'id': str(datetime.datetime.now()),
-                        'elapsedTime': elapsed_time,
-                        'provider':  __name__,
+        dictObject = {  'id': __name__,
+                        'DateTime': str(datetime.datetime.now()),
                         'result-totalNumberOfRecords': len(g_fileList),
                         'TotalNumberOfImagesDetected' : TotalNumberOfImagesDetected,
                         # 'result-true_true': true_true,

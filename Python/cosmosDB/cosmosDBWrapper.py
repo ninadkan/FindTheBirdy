@@ -1,5 +1,6 @@
 # this file  wraps CosmosDB API in python
 # https://github.com/Azure/azure-cosmos-python
+# https://github.com/Azure/azure-cosmos-python # MOST IMPRTANT AND UPDATED SITE
 # https://docs.microsoft.com/en-gb/python/api/overview/azure/cosmosdb?view=azure-python
 # pip install pydocumentdb
 # pip install azure-mgmt-cosmosdb
@@ -47,8 +48,9 @@ class clsCosmosWrapper:
 
     def __init__(self, host='', key='', databaseId=''):
 
-        self.LISTCONTAININGTRUEIMAGES = 'ListContainingTrueImages'
+        self.LISTCONTAININGTRUEIMAGES = 'ListContainingSomewhatTrueImages'
         self.LABELLEDIMAGES = 'LabelledImages'
+        self.DETECTEDIMAGES = 'detectedImages'
         self.host = ifNullReadAndAssignFromEnviron(host, 'COSMOSDB_HOST')
         assert(self.host is not None), "cosmosDB host not specified"
         self.key =  ifNullReadAndAssignFromEnviron(key, 'COSMOSDB_KEY')
@@ -63,14 +65,17 @@ class clsCosmosWrapper:
         assert(self.client is not None), "Unable to create client"
         #Check existence of database and create it it does not exist
         self.dbSelfLink = None
+        print("Querying database...")
         databases = list(self.client.QueryDatabases({
             "query": "SELECT * FROM r WHERE r.id=@id",
             "parameters": [
                 { "name":"@id", "value": self.databaseId }
             ] }))
-        if len(databases) > 0: # exists, take the first one
+        if len(databases) > 0: # exists, take the first one, it should return only one
+            print("Database found...")
             self.dbSelfLink = databases[0]['_self'] 
         else:
+            print("Creating database ...")
             self.dbSelfLink = self.client.CreateDatabase({"id": self.databaseId})['_self']
         
         assert (self.dbSelfLink is not None)
@@ -126,7 +131,62 @@ class clsCosmosWrapper:
         # self.client.DeleteDatabase(db['_self'])
         return 
 
-    
+    def returnAllCollection(self):
+        self.preCheck()
+        collections = list(self.client.ReadContainers(self.dbSelfLink))
+        return collections, self.dbSelfLink
+
+    def returnAllDocuments(self, collectionLink):
+        self.preCheck()
+        documentlist = list(self.client.ReadItems(collectionLink, {'maxItemCount':10}))
+        return documentlist
+
+    def returnDocument(self, documentId):
+        self.preCheck()
+        dObj = self.client.ReadItem(documentId)
+        return dObj
+
+    def preCheck(self):
+        assert(self.client is not None), "client set to Null!!!"
+        assert(self.dbSelfLink is not None), "Database self link is set to Null!!!"
+        print()
+        return
+        
+
+    def insert_document_in_collection(self, collectionId, id, detectedItems):
+        self.preCheck()
+        docs = self.queryDocsForExistence(collectionId, id)
+        # remove all the existing document first
+        for doc in docs:
+            self.client.DeleteItem(doc['_self'])
+            
+        # Not sure if we need to have a breather here first. 
+        dictObject = {'id': id,
+                       self.DETECTEDIMAGES : detectedItems}
+        doc_id = self.client.CreateItem(collectionId, dictObject)
+        return doc_id
+
+    def queryDocsForExistence(self, collection_link, docid):
+        self.preCheck()
+        documentquery = {
+                "query": "SELECT * FROM r WHERE r.id=@id",
+                "parameters": [ { "name":"@id", "value": docid } ]
+                }
+        try:
+            results = list(self.client.QueryItems(collection_link, documentquery))
+            return results
+        except errors.HTTPFailure as e:
+            if e.status_code == 404:
+                print("Document doesn't exist")
+            elif e.status_code == 400:
+                # Can occur when we are trying to query on excluded paths
+                print("Bad Request exception occured: ", e)
+                pass
+            else:
+                raise
+        finally:
+            print()
+   
 
 
     def saveGoodPhotoListToCosmosDB(self, LabelledImagesPassed):
@@ -143,7 +203,7 @@ class clsCosmosWrapper:
             dictObject = {'id': self.LISTCONTAININGTRUEIMAGES,
                           self.LABELLEDIMAGES : LabelledImagesPassed}
             doc_id = self.client.CreateItem(collection['_self'], dictObject)
-            # dObj = self.client.ReadItem(doc_id['_self'])
+            
             collection = None
         return
 
@@ -207,7 +267,7 @@ class clsCosmosWrapper:
         return 
 
 
-    def returnGoodPhotoList(self, experimentName, doChecks=True):
+    def returnGoodPhotoList(self, experimentName):
         collection = self.QueryCollectionsWithQuery(experimentName)
         for coll in collection: # there should be only one
             docs = self.QueryDocumentsForTrueImages(coll['_self'])
