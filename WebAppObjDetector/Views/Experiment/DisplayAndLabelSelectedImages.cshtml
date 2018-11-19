@@ -8,121 +8,6 @@
 <h2>Display And Label Selected Images</h2>
 
 
-
-@*@if (Model != null)
-    {
-        var count = 0;
-        <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000">
-            <ol class="carousel-indicators">
-                @foreach (var item in Model)
-                {
-                    string firstString = "<li data-target=\"#myCarousel\" data-slide-to=\"";
-                    string secondString = count.ToString();
-                    string thirdString = "\"";
-                    string fourthString = " class=\"active\"";
-                    string fifthString = "></li>";
-
-                    if (count == 0)
-                    {
-                        @Html.Raw(@firstString)@Html.Raw(@secondString)@Html.Raw(@thirdString)@Html.Raw(@fourthString)@Html.Raw(@fifthString)@Html.Raw("\n")
-                    }
-                    else
-                    {
-                        @Html.Raw(@firstString)@Html.Raw(@secondString)@Html.Raw(@thirdString)@Html.Raw(@fifthString)@Html.Raw("\n")
-                    }
-
-                    count++;
-                }
-            </ol>
-            <div class="carousel-inner" role="listbox">
-                @foreach (var item in Model)
-                {
-                    var divTag = "<div class=\"item\">";
-
-                    //var key = "?sv=2017-11-09&ss=bfqt&srt=sco&sp=rwdlacup&se=2018-11-14T13:49:03Z&st=2018-11-14T05:49:03Z&spr=https&sig=7%2FBuYYE5ZlUsPStEJaV8lmF0sGTIHtRAmqXRgBEA%2BKA%3D";
-                    var imgTag = "<img src =\"https://nkdsvm.file.core.windows.net/experiment-findthebird/data/outputopencv/" + item.openCVDetectedImageName + "?sv=2017-11-09&ss=bfqt&srt=sco&sp=rwdlacup&se=2018-11-17T22:46:16Z&st=2018-11-14T14:46:16Z&spr=https,http&sig=fm6SUsP2UZnZWaTswLmZynvtGX0oReEIvnWwVBt1TXc%3D" + "\" alt=\"ALT\" class=\"img-responsive\" />";
-
-                    //var filePath = "https://nkdsvm.file.core.windows.net/linuxraspshare/Share/";
-
-                    //var filePath = "/images/banner2.svg";
-
-                    //var endString = ";
-                    var middleDivTag = "<div class=\"carousel-caption\" role=\"option\"> <p> Learn how </p> </div>";
-
-                    var finalEndDiv = "</div>";
-
-
-                    @Html.Raw(@divTag)@Html.Raw("\n")@Html.Raw(@imgTag)@Html.Raw("\n")@Html.Raw(@middleDivTag)@Html.Raw("\n")@Html.Raw(@finalEndDiv)@Html.Raw("\n")
-
-
-                }
-            </div>
-
-
-
-            <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
-                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-                <span class="sr-only">Previous</span>
-            </a>
-            <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
-                <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-                <span class="sr-only">Next</span>
-            </a>
-        </div>
-
-    }*@
-
-@*<table class="table">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.openCVDetectedImageName)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.TopX)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.TopY)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.BottomX)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.BottomY)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.openCVDetectedImageName)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.TopX)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.TopY)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.BottomX)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.BottomY)
-                    </td>
-                    <td>
-                        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>*@
-
-
 <input type="hidden" id="selectedCollectionId" value="@ViewBag.CollectionId" />
 <select name="ExperimentCollection" id="ExperimentCollection" class="form-control col-md-12" asp-items="ViewBag.ExperimentCollectionVB"></select>
 
@@ -202,43 +87,11 @@
 
 <hr />
 
-@*<div id="dynamicTable">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Image File</th>
-                <th>Previous Tag</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody id="dynamicExperimentData"></tbody>
-    </table>
-</div>*@
 
 <div id="textDiv"></div>
 
 
 <hr />
-
-@*<div id="myCarousel" class="carousel slide" data-interval="6000">
-
-        <ol id="myCarouselIndicators" class="carousel-indicators"></ol>
-
-        <div id="myCarouselInner" class="carousel-inner" role="listbox">
-        </div>
-
-        <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
-            <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-            <span class="sr-only">Previous</span>
-        </a>
-        <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
-            <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-            <span class="sr-only">Next</span>
-        </a>
-    </div>*@
-
-
-
 @section Scripts {
     <script>
 
@@ -459,13 +312,9 @@
 
         function InvokeWebAPI(dataVal) {
             var body = dataVal;
-            console.log(dataVal);
             var collectionId = $('#selectedCollectionId').val();
-            console.log(collectionId); 
             var urlEncodeCollectionId = encodeURIComponent(collectionId);
-            console.log(urlEncodeCollectionId)
             var url = 'http://localhost:5000/comsosDB/v1.0/insert_doc_collection?collId=' + urlEncodeCollectionId;
-            
 
             if (invocation) {
                 invocation.open('POST', url, true);

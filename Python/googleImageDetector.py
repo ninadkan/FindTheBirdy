@@ -24,13 +24,13 @@ import os
 from pathlib import Path
 import time
 
+from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
+
 #global object
 g_client = None
 
 _CONF_THRESHOLD = 0.5
 _NO_OF_ITERATIONS = -1 
-
-_OUTPUT_FOLDER = Path('../data/outputopencv/')
 
 _IMAGE_TAG = "bird"
 verbosity = True
@@ -69,7 +69,7 @@ def DetectBirdInImage( pathToFileInDisk,confThreshold, imageTag):
 
 
 
-def processImages(  outputFolder = _OUTPUT_FOLDER,
+def processImages(  outputFolder = _SRCIMAGEFOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = _IMAGE_TAG,
@@ -87,6 +87,9 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
     TotalBirdsFound = 0
 
     init()
+
+    outputFolder = os.path.join(outputFolder,experimentName)
+    outputFolder = os.path.join(outputFolder,_DESTINATIONFOLDER)
 
     FILE_LIST = []
     for file in os.listdir(outputFolder):

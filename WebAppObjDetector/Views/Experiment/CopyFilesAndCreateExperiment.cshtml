@@ -1,0 +1,199 @@
+﻿@model IEnumerable<WebApplication1.Models.OpenCVResult>
+
+@{
+    ViewData["Title"] = "Copy Files and Create Experiments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Copy Files and Create Experiments</h2>
+
+
+
+<div id="devOperations">
+    <table class="table table-condensed" align="center">
+        <tbody>
+            <tr valign="middle">
+                <th align="center" width="30%"></th>
+                <th align="center" width="40%"></th>
+                <th align="center" width="30%"></th>
+            </tr>
+
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Source Share</label></td>
+                <td align="left" colspan="2"><input id="txtSourceShare" name="txtSourceShare" value="linuxraspshare" /></td>
+
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Destination Share</label></td>
+                <td align="left" colspan="2"><input class="btn-block" id="txtDestinationShare" name="txtDestinationShare" value="experiment-data" /></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Source Directory</label></td>
+                <td align="left" colspan="2"><input class="btn-block" id="txtSourceDirectory" name="txtSourceDirectory" value="backup" /></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Destination Directory</label></td>
+                <td align="left" colspan="2"><input class="btn-block" id="txtDestinationDirectory" name="txtDestinationDirectory" value="object-detection" /></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">File Filter</label></td>
+                <td align="left" colspan="2"><input id="txtFileFilter" name="txtFileFilter" value=".jpg" /></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Experiment Name Filter</label></td>
+                <td align="left" colspan="2"><input id="txtExperimentNameFilter" name="txtExperimentNameFilter" value="2018-04-15" /></td>
+            </tr>
+
+            <tr>
+                <td align="center"><button id="btnCopyFiles" class="btn btn-info" onclick="btnCopyFileHandler()">Copy Files</button></td>
+                <td align="center"><button id="btnCreateBackUp" class="btn btn-success" onclick="btnCreateBackUpHandler()">Create Back Up</button></td>
+                <td align="center"><button id="btnCreateExperimentFolder" class="btn btn-primary" onclick="btnCreateExperimentFolderHandler()">Create Experiment Folder</button></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Result : </label></td>
+                <td align="right" colspan="2" rowspan="2"><label id="lblResult" class="col-md-12 control-label"></label><p> </p><p> </p></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+
+    <script>
+
+        var sourceShare = '';
+        var destinationShare = '';
+        var sourceDirectory = '';
+        var destinationDirectory = '';
+        var fileFilter = '';
+        var experimentName = '';
+
+        $(function () // called when the body is ready
+        {
+            console.log("Home Run");
+            getAllValues();
+        });
+
+        function getAllValues() {
+            sourceShare = $('#txtSourceShare').val();
+            destinationShare = document.getElementById('txtDestinationShare').value;
+            sourceDirectory = document.getElementById('txtSourceDirectory').value;
+            destinationDirectory = document.getElementById('txtDestinationDirectory').value;
+            fileFilter = document.getElementById('txtFileFilter').value;
+            experimentName = document.getElementById('txtExperimentNameFilter').value;
+        }
+
+        function checkParameters() {
+            getAllValues();
+
+            if (sourceShare == null || sourceShare.length < 1) {
+                alert('Please enter a valid storage sourceShare name!');
+                return false;
+            }
+            if (destinationShare == null || destinationShare.length < 1) {
+                alert('Please enter a valid destinationShare Token!');
+                return false;
+            }
+
+            // check additional parameters
+            if (sourceDirectory == null || sourceDirectory.length < 1) {
+                alert('Please enter a valid Source Directory name!');
+                return false;
+            }
+
+            if (destinationDirectory == null || destinationDirectory.length < 1) {
+                alert('Please enter a valid Destination Directory name!');
+                return false;
+            }
+
+            if (fileFilter == null || fileFilter.length < 1) {
+                alert('Please enter a valid File Filter name!');
+                return false;
+            }
+
+            if (experimentName == null || experimentName.length < 1) {
+                alert('Please enter a valid Experiment name!');
+                return false;
+            }
+            return true;
+        }
+
+        function btnCreateExperimentFolderHandler() {
+            console.log("btnCreateExperimentFolderHandler");
+            var checkOK = checkParameters();
+            if (!checkOK)
+                return;
+
+            var jsonData = {
+                _sourceFileShareFolderName: sourceShare, _sourceDirectoryName: sourceDirectory,
+                _destinationFileShareFolderName: destinationShare, _destinationDirectoryName: destinationDirectory,
+                _ExperimentName: experimentName, _fileExtensionFilter: fileFilter
+            };
+            console.log(jsonData);
+            var updatedTagJson = JSON.stringify(jsonData);
+            console.log(updatedTagJson);
+            InvokeWebAPI(updatedTagJson);
+
+        }
+
+        var invocation = new XMLHttpRequest();
+        var invocationHistoryText;
+
+        function InvokeWebAPI(dataVal) {
+            console.log('InvokeWebAPI');
+            $("body").css("cursor", "progress");
+            var body = dataVal;
+            //var urlEncodeCollectionId = encodeURIComponent(body);
+            //console.log(urlEncodeCollectionId);
+
+            var url = 'http://localhost:5000/azureStorage/v1.0/CopySourceDestination';
+            console.log(url);
+
+            if (invocation) {
+                invocation.open('POST', url, true);
+                invocation.setRequestHeader('Content-Type', 'application/json');
+                invocation.onreadystatechange = handler;
+                invocation.send(body);
+            }
+            else {
+                invocationHistoryText = "No Invocation TookPlace At All";
+                UpdateTextDivObject(invocationHistoryText);
+            }
+
+        }
+
+        function handler(evtXHR) {
+            if (invocation.readyState == 4) {
+                if (invocation.status == 200) {
+                    var response = invocation.responseText;
+                    UpdateTextDivObject(response);
+                    $("body").css("cursor", "default");
+                }
+                else {
+                    var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
+                    UpdateTextDivObject(AppendedText);
+                    $("body").css("cursor", "default");
+                }
+            }
+            else {
+
+                UpdateTextDivObject("currently the application is at" + invocation.readyState);
+            }
+        }
+
+        function UpdateTextDivObject(displayString) {
+            console.log(displayString);
+            var temp = document.createTextNode(displayString);
+            var textDiv = document.getElementById("lblResult");
+            textDiv.appendChild(temp);
+        }
+
+    </script>
+    }

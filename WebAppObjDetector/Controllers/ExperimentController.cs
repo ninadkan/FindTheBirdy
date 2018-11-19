@@ -29,6 +29,11 @@ namespace WebApplication1.Controllers
             return View();
         }
 
+        public IActionResult CopyFilesAndCreateExperiment()
+        {
+            return View(); 
+        }
+
 
         #region AJAX calls
 
@@ -73,7 +78,7 @@ namespace WebApplication1.Controllers
 
 
 
-        
+
         public ActionResult GetDetails(string provider, string docId, string collectionId)
         {
             string strRV = string.Empty;

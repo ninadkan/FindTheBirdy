@@ -5,6 +5,8 @@ import os
 import sys
 from pathlib import Path
 
+from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
+
 # https://github.com/Microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Computer%20Vision%20API%20Example.ipynb 
 # https://anaconda.org/conda-forge/requests
 
@@ -19,8 +21,6 @@ _maxNumRetries = 10
 _CONF_THRESHOLD = 0.5
 _NO_OF_ITERATIONS = -1
 
-_OUTPUT_FOLDER = str(Path('../data/outputopencv/'))
-    
 _IMAGE_TAG = "bird"
 verbosity = True
 _LOG_RESULT = True
@@ -64,7 +64,7 @@ def processRequest( json, data, headers, params ):
     return result
 
 def processImages(  _key = '', 
-                    outputFolder = _OUTPUT_FOLDER,
+                    outputFolder = _SRCIMAGEFOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = _IMAGE_TAG,
@@ -86,6 +86,10 @@ def processImages(  _key = '',
             print("Azure Vision API Key not specified. Exiting")
             sys.exit(0)
           
+
+    outputFolder = os.path.join(outputFolder,experimentName)
+    outputFolder = os.path.join(outputFolder,_DESTINATIONFOLDER)
+
 
     FILE_LIST = []
     for file in os.listdir(outputFolder):

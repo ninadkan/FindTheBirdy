@@ -387,3 +387,6 @@ ASALocalRun/
 .mfractor/
 # Local History for Visual Studio
 .localhistory/
+
+Python/keys.cmd
+Python/keys.bat

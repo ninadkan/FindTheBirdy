@@ -65,14 +65,14 @@ class clsCosmosWrapper:
         assert(self.client is not None), "Unable to create client"
         #Check existence of database and create it it does not exist
         self.dbSelfLink = None
-        print("Querying database...")
+        #print("Querying database...")
         databases = list(self.client.QueryDatabases({
             "query": "SELECT * FROM r WHERE r.id=@id",
             "parameters": [
                 { "name":"@id", "value": self.databaseId }
             ] }))
         if len(databases) > 0: # exists, take the first one, it should return only one
-            print("Database found...")
+            #print("Database found...")
             self.dbSelfLink = databases[0]['_self'] 
         else:
             print("Creating database ...")
@@ -119,6 +119,14 @@ class clsCosmosWrapper:
                 coll = self.client.CreateContainer(self.dbSelfLink, {"id": collectionName})
         assert(coll is not None), "Unable to get collection object"
 
+        # Made a decision to remove any previous instance with same ID
+
+        docID = documentDict['id']; 
+        docs = self.queryDocsForExistence(coll['_self'], docID)
+        # remove all the existing document first
+        for doc in docs:
+            self.client.DeleteItem(doc['_self'])
+        # Now create a new one
         doc_id = self.client.CreateItem(coll['_self'], documentDict)
 
         coll = None

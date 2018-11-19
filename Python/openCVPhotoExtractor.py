@@ -11,6 +11,7 @@ import time
 
 
 from pathlib import Path
+from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
 
 # Global parameters
 g_fileList = []
@@ -21,8 +22,8 @@ g_destinationFolder = None
 g_verbosity = False
 #defaults - applicable for Windows version only. override these with Linux versions
 
-g_srcImageFolder = SRCIMAGEFOLDER = str(Path('../data/'))
-g_destinationFolder = _DESTINATIONFOLDER = str(Path('../data/outputopencv/'))
+g_srcImageFolder = _SRCIMAGEFOLDER 
+g_destinationFolder = _DESTINATIONFOLDER
 
 g_filenameExtension = _FILENAMEEXTENSION = '.jpg'
 _HISTORYIMAGE = 10
@@ -174,56 +175,20 @@ def processImages(  historyImage = _HISTORYIMAGE,
     # check how long it takes to run this 
     start_time = time.time()
 
-    #region Data
-    # ================================= Data ======================================
-    # DataClassification_Good = [ 
-    #             '2018-04-15_0638',
-    #             '2018-04-15_0639',
-    #             '2018-04-15_0654', 
-    #             '2018-04-15_0803',
-    #             '2018-04-15_0845',
-    #             '2018-04-15_0853',
-    #             '2018-04-15_0854',
-    #             '2018-04-15_0855',
-    #             '2018-04-16_0405',
-    #             '2018-04-16_0406',
-    #             '2018-04-16_0453',
-    #             '2018-04-16_0731',
-    #             '2018-04-16_0746',
-    #             '2018-04-16_0751',
-    #             '2018-04-16_1002',
-    #             '2018-04-16_1003',
-    #             '2018-04-16_1004',
-    #             '2018-04-21_0808',
-    #             '2018-04-21_0809',
-    #             '2018-04-21_0911',
-    #             '2018-04-21_0914',
-    #             ]
-    # DataClassification_OK = [
-    #                 '2018-04-16_0430', # sitting on porch
-    #                 '2018-04-16_0446', # moving along the edges
-    #                 '2018-04-16_0447',
-    #                 '2018-04-16_0448',
-    #                 '2018-04-16_0449',
-    #                 '2018-04-16_0450',
-    #                 '2018-04-16_0747',
-    #                 '2018-04-16_0749',
-    #                 '2018-04-16_0750',
-    #                 '2018-04-16_0752',
-    #                 '2018-04-16_0753',
-    #                 ]
-    # DataClassification_Ignored = ['2018-04-15_0916',
-    #                 '2018-04-16_0914',
-    #                 '2018-04-16_1005',
-    #                 '2018-04-16_1007',
-    #                 '2018-04-16_1008',
-    #                 '2018-04-16_1009',
-    #                 '2018-04-16_1052',
-    #                 '2018-04-21_0827',
-    #                 '2018-04-21_0941',
-    #                 '2018-04-21_0942',
-    #                 '2018-04-21_0943',
-    #                 '2018-04-22_0233']
+    # update the location where our image can be found
+    global g_srcImageFolder
+    g_srcImageFolder = os.path.join(g_srcImageFolder,experimentName)
+
+    # update the location where our output is to be written back
+    global g_destinationFolder
+    g_destinationFolder = os.path.join(g_srcImageFolder,g_destinationFolder)
+
+    if not os.path.exists(g_destinationFolder):
+        print("creating folder {0}".format(g_destinationFolder))
+        os.makedirs(g_destinationFolder)
+
+
+
 
     # Our background subtractor
     fgbg = cv2.createBackgroundSubtractorMOG2(  history=historyImage, 
@@ -364,7 +329,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="command")
     process_parser = subparsers.add_parser("processImages", help=processImages.__doc__)
 
-    process_parser.add_argument("srcImageFolder", nargs='?', default=SRCIMAGEFOLDER, help="Source Folder")
+    process_parser.add_argument("srcImageFolder", nargs='?', default=_SRCIMAGEFOLDER, help="Source Folder")
     process_parser.add_argument("filenameExtension", nargs='?',default=_FILENAMEEXTENSION, help="file extension that needs to be copied")
     process_parser.add_argument("destinationFolder", nargs='?', default=_DESTINATIONFOLDER, help="Destination Folder")
     process_parser.add_argument("historyImage", nargs='?', default=_HISTORYIMAGE, help="The amount of images used to construct mean background")

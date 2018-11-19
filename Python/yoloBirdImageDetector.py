@@ -5,12 +5,13 @@ import argparse
 from pathlib import Path
 import time
 
+from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
+
 # Initialize DEFAULTS
 _CONF_THRESHOLD = 0.5
 _SHAPE_WEIGHT = 224
 
 _YOLO_CONFIG_FOLDER = Path("./yolo/")
-_IMAGE_SRC_FOLDER = Path('../data/outputopencv/')
 
 _CLASSESFILE  = os.path.join(_YOLO_CONFIG_FOLDER, "coco.names")
 _MODELCONFIG = os.path.join(_YOLO_CONFIG_FOLDER, "yolov3.cfg")
@@ -117,7 +118,7 @@ def YoloBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThresh
     
     return bRV
  
-def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
+def processImages(  outputFolder = _SRCIMAGEFOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     shapeWeight = _SHAPE_WEIGHT,
                     yoloConfigurationFolder = _YOLO_CONFIG_FOLDER, 
@@ -146,6 +147,10 @@ def processImages(  outputFolder = _IMAGE_SRC_FOLDER,
     '''
     global detectedImages
     start_time = time.time()
+
+
+    outputFolder = os.path.join(outputFolder,experimentName)
+    outputFolder = os.path.join(outputFolder,_DESTINATIONFOLDER)
 
     FILE_LIST = []
     for file in os.listdir(outputFolder):
@@ -202,7 +207,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="command")
     process_parser = subparsers.add_parser("processImages", help=processImages.__doc__)
 
-    process_parser.add_argument("outputFolder", nargs='?', default=_IMAGE_SRC_FOLDER, help="Location of image files")
+    process_parser.add_argument("outputFolder", nargs='?', default=_SRCIMAGEFOLDER, help="Location of image files")
     process_parser.add_argument("confThreshold", nargs='?', default=_CONF_THRESHOLD, help="Minimum confidence threshold")
     process_parser.add_argument("shapeWeight", nargs='?', default=_SHAPE_WEIGHT, help="Shape weight to be used in DNN blobFromImage fn")
     process_parser.add_argument("yoloConfigurationFolder", nargs='?', default=_YOLO_CONFIG_FOLDER, help="Yolo folder")

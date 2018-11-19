@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 import time
 
+from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
+
 # initialize the list of class labels MobileNet SSD was trained to
 # detect, then generate a set of bounding box colors for each class
 _CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
@@ -14,7 +16,8 @@ _CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"sofa", "train", "tvmonitor"]
 
 _MOBILE_NET_FOLDER = Path("./mobileNet/")
-_OUTPUT_FOLDER = Path('../data/outputopencv/')
+
+
 _PROTOTXT = os.path.join(_MOBILE_NET_FOLDER, 'MobileNetSSD_deploy.prototxt.txt')
 _MODEL = os.path.join(_MOBILE_NET_FOLDER,'MobileNetSSD_deploy.caffemodel')
 #common DEFAULTS
@@ -73,7 +76,7 @@ def MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confT
                 break
     return bRV
 
-def processImages(  outputFolder = _OUTPUT_FOLDER,
+def processImages(  outputFolder = _SRCIMAGEFOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     shapeWeight = _SHAPE_WEIGHT,
                     scaleFactor = _SCALE_FACTOR , 
@@ -98,6 +101,13 @@ def processImages(  outputFolder = _OUTPUT_FOLDER,
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
     start_time = time.time()
+
+
+    outputFolder = os.path.join(outputFolder,experimentName)
+    outputFolder = os.path.join(outputFolder,_DESTINATIONFOLDER)
+
+
+
     FILE_LIST = []
     for file in os.listdir(outputFolder):
         FILE_LIST.append(file)

@@ -1,10 +1,11 @@
 #OpenCVPhotoExtractorTest
 import time
-from openCVPhotoExtractor import processImages, _DESTINATIONFOLDER, g_verbosity
+from openCVPhotoExtractor import processImages, g_verbosity
+from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
 import platform 
 
 
-ExportKeys = ['COSMOSDB_HOST', 'COSMOSDB_KEY', 'COSMOSDB_DATABASE', 'AZURE_VISION_API_KEY', 'GOOGLE_APPLICATION_CREDENTIALS']
+ExportKeys = ['COSMOSDB_HOST', 'COSMOSDB_KEY', 'COSMOSDB_DATABASE', 'AZURE_VISION_API_KEY', 'GOOGLE_APPLICATION_CREDENTIALS', 'EXPERIMENT_NAME']
 # try to load it from the environmental variables
 
 for keysToBeFound in ExportKeys:
@@ -15,7 +16,7 @@ for keysToBeFound in ExportKeys:
         print("{0} Key not specified. Exiting".format(keysToBeFound))
         sys.exit(0)
           
-
+ExperimentName = os.environ.get('EXPERIMENT_NAME')
 BoundingRectList = [1000] #[2500, 2000, 1500, 1000]
 
 osString = platform.platform()
@@ -27,11 +28,18 @@ if ('Windows' in osString):
 def delete_existing_files():
     import os
 
+    files = os.path.join(_SRCIMAGEFOLDER,ExperimentName)
+    files = os.path.join(files, _DESTINATIONFOLDER)
+    
+
     if NIX_DEFINED:
-        files = os.path.join(_DESTINATIONFOLDER,'*')
+        files = os.path.join(files,'*')
+        print(files)
         cpCommand = "rm -r " +  files
     else:
-        files = os.path.join(_DESTINATIONFOLDER,'*.*')
+    
+        files = os.path.join(files,'*.*')
+        print(files)
         cpCommand = "del /q " + files
 
     try:
@@ -43,9 +51,6 @@ def delete_existing_files():
 
 import time
 import datetime
-ExperimentName = "BirdImageDetection-" + str(datetime.datetime.now())
-print(ExperimentName)
-#ExperimentName ='BirdImageDetection-2018-11-03 02:32:04.704886'
 
 
 for item in BoundingRectList:
@@ -86,14 +91,14 @@ googleTest(experimentName=ExperimentName)
 # Add our temporary reading of the images that we believe are the correct ones. These are not the 
 # exhaustive list but atleast contain the superflous list. 
 # ExperimentName = 'BirdImageDetection-2018-11-09 14:09:51.541986'
-_FILENAMEEXTENSION = '.jpg'
-FILE_LIST = []
-import os
-for file in os.listdir(_DESTINATIONFOLDER):
-    strFileName = file.replace(_FILENAMEEXTENSION,'')
-    FILE_LIST.append(strFileName)
-from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
-clsObj = clsCosmosWrapper()
-clsObj.savePhotoListToACollection(FILE_LIST, ExperimentName)
+# _FILENAMEEXTENSION = '.jpg'
+# FILE_LIST = []
+# import os
+# for file in os.listdir(_DESTINATIONFOLDER):
+#     strFileName = file.replace(_FILENAMEEXTENSION,'')
+#     FILE_LIST.append(strFileName)
+# from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
+# clsObj = clsCosmosWrapper()
+# clsObj.savePhotoListToACollection(FILE_LIST, ExperimentName)
 
 
