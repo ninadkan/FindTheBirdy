@@ -4,7 +4,11 @@ from flask import abort
 from flask import make_response
 from flask import request
 from flask_cors import CORS
-from  azureFileShareTest import CopySourceDestination, deleteAllFiles
+from flask import send_file
+from  azureFileShareTest import CopySourceDestination, deleteAllFiles, getAllExperimentsAndFirstFilesImpl
+from mask_creation import GetMaskedImageImpl
+import io
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -44,6 +48,42 @@ def CopySourceDestinationAPI():
     else:
         return jsonify({'result': result})
 
+
+
+@app.route('/azureStorage/v1.0/GetMaskedImage', methods=['POST'])
+def GetMaskedImage():
+    if not request.json or not '_sourceFileShareFolderName' in request.json \
+        or not '_sourceDirectoryName' in request.json \
+        or not '_imageFileName' in request.json \
+        or not '_maskTags' in request.json:
+        abort(400)
+
+
+    result, image_binary = GetMaskedImageImpl( request.json['_sourceFileShareFolderName'],
+                                    request.json['_sourceDirectoryName'],
+                                    request.json['_imageFileName'],
+                                    request.json['_maskTags'])
+    if (result == True):
+        binary_image = io.BytesIO(image_binary)
+        binary_image.seek(0)
+        return send_file(binary_image,mimetype='image/jpeg')
+    else:
+        return make_response(jsonify({'error': 'Error Processing'}), 500)
+
+
+
+@app.route('/azureStorage/v1.0/GetAllExperimentsAndFirstFiles', methods=['POST'])
+def GetAllExperimentsAndFirstFiles():
+    if not request.json or not '_sourceFileShareFolderName' in request.json \
+        or not '_sourceDirectoryName' in request.json :
+        abort(400)
+
+    result, obj = getAllExperimentsAndFirstFilesImpl(request.json['_sourceFileShareFolderName'],
+                                                     request.json['_sourceDirectoryName'])
+    if (result == True):
+        return json.dumps(obj)
+    else:
+        return make_response(jsonify({'error': obj}), 500)
 
 
 if __name__ == '__main__':

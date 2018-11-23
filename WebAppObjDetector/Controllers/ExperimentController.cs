@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Azure.Documents;
-using WebApplication1.Db;
-using WebApplication1.Models;
+using WebAppObjectDetector.Db;
+using WebAppObjectDetector.Models;
 
-namespace WebApplication1.Controllers
+namespace WebAppObjectDetector.Controllers
 {
     public class ExperimentController : Controller
     {
@@ -32,6 +32,12 @@ namespace WebApplication1.Controllers
         public IActionResult CopyFilesAndCreateExperiment()
         {
             return View(); 
+        }
+
+
+        public IActionResult ImageMaskTag()
+        {
+            return View();
         }
 
 

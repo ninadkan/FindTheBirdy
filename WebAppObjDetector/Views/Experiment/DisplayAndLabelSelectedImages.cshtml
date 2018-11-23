@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebApplication1.Models.OpenCVDetectedItems>
+﻿@model IEnumerable<WebAppObjectDetector.Models.OpenCVDetectedItems>
 
 @{
     ViewData["Title"] = "DisplayAndLabelSelectedImages";
@@ -123,6 +123,7 @@
 
         function InstantiateAnimation() {
 
+            // This DID NOT WORK. HAD TO FALL BACK ON THE TIMER
             //console.log('InstantiateAnimation');
             //var carouselIndicators = $('#myCarouselIndicators');
             //var carouselInner = $('#myCarouselInner');
@@ -406,7 +407,7 @@
         }
 
         var account = 'nkdsvm';
-        var sas = '?sv=2017-11-09&ss=f&srt=sco&sp=rwdlc&se=2018-11-23T02:44:36Z&st=2018-11-15T18:44:36Z&spr=https,http&sig=UG3EtgG%2BgG4quvcomMVY7pxV1Z9oFzx3bL2wANChYTM%3D';
+        var sas = '';
         var fileShare = 'linuxraspshare';
         var directory = 'Share';
         var outputFiles = [];

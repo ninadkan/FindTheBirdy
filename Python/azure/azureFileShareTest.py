@@ -2,13 +2,7 @@
 import os
 import sys
 from azure.storage.file import FileService
-
-
-# PhotoFilter = ['2018-04-15_',
-#               '2018-04-16_',
-#               '2018-04-21_',
-#               '2018-04-22_']
-
+from azureCommon import preCheck
 
 
 def exitIfNull(_key, environVariable):
@@ -63,8 +57,6 @@ def CopySourceDestination(  _sourceFileShareFolderName, _sourceDirectoryName,
                         time.sleep(5)
                         copy = self.service.get_file_properties(_destinationFileShareFolderName, combinedDestinationFolderName, imageFileName.name).properties.copy
 
-
-
         return True, "OK"
 
 def deleteAllFiles(_sourceFileShareFolderName, _sourceDirectoryName, _fileExtensionFilter='.jpg' ):
@@ -84,34 +76,29 @@ def deleteAllFiles(_sourceFileShareFolderName, _sourceDirectoryName, _fileExtens
                     copy = file_service.delete_file(_sourceFileShareFolderName, _sourceDirectoryName, imageFileName.name)
     return True, "OK"
 
+def getAllExperimentsAndFirstFilesImpl(_sourceFileShareFolderName, _sourceDirectoryName, _fileExtensionFilter='.jpg'):
+    rv, description, file_service, _accountName, _accountKey = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
+    if (rv == False):
+        return rv, description
+    else:
+        returnList = []
+        experimentList = list(file_service.list_directories_and_files(_sourceFileShareFolderName, directory_name=_sourceDirectoryName))
 
-def preCheck(_sourceFileShareFolderName, _sourceDirectoryName):
-    AZURE_ACN_NAME = 'AZURE_ACN_NAME'
-    _accountName = os.environ.get(AZURE_ACN_NAME)
-    if (_accountName is None ) or (len(_accountName) == 0):
-        return false , 'AZURE_ACN_NAME Environment Variable not set', None, None, None
+        if (not(experimentList is None and len(experimentList)<1)):
+            for i, experimentName in enumerate(experimentList):
+                filenameList = list(file_service.list_directories_and_files(_sourceFileShareFolderName, _sourceDirectoryName+ "/" + experimentName.name))
+                if (not (filenameList is None and len(filenameList)<1)):
+                    for j, filenameList in enumerate(filenameList):
+                        if (filenameList.name.endswith(_fileExtensionFilter)):
+                            myVar = {"experimentName":experimentName.name, "filename":filenameList.name}
+                            returnList.append(myVar)
+                            # we've got our file, lets exit from this inner loop
+                            break
 
-    AZURE_ACN_STRG_KEY = 'AZURE_ACN_STRG_KEY'
-    _accountKey = os.environ.get(AZURE_ACN_STRG_KEY)
-    if (_accountKey is None ) or (len(_accountKey) == 0):
-        return false , 'AZURE_ACN_STRG_KEY Environment Variable not set', None  , None, None    
+    return True, returnList
 
-    file_service = FileService(account_name=_accountName, 
-    account_key=_accountKey)
 
-    # Can we create file_share service
-    if (file_service is None):
-        return False, "Unable to create File share, check Account Name, Key and connectivity", None, None, None
 
-    # check for existence of Source share folder
-    if (file_service.exists(_sourceFileShareFolderName) == False):
-        return False, "source share does not exist", None, None, None
-
-    # check for existence of source share directory 
-    if (file_service.exists(_sourceFileShareFolderName, directory_name=_sourceDirectoryName) == False):
-        return False, "source directory does not exist", None, None, None
-
-    return True, "OK", file_service, _accountName, _accountKey
 
 
 

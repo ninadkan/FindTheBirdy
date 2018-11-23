@@ -8,6 +8,7 @@ import numpy as np
 import cv2
 import os
 import time
+import json
 
 
 from pathlib import Path
@@ -81,18 +82,16 @@ def init(partOfFileName=''):
     # It is same for all the images
     height, width = imgFirst.shape[:2]
 
+    myROI = []
+
     #create mask to stub out areas that we don't want to include. 
-    myROI = [   (0,990-75), 
-                (250, 930-75),
-                (600,950-75),
-                (950,900-75),
-                (1720,850-75),
-                (1780,845-75),
-                (2100,850-75),
-                (width, 1000-75),
-                (width, 0),
-                (0, 0)
-                ]  # (x, y)
+    outFileName= os.path.join(g_srcImageFolder, 'mask_file.txt')
+    with open(outFileName, 'r') as filehandle:  
+        #places = [current_place.rstrip() for current_place in filehandle.readlines()]
+        myROI = json.load(filehandle)
+
+    assert(myROI is not None), "Unable to load MASK!!!"
+    assert((len(myROI)> 0)), "MASK Length is zero!!!"
 
     #colour mask
     g_colourMask = imgFirst[0:height, 0:width]
@@ -318,6 +317,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
     return len(g_fileList), TotalNumberOfImagesDetected,  elapsed_time  #, true_true, false_positive, false_negative
 
 if __name__ == "__main__":
+    #python openCVPhotoExtractor.py processImages
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -353,7 +353,7 @@ if __name__ == "__main__":
         if (args.verbose):
             g_verbosity = True
 
-        l, t, tt, fp, fn = processImages(   historyImage = args.historyImage, 
+        l,tt, t, = processImages(   historyImage = args.historyImage, 
                                             varThreshold=args.varThreshold, 
                                             numberOfIterations=args.numberOfIterations,
                                             boundingRectAreaThreshold=args.boundingRectAreaThreshold, 
@@ -364,9 +364,9 @@ if __name__ == "__main__":
                                             logResult = args.logResult,
                                             experimentName = args.experimentName )
 
-        print("")                
-        print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}".format(l))
-        print ("True detection = {0:0.2f}, false +ve = {1:0.2f} , false negative = {2:0.2f}".format(tt, fp, fn))
+
+        print ("")
+        print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))                            
 
             
 

@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using WebApplication1.Db;
+using WebAppObjectDetector.Db;
 
-namespace WebApplication1
+namespace WebAppObjectDetector
 {
     public class Startup
     {

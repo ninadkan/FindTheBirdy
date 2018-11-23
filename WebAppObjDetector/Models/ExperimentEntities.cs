@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json; 
 
-namespace WebApplication1.Models
+namespace WebAppObjectDetector.Models
 {
 
     public class GenericItems

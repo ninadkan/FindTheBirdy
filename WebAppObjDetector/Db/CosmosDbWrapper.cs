@@ -9,12 +9,12 @@ using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using WebApplication1.Models;
+using WebAppObjectDetector.Models;
 
 // https://dzone.com/articles/a-few-great-ways-to-consume-restful-apis-in-c
 // https://code-maze.com/different-ways-consume-restful-api-csharp/#HttpWebRequest 
 
-namespace WebApplication1.Db
+namespace WebAppObjectDetector.Db
 {
     public static class CosmosDbWrapper
     {

@@ -1,3 +1,8 @@
+#For some reason, one might need to execute this commands on the command line!!!. executing it from the ps1 file 
+# does not work. 
+
+Test-NetConnection -ComputerName nkdsvm.file.core.windows.net -Port 445
+
 Login-AzureRmAccount -SubscriptionName "AzureCAT GSI"
 
 $resourceGroupName = "nkdeepml"
@@ -28,3 +33,6 @@ $password = ConvertTo-SecureString -String $storageAccountKeys[0].Value -AsPlain
 
 $credential = New-Object System.Management.Automation.PSCredential -ArgumentList "AZURE\$($storageAccount.StorageAccountName)", $password
 New-PSDrive -Name E -PSProvider FileSystem -Root "\\$($fileShare.StorageUri.PrimaryUri.Host)\$($fileShare.Name)" -Credential $credential -Persist
+
+# To disconnect, one needs to execute the following. 
+# Remove-PSDrive -Name <desired-drive-letter>
