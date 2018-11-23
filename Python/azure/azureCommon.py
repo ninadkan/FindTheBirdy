@@ -2,6 +2,8 @@ import os
 import sys
 from azure.storage.file import FileService
 
+maskFileName = 'mask_file.txt'
+
 def preCheck(_sourceFileShareFolderName, _sourceDirectoryName):
     AZURE_ACN_NAME = 'AZURE_ACN_NAME'
     _accountName = os.environ.get(AZURE_ACN_NAME)

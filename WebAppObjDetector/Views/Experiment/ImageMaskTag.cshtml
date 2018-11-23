@@ -68,7 +68,7 @@
 
 <hr />
 
-<p>Image to use:</p>
+<h6>Images :</h6>
 <div id="divImg">
     <img id="dynamicImage"
          src="" alt="ALT">
@@ -80,7 +80,10 @@
     <canvas id="imageCanvas"></canvas>
     <canvas id="sideCanvas"></canvas>
 </div>
-<div> </div>
+<div>
+    <img id="maskImage"
+         src="" alt="ALT">
+</div>
 
 
 
@@ -146,7 +149,6 @@
                 return;
             loadDynamicImage(); 
         }
-
 
         function btnLoadAllExperimentsAndFirtsFiles() {
             console.log("btnLoadImageHandler");
@@ -661,7 +663,6 @@
             console.log(url);
 
             if (invocation) {
-
                 addInvocationListeners();
                 invocation.open('POST', url, true);
                 invocation.responseType = "blob"; //"arraybuffer"; //"blob"; // blob returns the entire content I think.  

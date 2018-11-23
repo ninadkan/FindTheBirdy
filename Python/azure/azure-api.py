@@ -6,7 +6,7 @@ from flask import request
 from flask_cors import CORS
 from flask import send_file
 from  azureFileShareTest import CopySourceDestination, deleteAllFiles, getAllExperimentsAndFirstFilesImpl
-from mask_creation import GetMaskedImageImpl
+from mask_creation import GetMaskedImageImpl, GetRawSourceImageImpl
 import io
 import json
 
@@ -41,13 +41,29 @@ def CopySourceDestinationAPI():
                                     request.json['_destinationDirectoryName'],
                                     request.json['_ExperimentName'],
                                     request.json['_fileExtensionFilter'])
-
     if (result == False):
         print(description)
         return make_response(jsonify({'error': description}), 500)
     else:
         return jsonify({'result': result})
 
+@app.route('/azureStorage/v1.0/GetRawSourceImage', methods=['POST'])
+def GetRawSourceImage():
+    if not request.json or not '_sourceFileShareFolderName' in request.json \
+        or not '_sourceDirectoryName' in request.json \
+        or not '_imageFileName' in request.json:
+        abort(400)
+
+    result, description, image_binary = GetRawSourceImageImpl(  request.json['_sourceFileShareFolderName'],
+                                                                request.json['_sourceDirectoryName'],
+                                                                request.json['_imageFileName'])
+
+    if (result == True):
+        binary_image = io.BytesIO(image_binary)
+        binary_image.seek(0)
+        return send_file(binary_image,mimetype='image/jpeg')
+    else:
+        return make_response(jsonify({'error': image_binary}), 500)    
 
 
 @app.route('/azureStorage/v1.0/GetMaskedImage', methods=['POST'])
@@ -59,18 +75,18 @@ def GetMaskedImage():
         abort(400)
 
 
-    result, image_binary = GetMaskedImageImpl( request.json['_sourceFileShareFolderName'],
+    result, description, image_binary = GetMaskedImageImpl( request.json['_sourceFileShareFolderName'],
                                     request.json['_sourceDirectoryName'],
                                     request.json['_imageFileName'],
                                     request.json['_maskTags'])
+
     if (result == True):
         binary_image = io.BytesIO(image_binary)
         binary_image.seek(0)
         return send_file(binary_image,mimetype='image/jpeg')
     else:
-        return make_response(jsonify({'error': 'Error Processing'}), 500)
-
-
+        
+        return make_response(jsonify({'error': image_binary}), 500)
 
 @app.route('/azureStorage/v1.0/GetAllExperimentsAndFirstFiles', methods=['POST'])
 def GetAllExperimentsAndFirstFiles():

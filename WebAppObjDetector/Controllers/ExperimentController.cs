@@ -35,7 +35,7 @@ namespace WebAppObjectDetector.Controllers
         }
 
 
-        public IActionResult ImageMaskTag()
+        public IActionResult CreateViewUpdateMask()
         {
             return View();
         }

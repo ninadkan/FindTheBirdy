@@ -2,18 +2,21 @@
 import os
 import sys
 from azure.storage.file import FileService
-from azureCommon import preCheck
+from azureCommon import preCheck, maskFileName
+import json
 
 
 def exitIfNull(_key, environVariable):
     if (_key is None ) or (len(_key) == 0):
-        return False, "Environment variable {0} name not specified. Exiting".format(environVariable)
+        return False, "Environment Variable {0} name not specified. Exiting".format(environVariable)
     
 def CopySourceDestination(  _sourceFileShareFolderName, _sourceDirectoryName, 
                             _destinationFileShareFolderName, _destinationDirectoryName, 
                             _ExperimentName, _fileExtensionFilter='.jpg'):
     '''
-    _sourceDirectoryName, _destinationDirectoryName: format should be directoryName/secondDirectoryName/
+    This method copies raw data from the source directory to the experiment folder
+    _sourceDirectoryName, _destinationDirectoryName: format should be directoryName/secondDirectoryName, no trailing 
+    slashes.  
     '''
     rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
     if (rv == False):
@@ -89,8 +92,15 @@ def getAllExperimentsAndFirstFilesImpl(_sourceFileShareFolderName, _sourceDirect
                 filenameList = list(file_service.list_directories_and_files(_sourceFileShareFolderName, _sourceDirectoryName+ "/" + experimentName.name))
                 if (not (filenameList is None and len(filenameList)<1)):
                     for j, filenameList in enumerate(filenameList):
+                        maskContent = ''
+                        # check if maskFile exists and load its content
+                        if (file_service.exists(_sourceFileShareFolderName, _sourceDirectoryName+ "/" + experimentName.name, maskFileName) != False):
+                            fileMask = file_service.get_file_to_text(_sourceFileShareFolderName, _sourceDirectoryName+ "/" + experimentName.name, maskFileName)
+                            if (fileMask is not None and fileMask.content is not None and len(fileMask.content) >0 ):
+                                maskContent = json.loads(fileMask.content)
+                        # load name of first file with extsnsion = _fileExtensionFilter
                         if (filenameList.name.endswith(_fileExtensionFilter)):
-                            myVar = {"experimentName":experimentName.name, "filename":filenameList.name}
+                            myVar = {"experimentName":experimentName.name, "filename":filenameList.name, "maskContent": maskContent}
                             returnList.append(myVar)
                             # we've got our file, lets exit from this inner loop
                             break
