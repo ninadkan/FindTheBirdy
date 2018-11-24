@@ -157,9 +157,20 @@
         var _sourceDirectory = '';
         var _imageFileName = '';
 
+        var _btnLoadExperiments;
+        var _btnLoadImage; 
+        var _btnUpdateMaskTags;
+        var _btnSaveMask; 
+
         $(function () // called when the body is ready
         {
             console.log("Ready");
+
+             _btnLoadExperiments = document.getElementById('btnLoadExperiments');
+             _btnLoadImage = document.getElementById('btnLoadImage');
+             _btnUpdateMaskTags = document.getElementById('btnUpdateMaskTags');
+             _btnSaveMask = document.getElementById('btnSaveMask');
+
             $('#ExperimentCollection').on('change', onExperimentCollChanged);
             // ensure that the text displayed is the correct one for our button
             $('#btnUpdateMaskTags').val(_txtStartMaskUpdate);
@@ -201,13 +212,13 @@
             };
 
             var updatedTagJson = JSON.stringify(jsonData);
-
+            _btnLoadExperiments.setAttribute("class", "btn btn-default");
             InvokeWebAPIGeneric('GetAllExperimentsAndFirstFiles', updatedTagJson, handlerGetAllExperiments )
         }
 
-
-         function InvokeWebAPIGeneric(urlAdd, dataval, handler) {
+        function InvokeWebAPIGeneric(urlAdd, dataval, handler) {
             $("body").css("cursor", "progress");
+            
             var body = dataval;
 
             var url = 'http://localhost:5000/azureStorage/v1.0/' + urlAdd;
@@ -226,20 +237,16 @@
         function handlerGetAllExperiments(evtXHR) {
             if (invocation.readyState == 4) {
                 if (invocation.status == 200) {
-                    //UpdateTextDivObject("Success");
                     populateComboBox(invocation.responseText);
                     onExperimentCollChanged();
-                    $("body").css("cursor", "default");
                 }
                 else {
                     var AppendedText = " Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
                     UpdateTextDivObject(AppendedText);
-                    $("body").css("cursor", "default");
                 }
-            }
-            else {
-                //UpdateTextDivObject(" ; currently the application is at " + invocation.readyState);
-            }
+                _btnLoadExperiments.setAttribute("class", "btn btn-info");
+                $("body").css("cursor", "default");
+             }
         }
 
         function populateComboBox(response) {
@@ -297,10 +304,8 @@
             $("body").css("cursor", "default");
         }
 
-
         var _maskTags = '';
         var _experimentName = '';
-
 
         function checkExtraParameters() {
             _imageFileName = $('#txtImageFileName').val();
@@ -326,19 +331,18 @@
         }
 
         function precheckLoadingImages() {
-
             var checkOK = checkNecessaryParameters();
             if (!checkOK)
-                return;
+                return false;
 
             checkOK = checkExtraParameters();
             if (!checkOK)
-                return;
-
+                return false;
+            return true; 
         }
 
         function loadImage() {
-            precheckLoadingImages();
+            if (!precheckLoadingImages()) return; 
             $("body").css("cursor", "progress");
 
             var jsonData = {
@@ -347,6 +351,8 @@
                 _imageFileName: _imageFileName
             };
             var updatedJson = JSON.stringify(jsonData);
+            
+            _btnLoadImage.setAttribute("class", "btn btn-default");
             InvokeWebAPIImageGeneric('GetRawSourceImage', updatedJson, HandlerGetRawImage);
             $("body").css("cursor", "default");
         }
@@ -359,7 +365,7 @@
                         _dynamicImage.src = window.URL.createObjectURL(invocation.response);
                     }
 
-                    UpdateTextDivObject("Data obtained");
+                    //UpdateTextDivObject("Data obtained");
                     $("body").css("cursor", "default");
                 }
                 else {
@@ -367,9 +373,6 @@
                     UpdateTextDivObject(AppendedText);
                     $("body").css("cursor", "default");
                 }
-            }
-            else {
-                //UpdateTextDivObject("currently the application is at" + invocation.readyState);
             }
             $("body").css("cursor", "default");
         }
@@ -388,8 +391,6 @@
         }
 
         function InvokeWebAPIImageGeneric(apiFn, dataval, handler) {
-
-
             $("body").css("cursor", "progress");
             var body = dataval;
 
@@ -433,8 +434,6 @@
                         maskImage.setAttribute("height", _maxHeight);
                         maskImage.src = window.URL.createObjectURL(invocation.response);
                     }
-
-                    UpdateTextDivObject("Data obtained");
                     $("body").css("cursor", "default");
                 }
                 else {
@@ -442,9 +441,8 @@
                     UpdateTextDivObject(AppendedText);
                     $("body").css("cursor", "default");
                 }
-            }
-            else {
-                //UpdateTextDivObject("currently the application is at" + invocation.readyState);
+                $("body").css("cursor", "default");
+                _btnLoadImage.setAttribute("class", "btn btn-primary");
             }
             $("body").css("cursor", "default");            //HandlerGetRawImage();
         }
@@ -779,17 +777,19 @@
             var btnText = $('#btnUpdateMaskTags').text();
 
             if (_txtStartMaskUpdate.localeCompare(btnText) == 0) {
+                $('#btnUpdateMaskTags').prop('class', 'btn btn-outline-success');
                 $('#btnUpdateMaskTags').html(_txtStopMaskUpdate);
                 $('#txtMaskPoints').val('');
-                $('#lblResults').text('Scroll, click mouse over image to update mask poinst');
+                $('#lblResult').text('Scroll, click mouse over image to update mask poinst');
                 $("#txtMaskPoints").prop("readonly", true);
                 addImageCanvasEventListeners();
             }
             else {
                 removeImageCanvasEventListeners();
-                $('#lblResults').text('');
+                $('#lblResult').text('');
                 $("#txtMaskPoints").prop("readonly", false);
                 $('#btnUpdateMaskTags').html(_txtStartMaskUpdate);
+                $('#btnUpdateMaskTags').prop('class', 'btn btn-success');
             }
         }
 
@@ -940,7 +940,7 @@
         }
 
         function btnSaveMaskHandler() {
-            precheckLoadingImages();
+            if (!precheckLoadingImages()) return; 
             $("body").css("cursor", "progress");
 
             var jsonData = {
@@ -949,28 +949,26 @@
                 _maskTags: _maskTags
             };
             var updatedJson = JSON.stringify(jsonData);
-            console.log(updatedJson);
+            _btnSaveMask.setAttribute("class", "btn btn-default");
             InvokeWebAPIGeneric('SaveMaskFileData', updatedJson, handlerSaveMaskFile)
         }
 
-        function handlerSaveMaskFile(evtXHR) {
+        function handlerSaveMaskFile() {
             if (invocation.readyState == 4) {
-                console.log(evtXHR);
                 if (invocation.status == 200) {
-                    $('#lblResult').text(invocation.responseText);
-                    $("body").css("cursor", "default");
+                    // for some reason this gives us error!!!
+                    //$('#lblResult').text(invocation.responseText);
+                    //$("body").css("cursor", "default");
                 }
                 else {
-                    var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
-                    UpdateTextDivObject(AppendedText);
-                    $("body").css("cursor", "default");
+                    //var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
+                    //UpdateTextDivObject(AppendedText);
+                    //$("body").css("cursor", "default");
                 }
+                $("body").css("cursor", "default");     
+                _btnSaveMask.setAttribute("class", "btn btn-success");
             }
-            else {
-                console.log(invocation.readyState);
-                console.log(invocation.status);
-            }
-             $("body").css("cursor", "default");       
+            $("body").css("cursor", "default");       
         }
     </script>
 }
