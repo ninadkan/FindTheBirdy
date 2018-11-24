@@ -13,6 +13,7 @@
         float: left;
         margin-left: 20px;
     }
+
     .colnk {
         float: left;
     }
@@ -66,7 +67,10 @@
             <tr>
                 <td align="center"><button id="btnLoadExperiments" class="btn btn-info" onclick="btnLoadExperimentsHandler()">Refresh (Load Experiments)</button></td>
                 <td align="center"><button id="btnLoadImage" class="btn btn-primary" onclick="btnLoadImageHandler()">Load Image</button></td>
-                <td align="center"><button id="btnUpdateMaskTags" class="btn btn-success" onclick="btnUpdateMaskTagsHandler()">Start Mask Update</button></td>
+                <td align="center">
+                    <button id="btnUpdateMaskTags" class="btn btn-success" onclick="btnUpdateMaskTagsHandler()">Start Mask Update</button>
+                    <button id="btnSaveMask" class="btn btn-success" onclick="btnSaveMaskHandler()">Save Mask</button>
+                </td>
             </tr>
 
             <tr align="center" valign="middle">
@@ -79,25 +83,70 @@
 
 <hr />
 
-<h6>Images :</h6>
+<div id="devOperations">
+    <table>
+        <tbody>
+            <tr valign="middle">
+                <th align="center" width="50%"></th>
+              
+                <th align="center" width="50%"></th>
+            </tr>
+            <tr valign="middle">
+                <td align="center"><label> Original Image: </label></td>
+                <td align="center"><label> Masked Image: </label></td>
+            </tr>
+            <tr>
+                <td>
+                    <div id=divCanvas>
+                        <canvas id="topCanvas"></canvas>
+                    </div>
+                </td>
+                <td align="center"><label class="btn-block"> </label></td>
+            </tr>
+            <tr>
+                <td>
+                    <div>
+                        <canvas id="imageCanvas"></canvas>
+                        <canvas id="sideCanvas"></canvas>
+                    </div>
+                </td>
+                
+                <td>
+                    <div class="column">
+                        <img id="maskImage" alt="ALT">
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
 <div id="divImg">
     <img id="dynamicImage"
          src="" alt="ALT">
 </div>
-<div class="row" id=divCanvas>
-    <canvas id="topCanvas"></canvas>
-</div>
-<div class="row">
-    <div class="colnk">
-        <canvas id="imageCanvas"></canvas>
+
+
+
+@*<h6>Images :</h6>
+    <div id="divImg">
+        <img id="dynamicImage"
+             src="" alt="ALT">
     </div>
-    <div class="colnk">
-        <canvas id="sideCanvas"></canvas>
+    <div class="row" id=divCanvas>
+        <canvas id="topCanvas"></canvas>
     </div>
-    <div class="column">
-        <img id="maskImage" alt="ALT">
-    </div>
-</div>
+    <div class="row">
+        <div class="colnk">
+            <canvas id="imageCanvas"></canvas>
+        </div>
+        <div class="colnk">
+            <canvas id="sideCanvas"></canvas>
+        </div>
+        <div class="column">
+            <img id="maskImage" alt="ALT">
+        </div>
+    </div>*@
 
 
 
@@ -138,40 +187,35 @@
             _sourceDirectory = document.getElementById('txtSourceDirectory').value;
         }
 
+        var invocation = new XMLHttpRequest();
+ 
         function btnLoadExperimentsHandler() {
             $("body").css("cursor", "progress");
-            
+
             var checkOK = checkNecessaryParameters();
             if (!checkOK)
                 return;
 
-
             var jsonData = {
                 _sourceFileShareFolderName: _sourceShare, _sourceDirectoryName: _sourceDirectory
             };
-           
+
             var updatedTagJson = JSON.stringify(jsonData);
-           
-            InvokeWebAPIGetAllExperiments(updatedTagJson)
-            
-            $("body").css("cursor", "default");
+
+            InvokeWebAPIGeneric('GetAllExperimentsAndFirstFiles', updatedTagJson, handlerGetAllExperiments )
         }
 
-        var invocation = new XMLHttpRequest();
-        var invocationHistoryText;
 
-        function InvokeWebAPIGetAllExperiments(dataval) {
-            
+         function InvokeWebAPIGeneric(urlAdd, dataval, handler) {
             $("body").css("cursor", "progress");
             var body = dataval;
 
-            var url = 'http://localhost:5000/azureStorage/v1.0/GetAllExperimentsAndFirstFiles';
-          
+            var url = 'http://localhost:5000/azureStorage/v1.0/' + urlAdd;
 
             if (invocation) {
                 invocation.open('POST', url, true);
                 invocation.setRequestHeader('Content-Type', 'application/json');
-                invocation.onreadystatechange = handlerGetAllExperiments;
+                invocation.onreadystatechange = handler;
                 invocation.send(body);
             }
             else {
@@ -183,7 +227,7 @@
             if (invocation.readyState == 4) {
                 if (invocation.status == 200) {
                     //UpdateTextDivObject("Success");
-                    populateComboBox(invocation.responseText); 
+                    populateComboBox(invocation.responseText);
                     onExperimentCollChanged();
                     $("body").css("cursor", "default");
                 }
@@ -198,10 +242,10 @@
             }
         }
 
-        function populateComboBox(response){
-            $('#ExperimentCollection').empty(); 
+        function populateComboBox(response) {
+            $('#ExperimentCollection').empty();
             var result = $.parseJSON(response);
-           
+
 
             $.each(result, function (i, item) {
                 var experiment = item['experimentName'];
@@ -209,19 +253,19 @@
                 var maskTagsJson = item['maskContent'];
 
                 var maskTags = '['
-                for (var i = 0, l = maskTagsJson.length; i < l; i++){
+                for (var i = 0, l = maskTagsJson.length; i < l; i++) {
                     maskTags += '[';
-                    maskTags += maskTagsJson[i]; 
+                    maskTags += maskTagsJson[i];
                     maskTags += ']';
 
                     if (i < l - 1) {
                         maskTags += ','
                     }
                 }
-                maskTags += ']'; 
+                maskTags += ']';
 
-              
-               
+
+
                 var option = '';
 
                 option += '<option value="' + fileName + ";" + maskTags + '">' + experiment + '</option>';
@@ -235,29 +279,29 @@
 
         function onExperimentCollChanged() {
             $("body").css("cursor", "progress");
-         
+
             var comboBoxValue = $('#ExperimentCollection option:selected').val();
-         
+
             var n = comboBoxValue.indexOf(";");
             var filename = comboBoxValue.substring(0, n);
-            var maskTags = comboBoxValue.substring(n+1);
-            
+            var maskTags = comboBoxValue.substring(n + 1);
+
             // update values
             $('#txtImageFileName').val(filename);
             $('#txtMaskPoints').val(maskTags);
 
-            // Now invoke the web service call to get details about the images. 
+            // Now invoke the web service call to get details about the images.
             // That will call the next web service call automatically
             loadImage();
 
             $("body").css("cursor", "default");
         }
 
- 
-        var _maskTags = ''; 
-        var _experimentName = ''; 
 
-  
+        var _maskTags = '';
+        var _experimentName = '';
+
+
         function checkExtraParameters() {
             _imageFileName = $('#txtImageFileName').val();
             if (_imageFileName == null || _imageFileName.length < 1) {
@@ -282,7 +326,7 @@
         }
 
         function precheckLoadingImages() {
-         
+
             var checkOK = checkNecessaryParameters();
             if (!checkOK)
                 return;
@@ -296,22 +340,22 @@
         function loadImage() {
             precheckLoadingImages();
             $("body").css("cursor", "progress");
-           
+
             var jsonData = {
                 _sourceFileShareFolderName: _sourceShare,
                 _sourceDirectoryName: _sourceDirectory + "/" + _experimentName,
                 _imageFileName: _imageFileName
             };
             var updatedJson = JSON.stringify(jsonData);
-            InvokeWebAPIImageGeneric('GetRawSourceImage', updatedJson, HandlerGetRawImage );
+            InvokeWebAPIImageGeneric('GetRawSourceImage', updatedJson, HandlerGetRawImage);
             $("body").css("cursor", "default");
         }
 
         function HandlerGetRawImage() {
             if (invocation.readyState == 4) {
                 if (invocation.status == 200) {
-                     if (invocation.response) {
-                        _dynamicImage.onload = imgOnLoad; 
+                    if (invocation.response) {
+                        _dynamicImage.onload = imgOnLoad;
                         _dynamicImage.src = window.URL.createObjectURL(invocation.response);
                     }
 
@@ -333,7 +377,7 @@
         function imgOnLoad() {
             _imageHeight = dynamicImage.height;
             _imageWidth = dynamicImage.width;
-            
+
             var displayString = JSON.stringify({ _imageHeight, _imageWidth });
 
             $('#lblImageDimensions').text(displayString);
@@ -344,7 +388,7 @@
         }
 
         function InvokeWebAPIImageGeneric(apiFn, dataval, handler) {
-            
+
 
             $("body").css("cursor", "progress");
             var body = dataval;
@@ -371,7 +415,8 @@
             var jsonData = {
                 _sourceFileShareFolderName: _sourceShare,
                 _sourceDirectoryName: _sourceDirectory + "/" + _experimentName,
-                _imageFileName: _imageFileName, _maskTags: _maskTags
+                _imageFileName: _imageFileName,
+                _maskTags: _maskTags
             };
             var updatedTagJson = JSON.stringify(jsonData);
 
@@ -383,7 +428,7 @@
             if (invocation.readyState == 4) {
                 if (invocation.status == 200) {
                     if (invocation.response) {
-                         var maskImage = document.getElementById('maskImage');
+                        var maskImage = document.getElementById('maskImage');
                         maskImage.setAttribute("width", _maxWidth);
                         maskImage.setAttribute("height", _maxHeight);
                         maskImage.src = window.URL.createObjectURL(invocation.response);
@@ -582,7 +627,7 @@
 
             imageCanvas.addEventListener('mousemove', (e) => {
 
-                 const mousePos = {
+                const mousePos = {
                     x: e.clientX - imageCanvas.offsetTop,
                     y: e.clientY - imageCanvas.offsetLeft,
                     orgX: e.clientX,
@@ -598,7 +643,7 @@
         var errorRange = 15;
 
         function onCanvasclick(evt) {
-             var r = imageCanvas.getBoundingClientRect();
+            var r = imageCanvas.getBoundingClientRect();
 
             if (r.left <= evt.orgX && evt.orgX <= r.left + r.width &&
                 r.top <= evt.orgY && evt.orgY <= r.top + r.height) {
@@ -678,7 +723,7 @@
 
                 // horizontal ruler
                 drawHorizontalRuler(topCtx, width, _rowDim);
-                // previous Style 
+                // previous Style
                 var preStyle = sideCtx.strokeStyle;
                 topCtx.strokeStyle = '#0f0'; //  ??
                 topCtx.beginPath();
@@ -693,7 +738,7 @@
                 // vertical ruler
                 drawVerticalRuler(sideCtx, _rowDim, height);
 
-                // previous Style 
+                // previous Style
                 var preStyle = sideCtx.strokeStyle;
                 sideCtx.strokeStyle = '#f00'; // red ??
                 sideCtx.beginPath();
@@ -725,8 +770,6 @@
             ctx.stroke();
         }
 
-  
-
         var errorRange = 15;
         var _txtStartMaskUpdate = 'Start Mask Update';
         var _txtStopMaskUpdate = 'Stop Mask Update';
@@ -735,7 +778,7 @@
         function btnUpdateMaskTagsHandler() {
             var btnText = $('#btnUpdateMaskTags').text();
 
-            if ( _txtStartMaskUpdate.localeCompare(btnText) == 0 ){
+            if (_txtStartMaskUpdate.localeCompare(btnText) == 0) {
                 $('#btnUpdateMaskTags').html(_txtStopMaskUpdate);
                 $('#txtMaskPoints').val('');
                 $('#lblResults').text('Scroll, click mouse over image to update mask poinst');
@@ -752,7 +795,7 @@
 
         function addImageCanvasEventListeners() {
             imageCanvas.addEventListener('click', onCanvasclick, false);
-            imageCanvas.addEventListener('mousemove', onCanvasMouseOver, false); 
+            imageCanvas.addEventListener('mousemove', onCanvasMouseOver, false);
         }
 
         function removeImageCanvasEventListeners() {
@@ -761,7 +804,7 @@
         }
 
         function onCanvasclick(e) {
-            
+
             const mousePos = {
                 x: e.clientX - imageCanvas.offsetTop,
                 y: e.clientY - imageCanvas.offsetLeft,
@@ -790,8 +833,8 @@
 
                 // lets store these values in our array
                 var newPoint = '[' + x.toString() + ',' + y.toString() + ']';
-               
-                
+
+
 
                 updateMaskDisplay(newPoint);
             }
@@ -804,17 +847,17 @@
                 $('#txtMaskPoints').val(startString);
             }
             else {
-                    var nCurrentStringLength = maskPointText.length;
-                    var position = nCurrentStringLength - 1;
-                    var output = maskPointText.slice(0, position) + newPoint + maskPointText.slice(position);
-                    
-                    $('#txtMaskPoints').val(output);
+                var nCurrentStringLength = maskPointText.length;
+                var position = nCurrentStringLength - 1;
+                var output = maskPointText.slice(0, position) + newPoint + maskPointText.slice(position);
+
+                $('#txtMaskPoints').val(output);
             }
         }
 
         function onCanvasMouseOver(e) {
 
-            
+
             const mousePos = {
                 x: e.clientX - imageCanvas.offsetTop,
                 y: e.clientY - imageCanvas.offsetLeft,
@@ -824,7 +867,7 @@
             e.preventDefault();
             e.stopPropagation();
 
-            var evt = mousePos; 
+            var evt = mousePos;
 
             var ctx = imageCanvas.getContext("2d");
             var topCtx = topCanvas.getContext("2d");
@@ -841,7 +884,7 @@
                 var x = evt.orgX - r.left;
                 var y = evt.orgY - r.top;
 
-                
+
 
                 ctx.drawImage(dynamicImage, 0, 0, _displayWidth, _displayHeight);
 
@@ -864,7 +907,7 @@
 
                 // horizontal ruler
                 drawHorizontalRuler(topCtx, width, _rowDim);
-                // previous Style 
+                // previous Style
                 var preStyle = sideCtx.strokeStyle;
                 topCtx.strokeStyle = '#0f0'; //  ??
                 topCtx.beginPath();
@@ -879,7 +922,7 @@
                 // vertical ruler
                 drawVerticalRuler(sideCtx, _rowDim, height);
 
-                // previous Style 
+                // previous Style
                 var preStyle = sideCtx.strokeStyle;
                 sideCtx.strokeStyle = '#f00'; // red ??
                 sideCtx.beginPath();
@@ -896,7 +939,39 @@
 
         }
 
+        function btnSaveMaskHandler() {
+            precheckLoadingImages();
+            $("body").css("cursor", "progress");
 
+            var jsonData = {
+                _sourceFileShareFolderName: _sourceShare,
+                _sourceDirectoryName: _sourceDirectory + "/" + _experimentName,
+                _maskTags: _maskTags
+            };
+            var updatedJson = JSON.stringify(jsonData);
+            console.log(updatedJson);
+            InvokeWebAPIGeneric('SaveMaskFileData', updatedJson, handlerSaveMaskFile)
+        }
+
+        function handlerSaveMaskFile(evtXHR) {
+            if (invocation.readyState == 4) {
+                console.log(evtXHR);
+                if (invocation.status == 200) {
+                    $('#lblResult').text(invocation.responseText);
+                    $("body").css("cursor", "default");
+                }
+                else {
+                    var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
+                    UpdateTextDivObject(AppendedText);
+                    $("body").css("cursor", "default");
+                }
+            }
+            else {
+                console.log(invocation.readyState);
+                console.log(invocation.status);
+            }
+             $("body").css("cursor", "default");       
+        }
     </script>
 }
 

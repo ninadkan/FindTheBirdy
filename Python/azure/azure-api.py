@@ -5,7 +5,7 @@ from flask import make_response
 from flask import request
 from flask_cors import CORS
 from flask import send_file
-from  azureFileShareTest import CopySourceDestination, deleteAllFiles, getAllExperimentsAndFirstFilesImpl
+from  azureFileShareTest import CopySourceDestination, deleteAllFiles, getAllExperimentsAndFirstFilesImpl, SaveMaskFileDataImpl
 from mask_creation import GetMaskedImageImpl, GetRawSourceImageImpl
 import io
 import json
@@ -28,9 +28,6 @@ def CopySourceDestinationAPI():
         or not '_ExperimentName' in request.json \
         or not '_fileExtensionFilter' in request.json:
         abort(400)
-
-    print('CopySourceDestination ... Validation Passed')
-
 
     # result, description = deleteAllFiles(request.json['_destinationFileShareFolderName'],
     #                                 request.json['_destinationDirectoryName'])
@@ -74,7 +71,6 @@ def GetMaskedImage():
         or not '_maskTags' in request.json:
         abort(400)
 
-
     result, description, image_binary = GetMaskedImageImpl( request.json['_sourceFileShareFolderName'],
                                     request.json['_sourceDirectoryName'],
                                     request.json['_imageFileName'],
@@ -100,6 +96,24 @@ def GetAllExperimentsAndFirstFiles():
         return json.dumps(obj)
     else:
         return make_response(jsonify({'error': obj}), 500)
+
+
+
+@app.route('/azureStorage/v1.0/SaveMaskFileData', methods=['POST'])
+def SaveMaskFileData():
+    if not request.json or not '_sourceFileShareFolderName' in request.json \
+        or not '_sourceDirectoryName' in request.json \
+        or not '_maskTags' in request.json:
+        abort(400)
+
+    result, description = SaveMaskFileDataImpl( request.json['_sourceFileShareFolderName'],
+                                                request.json['_sourceDirectoryName'],
+                                                request.json['_maskTags'])
+    print(description)
+    if (result == False):
+        return make_response(jsonify({'error': description}), 500)
+    else:
+        return jsonify({'result': description})
 
 
 if __name__ == '__main__':

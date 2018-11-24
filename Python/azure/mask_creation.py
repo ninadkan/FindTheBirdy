@@ -17,7 +17,7 @@ def GetMaskedImageImpl(_sourceFileShareFolderName, _sourceDirectoryName, _imageF
     rv = False
     rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
     if (rv == False):
-        return rv, description
+        return rv, description, None
     else: 
         masks = []
         # more validations
@@ -36,7 +36,7 @@ def GetMaskedImageImpl(_sourceFileShareFolderName, _sourceDirectoryName, _imageF
         if (loadFromCloud == True):
             print('loadFromCloud')
             if (file_service.exists(_sourceFileShareFolderName, _sourceDirectoryName, maskFileName) == False):
-                return rv, "_maskTags cannot be null as maskImage file also not exist!!!"
+                return rv, "_maskTags cannot be null as maskImage file also not exist!!!", None
             else: 
                 fileMask = file_service.get_file_to_text(_sourceFileShareFolderName, _sourceDirectoryName, maskFileName)
                 if (fileMask is not None and fileMask.content is not None and len(fileMask.content) >0 ):
@@ -90,4 +90,6 @@ def GetRawSourceImageImpl(_sourceFileShareFolderName, _sourceDirectoryName, _ima
                     return rv, "Unable to decode convert to byteArray :" + _imageFileName, None
             else:
                 return rv, "Null content obtained from the image source file", None
-         
+
+
+

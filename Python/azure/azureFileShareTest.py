@@ -37,7 +37,6 @@ def CopySourceDestination(  _sourceFileShareFolderName, _sourceDirectoryName,
         if (file_service.exists(_destinationFileShareFolderName, directory_name=combinedDestinationFolderName) == False):
             file_service.create_directory(_destinationFileShareFolderName, combinedDestinationFolderName)
 
-
         fileList = list(file_service.list_directories_and_files(_sourceFileShareFolderName, directory_name=_sourceDirectoryName))
 
         if (fileList is None and len(fileList)<1):
@@ -106,6 +105,32 @@ def getAllExperimentsAndFirstFilesImpl(_sourceFileShareFolderName, _sourceDirect
                             break
 
     return True, returnList
+
+def SaveMaskFileDataImpl(_sourceFileShareFolderName, _sourceDirectoryName, _maskTags):
+    rv = False
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
+    if (rv == False):
+        return rv, description
+    else: 
+        if (_maskTags is None or len(_maskTags) == 0 ):
+            return rv, "Invalid mask values!!!"
+        else:
+            masks = []
+            bDataValid = False
+            try:
+                masks = json.loads(_maskTags)
+                bDataValid = True
+            except ValueError:
+                pass
+            
+            if (bDataValid == True):
+                if (masks is None or len(masks) == 0 ):
+                    return rv, "Incorrect format of ask values!!!"
+                else:
+                    file_service.create_file_from_text(_sourceFileShareFolderName, _sourceDirectoryName, maskFileName, _maskTags)
+                    return True, "OK"
+            else:
+                return rv, "masks passed cannot be converted to json objects"
 
 
 
