@@ -4,6 +4,7 @@ import sys
 from azure.storage.file import FileService
 from azureCommon import preCheck, maskFileName
 import json
+import datetime
 
 
 def exitIfNull(_key, environVariable):
@@ -18,6 +19,8 @@ def CopySourceDestination(  _sourceFileShareFolderName, _sourceDirectoryName,
     _sourceDirectoryName, _destinationDirectoryName: format should be directoryName/secondDirectoryName, no trailing 
     slashes.  
     '''
+    
+    start_time = datetime.datetime.now()
     rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
     if (rv == False):
         return rv, description
@@ -58,8 +61,10 @@ def CopySourceDestination(  _sourceFileShareFolderName, _sourceDirectoryName,
                             return False, 'Timed out waiting for async copy to complete., Filename = {0} '.format(imageFileName) 
                         time.sleep(5)
                         copy = self.service.get_file_properties(_destinationFileShareFolderName, combinedDestinationFolderName, imageFileName.name).properties.copy
-
-        return True, "OK"
+        
+        time_elapsed = datetime.datetime.now() - start_time 
+        elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+        return True, elapsedTime
 
 def deleteAllFiles(_sourceFileShareFolderName, _sourceDirectoryName, _fileExtensionFilter='.jpg' ):
     rv, description, file_service, _accountName, _accountKey = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
@@ -107,6 +112,7 @@ def getAllExperimentsAndFirstFilesImpl(_sourceFileShareFolderName, _sourceDirect
     return True, returnList
 
 def SaveMaskFileDataImpl(_sourceFileShareFolderName, _sourceDirectoryName, _maskTags):
+    start_time = datetime.datetime.now()
     rv = False
     rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
     if (rv == False):
@@ -128,9 +134,79 @@ def SaveMaskFileDataImpl(_sourceFileShareFolderName, _sourceDirectoryName, _mask
                     return rv, "Incorrect format of ask values!!!"
                 else:
                     file_service.create_file_from_text(_sourceFileShareFolderName, _sourceDirectoryName, maskFileName, _maskTags)
-                    return True, "OK"
+                    time_elapsed = datetime.datetime.now() - start_time 
+                    elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+                    return True, elapsedTime
             else:
                 return rv, "masks passed cannot be converted to json objects"
+
+
+def GetAllUniqueExperimentNamesImpl(_sourceFileShareFolderName, _sourceDirectoryName, _fileExtensionFilter='.jpg'):
+    start_time = datetime.datetime.now()
+    rv = False
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    returnList = []
+    experimentList = list(file_service.list_directories_and_files(_sourceFileShareFolderName, _sourceDirectoryName))
+
+    if (not(experimentList is None and len(experimentList)<1)):
+        for i, experimentName in enumerate(experimentList):
+            if (experimentName.name.endswith(_fileExtensionFilter)):
+                n = experimentName.name.find('_')
+                if (n > 0):
+                    expName = experimentName.name[0:n]
+                    if expName not in returnList:
+                        returnList.append(expName)
+
+    time_elapsed = datetime.datetime.now() - start_time 
+    elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+    return True, elapsedTime,returnList
+
+
+def GetAllExperimentsNotYetProcessed(_destinationFileShareFolderName, _destinationDirectoryName, _experimentNames):
+    start_time = datetime.datetime.now()
+    rv = False
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_destinationFileShareFolderName, _destinationDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    
+    returnList = []
+
+    for experimentName in (_experimentNames):
+        # check if maskFile exists and load its content
+        if (file_service.exists(_destinationFileShareFolderName, _destinationDirectoryName+ "/" + experimentName, maskFileName) == False):
+            returnList.append(experimentName)
+
+    time_elapsed = datetime.datetime.now() - start_time 
+    elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+    return True, elapsedTime, returnList
+
+
+def GetAllExperimentsFilesNotCopiedImpl(_destinationFileShareFolderName, _destinationDirectoryName, _experimentNames):
+
+    start_time = datetime.datetime.now()
+    rv = False
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_destinationFileShareFolderName, _destinationDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    
+    returnList = []
+
+    for experimentName in (_experimentNames):
+        if (file_service.exists(_destinationFileShareFolderName, _destinationDirectoryName+ "/" + experimentName) == False):
+            returnList.append(experimentName)
+
+    time_elapsed = datetime.datetime.now() - start_time 
+    elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+    return True, elapsedTime, returnList    
+
+
+    
+
+    
+
+
 
 
 

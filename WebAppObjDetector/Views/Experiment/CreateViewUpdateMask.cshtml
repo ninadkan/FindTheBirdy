@@ -849,7 +849,7 @@
             else {
                 var nCurrentStringLength = maskPointText.length;
                 var position = nCurrentStringLength - 1;
-                var output = maskPointText.slice(0, position) + newPoint + maskPointText.slice(position);
+                var output = maskPointText.slice(0, position) + "," + newPoint + maskPointText.slice(position);
 
                 $('#txtMaskPoints').val(output);
             }
@@ -961,8 +961,8 @@
                     //$("body").css("cursor", "default");
                 }
                 else {
-                    //var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
-                    //UpdateTextDivObject(AppendedText);
+                    var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
+                    UpdateTextDivObject(AppendedText);
                     //$("body").css("cursor", "default");
                 }
                 $("body").css("cursor", "default");     

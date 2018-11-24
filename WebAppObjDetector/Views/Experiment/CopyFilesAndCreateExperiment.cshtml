@@ -32,7 +32,7 @@
 
             <tr align="center" valign="middle">
                 <td align="right"><label class="col-md-12 control-label">Source Directory</label></td>
-                <td align="left" colspan="2"><input class="btn-block" id="txtSourceDirectory" name="txtSourceDirectory" value="backup" /></td>
+                <td align="left" colspan="2"><input class="btn-block" id="txtSourceDirectory" name="txtSourceDirectory" value="Share" /></td>
             </tr>
 
             <tr align="center" valign="middle">
@@ -46,19 +46,19 @@
             </tr>
 
             <tr align="center" valign="middle">
-                <td align="right"><label class="col-md-12 control-label">Experiment Name Filter</label></td>
-                <td align="left" colspan="2"><input id="txtExperimentNameFilter" name="txtExperimentNameFilter" value="2018-04-15" /></td>
+                <td align="right"><label class="col-md-12 control-label">Experiment Name</label></td>
+                <td><select name="ExperimentCollection" id="ExperimentCollection" class="form-control col-md-12"></select></td>
             </tr>
 
             <tr>
-                <td align="center"><button id="btnCopyFiles" class="btn btn-info" onclick="btnCopyFileHandler()">Copy Files</button></td>
-                <td align="center"><button id="btnCreateBackUp" class="btn btn-success" onclick="btnCreateBackUpHandler()">Create Back Up</button></td>
-                <td align="center"><button id="btnCreateExperimentFolder" class="btn btn-primary" onclick="btnCreateExperimentFolderHandler()">Create Experiment Folder</button></td>
+                <td align="center"><button id="btnGetUniqueExperimentNames" class="btn btn-primary" onclick="btnGetUniqueExperimentNamesHandler()">Get Unique Experiment Names</button></td>
+                <td align="center"><button id="btnGetNonProcessedExperiments" class="btn btn-primary" onclick="btnGetNonProcessedExperimentsHandler()">Get Non Processed Experiments</button></td>
+                <td align="center"><button id="btnCopyFiles" class="btn btn-primary" onclick="btnCopyFileHandler()">Copy Files</button></td>
             </tr>
 
             <tr align="center" valign="middle">
                 <td align="right"><label class="col-md-12 control-label">Result : </label></td>
-                <td align="right" colspan="2" rowspan="2"><label id="lblResult" class="col-md-12 control-label"></label><p> </p><p> </p></td>
+                <td align="left" colspan="2" rowspan="2"><label id="lblResult" class="col-md-12 control-label"></label><p> </p><p> </p></td>
             </tr>
         </tbody>
     </table>
@@ -73,7 +73,11 @@
         var sourceDirectory = '';
         var destinationDirectory = '';
         var fileFilter = '';
-        var experimentName = '';
+        var _experimentName = '';
+
+        var _btnGetUniqueExperimentNames;
+        var _btnGetNonProcessedExperiments; 
+        var _btnCopyFiles; 
 
         $(function () // called when the body is ready
         {
@@ -87,7 +91,10 @@
             sourceDirectory = document.getElementById('txtSourceDirectory').value;
             destinationDirectory = document.getElementById('txtDestinationDirectory').value;
             fileFilter = document.getElementById('txtFileFilter').value;
-            experimentName = document.getElementById('txtExperimentNameFilter').value;
+
+            _btnGetUniqueExperimentNames = document.getElementById('btnGetUniqueExperimentNames');
+            _btnGetNonProcessedExperiments = document.getElementById('btnGetNonProcessedExperiments');
+            _btnCopyFiles = document.getElementById('btnCopyFiles');
         }
 
         function checkParameters() {
@@ -117,44 +124,18 @@
                 alert('Please enter a valid File Filter name!');
                 return false;
             }
-
-            if (experimentName == null || experimentName.length < 1) {
-                alert('Please enter a valid Experiment name!');
-                return false;
-            }
             return true;
-        }
-
-        function btnCreateExperimentFolderHandler() {
-            console.log("btnCreateExperimentFolderHandler");
-            var checkOK = checkParameters();
-            if (!checkOK)
-                return;
-
-            var jsonData = {
-                _sourceFileShareFolderName: sourceShare, _sourceDirectoryName: sourceDirectory,
-                _destinationFileShareFolderName: destinationShare, _destinationDirectoryName: destinationDirectory,
-                _ExperimentName: experimentName, _fileExtensionFilter: fileFilter
-            };
-            console.log(jsonData);
-            var updatedTagJson = JSON.stringify(jsonData);
-            console.log(updatedTagJson);
-            InvokeWebAPI(updatedTagJson);
-
         }
 
         var invocation = new XMLHttpRequest();
         var invocationHistoryText;
 
-        function InvokeWebAPI(dataVal) {
-            console.log('InvokeWebAPI');
+        function InvokeWebAPIGeneric(urlAdd, dataval, handler) {
             $("body").css("cursor", "progress");
-            var body = dataVal;
-            //var urlEncodeCollectionId = encodeURIComponent(body);
-            //console.log(urlEncodeCollectionId);
 
-            var url = 'http://localhost:5000/azureStorage/v1.0/CopySourceDestination';
-            console.log(url);
+            var body = dataval;
+
+            var url = 'http://localhost:5000/azureStorage/v1.0/' + urlAdd;
 
             if (invocation) {
                 invocation.open('POST', url, true);
@@ -163,36 +144,139 @@
                 invocation.send(body);
             }
             else {
-                invocationHistoryText = "No Invocation TookPlace At All";
-                UpdateTextDivObject(invocationHistoryText);
+                UpdateTextDivObject("No Invocation TookPlace At All");
             }
+        }
+
+        /* ============================================================ */
+
+        function btnCopyFileHandler() {
+
+            console.log("btnCopyFileHandler");
+
+            var checkOK = checkParameters();
+            if (!checkOK)
+                return;
+
+            _experimentName = $('#ExperimentCollection option:selected').val();
+            if (_experimentName == null || _experimentName.length < 1) {
+                alert('Please enter a valid Experiment name!');
+                return false;
+            }
+
+            var jsonData = {
+                _sourceFileShareFolderName: sourceShare, _sourceDirectoryName: sourceDirectory,
+                _destinationFileShareFolderName: destinationShare, _destinationDirectoryName: destinationDirectory,
+                _ExperimentName: _experimentName, _fileExtensionFilter: fileFilter
+            };
+            var updatedJson = JSON.stringify(jsonData);
+            _btnCopyFiles.setAttribute("class", "btn btn-default");
+            InvokeWebAPIGeneric('CopySourceDestination', updatedJson, handlerCopySourceDestination);
 
         }
 
-        function handler(evtXHR) {
+        function handlerCopySourceDestination(evtXHR) {
             if (invocation.readyState == 4) {
                 if (invocation.status == 200) {
                     var response = invocation.responseText;
                     UpdateTextDivObject(response);
-                    $("body").css("cursor", "default");
                 }
                 else {
                     var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
                     UpdateTextDivObject(AppendedText);
-                    $("body").css("cursor", "default");
                 }
-            }
-            else {
-
-                UpdateTextDivObject("currently the application is at" + invocation.readyState);
+                _btnCopyFiles.setAttribute("class", "btn btn-primary");
+                $("body").css("cursor", "default");
             }
         }
 
+        /* ============================================================ */
+        function btnGetUniqueExperimentNamesHandler() {
+            console.log("btnGetUniqueExperimentNamesHandler");
+            var checkOK = checkParameters();
+            if (!checkOK)
+                return;
+
+            var jsonData = {
+                _sourceFileShareFolderName: sourceShare,
+                _sourceDirectoryName: sourceDirectory,
+                _fileExtensionFilter: fileFilter
+            };
+            var updatedJson = JSON.stringify(jsonData);
+            _btnGetNonProcessedExperiments.setAttribute("class", "btn btn-default");
+            _btnGetUniqueExperimentNames.setAttribute("class", "btn btn-default");
+            InvokeWebAPIGeneric('GetAllUniqueExperimentNames', updatedJson, handlerGetUniqueExperimentNames);
+        }
+
+        function handlerGetUniqueExperimentNames(evtXHR) {
+            if (invocation.readyState == 4) {
+                if (invocation.status == 200) {
+                    var response = invocation.responseText;
+                    UpdateTextDivObject(response)
+                    populateComboBox(response)
+                }
+                else {
+                    var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
+                    UpdateTextDivObject(AppendedText);
+                }
+                _btnGetNonProcessedExperiments.setAttribute("class", "btn btn-primary");
+                _btnGetUniqueExperimentNames.setAttribute("class", "btn btn-primary");
+                $("body").css("cursor", "default");
+            }
+        }
+
+        function populateComboBox(response) {
+            $('#ExperimentCollection').empty();
+            var rv = $.parseJSON(response);
+            if (rv) {
+                var elapsedTime = rv["elapsedTime"];
+                $('#lblResult').text(elapsedTime);
+                var outerElements = rv["result"];
+                for (var i = 0, j = outerElements.length; i < j; i++) {
+                    var obj = outerElements[i];
+                    var option = '';
+                    option += '<option value="' + obj + '">' + obj + '</option>';
+                    $('#ExperimentCollection').append(option);
+                }
+            }
+        }
+         /* ============================================================ */
+        function btnGetNonProcessedExperimentsHandler() {
+            console.log("btnGetUniqueExperimentNamesHandler");
+            var checkOK = checkParameters();
+            if (!checkOK)
+                return;
+
+            experimentNames = []
+
+            var options = document.getElementById('ExperimentCollection').options;
+            for (var i = 0, j = options.length; i < j; i++) {
+                experimentNames.push(options[i].value);
+            }
+ 
+            var jsonData = {
+                _destinationFileShareFolderName: destinationShare,
+                _destinationDirectoryName: destinationDirectory,
+                _experimentNames: experimentNames
+            };
+            var updatedJson = JSON.stringify(jsonData);
+            // Not the best option.... 
+            //TODO:: improve how to pass parameter to handlers. 
+            _btnGetNonProcessedExperiments.setAttribute("class", "btn btn-default");
+            _btnGetUniqueExperimentNames.setAttribute("class", "btn btn-default");
+            InvokeWebAPIGeneric('GetAllExperimentsFilesNotCopied', updatedJson, handlerGetUniqueExperimentNames);
+        }
+
+
+
+        /* ============================================================ */
         function UpdateTextDivObject(displayString) {
-            console.log(displayString);
-            var temp = document.createTextNode(displayString);
-            var textDiv = document.getElementById("lblResult");
-            textDiv.appendChild(temp);
+            //console.log(displayString);
+            //var temp = document.createTextNode(displayString);
+            //var textDiv = document.getElementById("lblResult");
+            //textDiv.appendChild(temp);
+
+            $('#lblResult').text(displayString);
         }
 
     </script>

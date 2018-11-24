@@ -5,44 +5,16 @@ from flask import make_response
 from flask import request
 from flask_cors import CORS
 from flask import send_file
-from  azureFileShareTest import CopySourceDestination, deleteAllFiles, getAllExperimentsAndFirstFilesImpl, SaveMaskFileDataImpl
-from mask_creation import GetMaskedImageImpl, GetRawSourceImageImpl
+
+
 import io
 import json
+import azureFileShareTest
+import mask_creation
 
 app = Flask(__name__)
 CORS(app)
 
-
-@app.route('/azureStorage/v1.0/CopySourceDestination', methods=['POST'])
-def CopySourceDestinationAPI():
-    # print('CopySourceDestination')
-    # print(request)
-    # print(request.data)
-    # print(request.form)
-    # print(request.json)
-    if not request.json or not '_sourceFileShareFolderName' in request.json \
-        or not '_sourceDirectoryName' in request.json \
-        or not '_destinationFileShareFolderName' in request.json \
-        or not '_destinationDirectoryName' in request.json \
-        or not '_ExperimentName' in request.json \
-        or not '_fileExtensionFilter' in request.json:
-        abort(400)
-
-    # result, description = deleteAllFiles(request.json['_destinationFileShareFolderName'],
-    #                                 request.json['_destinationDirectoryName'])
-
-    result, description = CopySourceDestination( request.json['_sourceFileShareFolderName'],
-                                    request.json['_sourceDirectoryName'],
-                                    request.json['_destinationFileShareFolderName'],
-                                    request.json['_destinationDirectoryName'],
-                                    request.json['_ExperimentName'],
-                                    request.json['_fileExtensionFilter'])
-    if (result == False):
-        print(description)
-        return make_response(jsonify({'error': description}), 500)
-    else:
-        return jsonify({'result': result})
 
 @app.route('/azureStorage/v1.0/GetRawSourceImage', methods=['POST'])
 def GetRawSourceImage():
@@ -51,7 +23,7 @@ def GetRawSourceImage():
         or not '_imageFileName' in request.json:
         abort(400)
 
-    result, description, image_binary = GetRawSourceImageImpl(  request.json['_sourceFileShareFolderName'],
+    result, description, image_binary = mask_creation.GetRawSourceImageImpl(  request.json['_sourceFileShareFolderName'],
                                                                 request.json['_sourceDirectoryName'],
                                                                 request.json['_imageFileName'])
 
@@ -71,7 +43,7 @@ def GetMaskedImage():
         or not '_maskTags' in request.json:
         abort(400)
 
-    result, description, image_binary = GetMaskedImageImpl( request.json['_sourceFileShareFolderName'],
+    result, description, image_binary = mask_creation.GetMaskedImageImpl( request.json['_sourceFileShareFolderName'],
                                     request.json['_sourceDirectoryName'],
                                     request.json['_imageFileName'],
                                     request.json['_maskTags'])
@@ -84,13 +56,40 @@ def GetMaskedImage():
         
         return make_response(jsonify({'error': image_binary}), 500)
 
+
+@app.route('/azureStorage/v1.0/CopySourceDestination', methods=['POST'])
+def CopySourceDestinationAPI():
+    if not request.json or not '_sourceFileShareFolderName' in request.json \
+        or not '_sourceDirectoryName' in request.json \
+        or not '_destinationFileShareFolderName' in request.json \
+        or not '_destinationDirectoryName' in request.json \
+        or not '_ExperimentName' in request.json \
+        or not '_fileExtensionFilter' in request.json:
+        abort(400)
+
+    # result, description = deleteAllFiles(request.json['_destinationFileShareFolderName'],
+    #                                 request.json['_destinationDirectoryName'])
+
+    result, description = azureFileShareTest.CopySourceDestination( request.json['_sourceFileShareFolderName'],
+                                    request.json['_sourceDirectoryName'],
+                                    request.json['_destinationFileShareFolderName'],
+                                    request.json['_destinationDirectoryName'],
+                                    request.json['_ExperimentName'],
+                                    request.json['_fileExtensionFilter'])
+    if (result == False):
+        print(description)
+        return make_response(jsonify({'error': description}), 500)
+    else:
+        return jsonify({'result': result, 'elapsedTime':description})
+
+
 @app.route('/azureStorage/v1.0/GetAllExperimentsAndFirstFiles', methods=['POST'])
 def GetAllExperimentsAndFirstFiles():
     if not request.json or not '_sourceFileShareFolderName' in request.json \
         or not '_sourceDirectoryName' in request.json :
         abort(400)
 
-    result, obj = getAllExperimentsAndFirstFilesImpl(request.json['_sourceFileShareFolderName'],
+    result, obj = azureFileShareTest.getAllExperimentsAndFirstFilesImpl(request.json['_sourceFileShareFolderName'],
                                                      request.json['_sourceDirectoryName'])
     if (result == True):
         return json.dumps(obj)
@@ -99,6 +98,39 @@ def GetAllExperimentsAndFirstFiles():
 
 
 
+@app.route('/azureStorage/v1.0/GetAllUniqueExperimentNames', methods=['POST'])
+def GetAllUniqueExperimentNames():
+    if not request.json or not '_sourceFileShareFolderName' in request.json \
+        or not '_sourceDirectoryName' in request.json \
+        or not '_fileExtensionFilter' in request.json:
+        abort(400)
+
+    result, description, rlist = azureFileShareTest.GetAllUniqueExperimentNamesImpl(request.json['_sourceFileShareFolderName'],
+                                                                                    request.json['_sourceDirectoryName'],
+                                                                                    request.json['_fileExtensionFilter'] )
+    print(description)
+    if (result == False):
+        return make_response(jsonify({'error': description}), 500)
+    else:
+        return jsonify({'result': rlist, 'elapsedTime':description})
+
+
+@app.route('/azureStorage/v1.0/GetAllExperimentsFilesNotCopied', methods=['POST'])
+def GetAllExperimentsFilesNotCopied():
+    if not request.json or not '_destinationFileShareFolderName' in request.json \
+        or not '_destinationDirectoryName' in request.json \
+        or not '_experimentNames' in request.json:
+        abort(400)
+
+    result, description, rlist = azureFileShareTest.GetAllExperimentsFilesNotCopiedImpl( request.json['_destinationFileShareFolderName'],
+                                                                        request.json['_destinationDirectoryName'],
+                                                                        request.json['_experimentNames'])
+    print(description)
+    if (result == False):
+        return make_response(jsonify({'error': description}), 500)
+    else:
+        return jsonify({'result': rlist})
+
 @app.route('/azureStorage/v1.0/SaveMaskFileData', methods=['POST'])
 def SaveMaskFileData():
     if not request.json or not '_sourceFileShareFolderName' in request.json \
@@ -106,14 +138,16 @@ def SaveMaskFileData():
         or not '_maskTags' in request.json:
         abort(400)
 
-    result, description = SaveMaskFileDataImpl( request.json['_sourceFileShareFolderName'],
-                                                request.json['_sourceDirectoryName'],
-                                                request.json['_maskTags'])
+    result, description, = azureFileShareTest.SaveMaskFileDataImpl( request.json['_sourceFileShareFolderName'],
+                                                        request.json['_sourceDirectoryName'],
+                                                        request.json['_maskTags'])
+
     print(description)
     if (result == False):
         return make_response(jsonify({'error': description}), 500)
     else:
-        return jsonify({'result': description})
+        return jsonify({'elaspsedTime': description})
+
 
 
 if __name__ == '__main__':
