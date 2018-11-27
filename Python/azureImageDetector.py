@@ -25,7 +25,7 @@ _IMAGE_TAG = "bird"
 verbosity = True
 _LOG_RESULT = True
 _EXPERIMENTNAME = ''
-detectedImages = []
+g_detectedImages = []
 
 def processRequest( json, data, headers, params ):
     """
@@ -77,7 +77,8 @@ def processImages(  _key = '',
     numberOfIterations NO_OF_ITERATIONS = Maximum number of images to be searched. set to <0 for all
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
-    global detectedImages
+    global g_detectedImages
+    g_detectedImages = []
     start_time = time.time() 
     if (len(_key)== 0):
         # try to load it from the environmental variables
@@ -142,7 +143,7 @@ def processImages(  _key = '',
                             if (tagName == imageTag):
                                 bBirdFound = True
                                 TotalBirdsFound = TotalBirdsFound +1
-                                detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence))})
+                                g_detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence))})
                                 if (verbosity == True):
                                     print("")
                                     print("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
@@ -154,7 +155,7 @@ def processImages(  _key = '',
                                         bBirdFound = True
                                         TotalBirdsFound = TotalBirdsFound +1
                                         TotalHintBirdScore = TotalHintBirdScore +1
-                                        detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence)), 'Hint': TotalHintBirdScore})
+                                        g_detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence)), 'Hint': TotalHintBirdScore})
                                         if (verbosity == True):
                                             print("")
                                             print("Image name = {0}, imageTag = {1} , Confidence Score = {2} - Hint Option".format(imageName, imageTag, confidence))
@@ -174,7 +175,7 @@ def processImages(  _key = '',
                         'param - confThreshold' : confThreshold, 
                         'param - numberOfIterations' : numberOfIterations,
                         'param - imageTag' : imageTag,
-                        'detectedItems': detectedImages
+                        'detectedItems': g_detectedImages
                     }
         obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
     

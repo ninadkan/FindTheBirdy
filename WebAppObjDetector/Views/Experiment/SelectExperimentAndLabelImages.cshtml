@@ -1,0 +1,577 @@
+﻿
+@{
+    ViewData["Title"] = "SelectExperimentAndTagImages";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Select Experiment And Label Images</h2>
+
+<hr />
+
+
+<div id="devOperations">
+    <table class="table table-condensed" align="center">
+        <tbody>
+            <tr valign="middle">
+                <th align="center" width="20%"></th>
+                <th align="center" width="20%"></th>
+                <th align="center" width="20%"></th>
+                <th align="center" width="20%"></th>
+                <th align="center" width="20%"></th>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Experiment Name</label></td>
+                <td colspan="2"><select id="ExperimentCollection" class="form-control col-md-12"></select></td>
+                <td><button id="btnLoadExperiments" class="btn btn-primary" onclick="btnLoadExperimentsHandler(this)">Refresh (Load Experiments)</button></td>
+                <td></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Images</label></td>
+                <td><select name="ImageCollection" id="ImageCollection" class="form-control col-md-12"></select></td>
+                <td><button id="btnLoadImage" class="btn btn-primary" onclick="btnLoadImageHandler(this)" disabled>Load Images</button></td>
+                <td><button id="btnLoadTag" class="btn btn-primary" onclick="btnLoadTagHandler(this)" disabled>Load Tag</button> </td>
+                <td><button id="btnSaveTag" class="btn btn-primary" onclick="btnSaveTagHandler(this)" disabled>Save Tag</button> </td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Timer Delay (ms)</label></td>
+                <td align="left"> <input class="btn-block" id="txtTimer" name="txtTimer" value="1000" /></td>
+                <td><button id="btnStartStopTimer" class="btn btn-primary" onclick="btnStartStopTimerHandler(this)" disabled>Start Timer</button></td>
+                <td></td>
+                <td></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Destination Share</label></td>
+                <td align="left"><input class="btn-block" id="txtDestinationShare" value="experiment-data" /></td>
+                <td align="center" rowspan="6" colspan="3"><img id="imgPhoto" alt="SRC"/></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Destination Directory</label></td>
+                <td align="left"><input class="btn-block" id="txtDestinationDirectory" value="object-detection" /></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Output Folder</label></td>
+                <td align="left"><input class="btn-block" id="txtOutputFolder" value="output" /></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Db Experiment Name</label></td>
+                <td align="left"><input class="btn-block" id="txtDbExperimentName" value="experiment-find-the-birdy" /></td>
+
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Document Id</label></td>
+                <td align="left"><input class="btn-block" id="txtDocumentId" value="userDetector" disabled /></td>
+            </tr>
+
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Operation Result  : </label></td>
+                <td align="left"><label class="btn-block" id="lblResult"></label></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td></td>
+                <td></td>
+                <td><button id="btnAddLabel" class="btn btn-success" onclick="btnAddLabelHandler(this)">Add Label</button> </td>
+                <td><label class="col-md-12 control-label" id="PresenceTag">Current Label</label></td>
+                <td><button id="btnRemoveLabel" class="btn btn-success" onclick="btnRemoveLabelHandler(this)">Remove Label</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+@section Scripts {
+    <script>
+        var _lastButton = [];
+        var _lastButtonClass = [];
+
+        var _destinationShare = '';
+        var _destinationDirectory = '';
+        var _outputFolder = '';
+        var _experimentName = ''; 
+        var _imageName = ''; 
+        var _dynamicImage;
+
+        var invocation = new XMLHttpRequest();
+        var invocationCosmos = new XMLHttpRequest();
+
+        var _timer; 
+        var _startTimer = 'Start Timer';
+        var _stopTimer = 'Stop Timer';
+        var _imageLabelTag = [];
+        var _currentFileName = '';
+
+    /* =======================   Common ... =========================== */
+
+        function checkNecessaryParameters() {
+            getAllNeededValues();
+
+            if (_destinationShare == null || _destinationShare.length < 1) {
+                alert('Please enter a valid destination sourceShare name!');
+                return false;
+            }
+
+            // check additional parameters
+            if (_destinationDirectory == null || _destinationDirectory.length < 1) {
+                alert('Please enter a valid destination directory name!');
+                return false;
+            }
+
+            // check additional parameters
+            if (_outputFolder == null || _outputFolder.length < 1) {
+                alert('Please enter a valid output folder name!');
+                return false;
+            }
+            return true;
+        }
+
+        function getAllNeededValues() {
+            _destinationShare = document.getElementById('txtDestinationShare').value;
+            _destinationDirectory = document.getElementById('txtDestinationDirectory').value;
+            _outputFolder = document.getElementById('txtOutputFolder').value;
+        }
+
+        function precheckLoadingImages() {
+            if (!checkNecessaryParameters()) return false; 
+
+            _imageName = $('#ImageCollection option:selected').val();
+            // check additional parameters
+            if (_imageName == null || _imageName.length < 1) {
+                alert('Please select a valid image name!');
+                return false;
+            }
+
+            var comboBox = document.getElementById("ExperimentCollection");
+            _experimentName = comboBox.options[comboBox.selectedIndex].text.trim();
+           
+            // check additional parameters
+            if (_experimentName == null || _experimentName.length < 1) {
+                alert('Please select a valid experiment name!');
+                return false;
+            }
+            return true;
+        }
+
+        function pushElement(elementID) {
+            var element = document.getElementById(elementID);
+            if (element) {
+                _lastButton.push(element);
+                _lastButtonClass.push(element.getAttribute("class"));
+                element.setAttribute("class", "btn btn-default");
+                $("body").css("cursor", "progress");
+            }
+        }
+
+        function popElement() {
+            var element = _lastButton.pop();
+            var elementClass = _lastButtonClass.pop();
+            if (element) {
+                element.setAttribute("class", elementClass);
+            }
+            $("body").css("cursor", "default");
+        }
+
+    /* =======================   ...Common ... Event Handlers ...===== */
+ 
+        $(function () // called when the body is ready
+        {
+            console.log("Ready");
+            $("#btnStartStopTimer").html(_startTimer);
+            _dynamicImage = document.getElementById('imgPhoto'); 
+           
+            // setup Event Handlers
+            $('#ExperimentCollection').on('change', onExperimentCollChanged);
+            $('#ImageCollection').on('change', onImageCollChanged);
+
+            _dynamicImage.onload = imgOnLoad;
+            
+        });
+
+        function onExperimentCollChanged() {
+            $('#ImageCollection').empty();
+            
+            var comboBoxValue = $('#ExperimentCollection option:selected').val();
+            var ImageNames = comboBoxValue.split(";")
+            for (var i = 0, l = ImageNames.length; i < l; i++) {
+                var itemValue = '<option value="' + ImageNames[i] + '">' + ImageNames[i] + '</option>';
+                $('#ImageCollection').append(itemValue);
+            }
+
+            var comboBox = document.getElementById("ExperimentCollection");
+            _experimentName = comboBox.options[comboBox.selectedIndex].text.trim();
+
+            btnLoadTagHandler(document.getElementById('btnLoadTag')); 
+        }
+
+        function onImageCollChanged() {
+            _currentFileName = $('#ImageCollection option:selected').val();
+            var x = document.getElementById("ImageCollection").length; 
+            
+            if (x > 0)
+            {
+                document.getElementById("btnStartStopTimer").disabled = false;
+                document.getElementById("btnLoadTag").disabled = false;
+                document.getElementById("btnSaveTag").disabled = false;
+
+                // load image
+                element = document.getElementById("btnLoadImage");
+                element.disabled = false; 
+                btnLoadImageHandler(element);
+ 
+            }
+            else {
+                document.getElementById("btnLoadImage").disabled = true;
+                document.getElementById("btnStartStopTimer").disabled = true;
+                document.getElementById("btnLoadTag").disabled = true;
+                document.getElementById("btnSaveTag").disabled = true;
+            }
+        }
+
+        function btnLoadExperimentsHandler(obj){
+            var checkOK = checkNecessaryParameters();
+            if (!checkOK)
+                return;
+
+            var jsonData = {
+                _destinationFileShareFolderName: _destinationShare,
+                _destinationDirectoryName: _destinationDirectory,
+                _outputFolderName: _outputFolder
+            };
+           
+            var updatedTagJson = JSON.stringify(jsonData);
+            pushElement(obj.id);
+            InvokeWebAPIGeneric('GetAllDestinationExperimentNamesWithOutputFiles', updatedTagJson, handlerGetAllExperiments)
+        }
+
+        function btnLoadImageHandler(obj) {
+            console.log('btnLoadImageHandler');
+            if (!precheckLoadingImages()) return;
+
+            var jsonData = {
+                _sourceFileShareFolderName: _destinationShare,
+                _sourceDirectoryName: _destinationDirectory + "/" + _experimentName + "/" + _outputFolder,
+                _imageFileName: _imageName
+            };
+            var updatedJson = JSON.stringify(jsonData);
+            console.log(updatedJson);
+
+            pushElement(obj.id);
+            InvokeWebAPIImageGeneric('GetRawSourceImage', updatedJson, HandlerGetRawImage);
+        }
+
+        function btnLoadTagHandler(obj) {
+            console.log('btnLoadTagHandler');
+
+            if (!precheckLoadingImages()) return;
+            _imageLabelTag = []; // TODO:: we might be losing some previous unsaved entries!!!
+            var dataVal = { experimentName: _experimentName};
+            var updatedTagJson = JSON.stringify(dataVal);
+            console.log(updatedTagJson);
+            pushElement(obj.id);
+            InvokeWebAPICosmosDb('returnLabelledImageList', updatedTagJson, handlerCosmosDBReturnImageList); 
+        }
+
+        function btnSaveTagHandler(obj) {
+            console.log('btnSavePresenceTagHandler');
+
+            if (!precheckLoadingImages()) return
+             
+            // copy the updatedPresenceTag information to cosmosDB.
+            l = _imageLabelTag.length;
+            var i;
+            var objArray = [];
+            for (i = 0; i < l; i++) {
+                //var tempObj = { ImageName: _imageLabelTag[i], ConfidenceScore: 1.0 };
+                //objArray.push(tempObj);
+                objArray.push(_imageLabelTag[i]);
+            }
+
+            //var _idUserDetector = document.getElementById('txtDocumentId').value;
+            // var comboBoxValue = $('#ExperimentCollection option:selected').val();
+
+            var dataVal = { experimentName: _experimentName , labelledImages: objArray };
+            var updatedTagJson = JSON.stringify(dataVal);
+            console.log(updatedTagJson);
+            pushElement(obj.id);
+            InvokeWebAPICosmosDb('saveLabelledImageList', updatedTagJson, handlerCosmosDBSaveImageList); 
+        }
+
+        function btnStartStopTimerHandler(obj) {
+            console.log('btnStartStopTimerHandler');
+            existingText = $('#btnStartStopTimer').text();
+            if (existingText == _startTimer) {
+                var timerValue = $('#txtTimer').val();
+                if (!$.isNumeric(timerValue)) {
+                    timerValue = 1000
+                }
+                _timer = setInterval(TimerHandler, timerValue);
+                $("#btnStartStopTimer").html(_stopTimer);
+                $("#btnStartStopTimer").attr("class", "btn btn-warning");
+            }
+            else {
+                clearTimeout(_timer);
+                $("#btnStartStopTimer").html(_startTimer);
+                $("#btnStartStopTimer").attr("class", "btn btn-primary");
+            }
+        }
+
+        function btnAddLabelHandler(obj) {
+            console.log('btnAddLabelHandler');
+            if (_imageLabelTag.indexOf(_currentFileName) >= 0) {
+                // ignore. Already exists
+            }
+            else { _imageLabelTag.push(_currentFileName); }
+        }
+
+        function btnRemoveLabelHandler(obj) {
+            console.log('btnRemoveLabelHandler');
+            var index = _imageLabelTag.indexOf(_currentFileName);
+            if (index > -1) {
+                _imageLabelTag.splice(index, 1);
+            }
+        }
+
+        function currentImageLabelValue(sv) {
+            if (_imageLabelTag.indexOf(sv) >= 0) {
+                return true;
+            }
+            return false;
+        }
+
+
+     /* ======================= ...  Event Handlers  =========================== */
+        function TimerHandler() {
+            console.log("Timer Invoked");
+            // select the next item from the comboBox
+            $('#ImageCollection option:selected').next().attr('selected', 'selected');
+            onImageCollChanged();
+            checkifLastItemSelectedAndDisableTimer();
+        }
+
+        function checkifLastItemSelectedAndDisableTimer() {
+            var lastValue = $('#ImageCollection option:last-child').val();
+            var sv = $('#ImageCollection option:selected').val();
+            if (lastValue === sv) {
+                btnStartStopTimerHandler();
+            }
+        }
+
+     /* ====================== ... Timer Handlers  ==============================*/
+     /* ====================== Web API calls   ... ==============================*/
+
+        function InvokeWebAPIGeneric(urlAdd, dataval, handler) {
+            $("body").css("cursor", "progress");
+            var body = dataval;
+            var url = 'http://localhost:5000/azureStorage/v1.0/' + urlAdd;
+
+            if (invocation) {
+                invocation.open('POST', url, true);
+                invocation.setRequestHeader('Content-Type', 'application/json');
+                invocation.onreadystatechange = handler;
+                invocation.send(body);
+            }
+            else {
+                $('#lblResult').html("No Invocation TookPlace At All");
+            }
+        }
+
+        function handlerGetAllExperiments(evtXHR) {
+            if (invocation.readyState == 4) {
+                if (invocation.status == 200) {
+                    $('#lblResult').html(invocation.responseText);
+                    populateComboBox(invocation.responseText);
+                    onExperimentCollChanged();
+                }
+                else {
+                    var AppendedText = " Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
+                    $('#lblResult').html(AppendedText);
+                }
+                popElement();
+            }
+        }
+
+        function populateComboBox(response) {
+            $('#ExperimentCollection').empty();
+            var result = $.parseJSON(response);
+            $('#lblResult').html(result['elapsedTime']);
+            var resultPassed = result['result'];
+            
+            for (var i = 0, l = resultPassed.length; i < l; i++) {
+                var experimentName = resultPassed[i]["experimentName"];
+                var outputFiles = resultPassed[i]["outputFiles"];
+                var option = '';
+                for (j = 0, k = outputFiles.length; j < k; j++) {
+
+                    option += outputFiles[j];
+                    if (j < k - 1) {
+                        option += ';'
+                    }
+                }
+                var itemValue = '<option value="' + option + '">' + experimentName + '</option>';
+                $('#ExperimentCollection').append(itemValue);
+            }
+
+            // Lets load the labels for current experiment. 
+            
+        }
+
+        /* ================= Load images ..... ===========================================*/
+
+        function InvokeWebAPIImageGeneric(apiFn, dataval, handler) {
+            $("body").css("cursor", "progress");
+            var body = dataval;
+
+            var url = 'http://localhost:5000/azureStorage/v1.0/' + apiFn;
+
+            if (invocation) {
+                invocation.open('POST', url, true);
+                invocation.responseType = "blob";
+                invocation.setRequestHeader('Content-Type', 'application/json');
+                invocation.onreadystatechange = handler;
+                invocation.send(body);
+            }
+            else {
+                $('#lblResult').html("No Invocation TookPlace At All");
+            }
+        }
+
+        function HandlerGetRawImage() {
+            if (invocation.readyState == 4) {
+                if (invocation.status == 200) {
+                    if (invocation.response) {
+                        console.log('invocation.response');
+                        _dynamicImage.src = window.URL.createObjectURL(invocation.response);
+                        _dynamicImage.onload = imgOnLoad;
+                    }
+                    else {
+                        var errorText = "No Invocation response received";
+                        console.log(errorText);
+                        $('#lblResult').html(errorText);
+                    }
+                }
+                else {
+                        var errorText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
+                    $('#lblResult').html(errorText);
+                    console.log(errorText);
+                }
+                popElement();
+                $("body").css("cursor", "default");
+            }
+        }
+
+        function imgOnLoad() {
+            var displayString = JSON.stringify({ height: _dynamicImage.height, width: _dynamicImage.width });
+            $('#lblResult').html(displayString);
+            window.URL.revokeObjectURL(_dynamicImage.src); // I believe this needs to be done, to clean up
+
+            
+
+            // Lets update the image label that is currently stored
+            var currentTag = currentImageLabelValue(_imageName);
+            $('#PresenceTag').text(currentTag);
+        }
+
+        /* ================= ...... Load images ==========================================*/
+
+        /* ================= Load Save Labels ===========================================*/
+
+        function InvokeWebAPICosmosDb(urlAdd, dataval, handler) {
+            var url = 'http://localhost:5001/comsosDB/v1.0/' + urlAdd;
+
+            if (invocationCosmos) {
+                invocationCosmos.open('POST', url, true);
+                invocationCosmos.setRequestHeader('Content-Type', 'application/json');
+                invocationCosmos.onreadystatechange = handler;
+                invocationCosmos.send(dataval);
+            }
+            else {
+                var errorMsg = "No Invocation TookPlace At All";
+                $('#lblResult').html(errorMsg);
+            }
+        }
+
+        function handlerCosmosDBSaveImageList(evtXHR) {
+            if (invocationCosmos.readyState == 4) {
+                if (invocationCosmos.status == 200) {
+                    if (invocationCosmos.response) {
+                        $('#lblResult').html(invocation.response);
+                    }
+                }
+                else {
+                    var AppendedText = "Invocation Errors Occured " + invocationCosmos.readyState + " and the status is " + invocationCosmos.status;
+                    $('#lblResult').html(AppendedText);
+                }
+                popElement();
+            }
+        }
+
+        function handlerCosmosDBReturnImageList(evtXHR) {
+            console.log('handlerCosmosDBReturnImageList');
+            if (invocationCosmos.readyState == 4) {
+                console.log(invocationCosmos.status)
+                if (invocationCosmos.status == 200) {
+
+                    if (invocationCosmos.response) {
+                        $('#lblResult').html(invocationCosmos.response);
+                        loadCurrentLabels(invocationCosmos.response); 
+                    }
+                    //var response = invocation.responseText;
+                    //$('#lblResult').html(response);
+                    
+                }
+                else {
+                    var AppendedText = "Invocation Errors Occured " + invocationCosmos.readyState + " and the status is " + invocationCosmos.status;
+                    $('#lblResult').html(AppendedText);
+                }
+                popElement();
+            }
+
+            if (invocationCosmos.readyState == invocation.HEADERS_RECEIVED){
+                var contentType = invocationCosmos.getResponseHeader("Content-Type");
+                console.log(contentType); 
+            }
+        }
+
+
+        function loadCurrentLabels(response) {
+            console.log('loadCurrentLabels');
+            console.log(response);
+            // update the labels. Which could be nothing. 
+            // Now is the safe time to invoke the other functionality
+
+            _imageLabelTag = []; 
+
+            console.log(response);
+            var tp = $.parseJSON(response);
+            if (tp) {
+                var result = tp["result"];
+                if (result) {
+                    for (var i = 0; i < result.length; i++) {
+                        console.log(result[i]);
+                        _imageLabelTag.push(result[i]);
+                    }
+                }
+            }
+
+            onImageCollChanged();
+        }
+        
+
+        /* ================= Save Image Labels ===========================================*/
+
+
+    </script>
+
+    }
+
+
+
+

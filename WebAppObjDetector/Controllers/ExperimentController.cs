@@ -41,6 +41,12 @@ namespace WebAppObjectDetector.Controllers
         }
 
 
+        public IActionResult SelectExperimentAndLabelImages()
+        {
+            return View();
+        }
+
+
         #region AJAX calls
 
         //[HttpPost]

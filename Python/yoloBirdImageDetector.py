@@ -7,6 +7,7 @@ import time
 
 from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
 
+
 # Initialize DEFAULTS
 _CONF_THRESHOLD = 0.5
 _SHAPE_WEIGHT = 224
@@ -29,7 +30,7 @@ g_classes = None
 g_net = None
 verbosity = False
 
-detectedImages = []
+g_detectedImages = []
 
 def init(classesFile, modelConfiguration, modelWeights):
     global g_net
@@ -50,7 +51,7 @@ def getOutputsNames():
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
 def postprocess(imageName, imageFrame, outs, confThreshold, imageTag, nmsThreshold):
-    global detectedImages
+    global g_detectedImages
     bBirdFound = False
     frameHeight = imageFrame.shape[0]
     frameWidth = imageFrame.shape[1]
@@ -95,7 +96,7 @@ def postprocess(imageName, imageFrame, outs, confThreshold, imageTag, nmsThresho
             bird = '%s' % (g_classes[classIds[i]])
             if (bird == imageTag):
                 bBirdFound = True
-                detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidences[i]))})
+                g_detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidences[i]))})
                 if (verbosity == True):
                     print("")
                     print("Image name = {0}, Bird Found = {1}, Confidence Score = {2}".format(imageName, bBirdFound, confidences[i]))
@@ -145,7 +146,8 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
     scaleFactor SCALE_FACTOR = Scale factor to be used in DNN blobFromImage
     nmsThreshold _NMS_THRESHOLD nmsThreshold used in the cv2.dnn.NMSBoxes fn
     '''
-    global detectedImages
+    global g_detectedImages
+    g_detectedImages = []
     start_time = time.time()
 
 
@@ -189,7 +191,7 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
                         'param - numberOfIterations' : numberOfIterations,
                         'param - imageTag' : imageTag,
                         'param - nmsThreshold' : nmsThreshold,
-                        'detectedItems': detectedImages
+                        'detectedItems': g_detectedImages
                     }
         obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
     return TotalBirdsFound

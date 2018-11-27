@@ -141,7 +141,7 @@
 
 
         var invocation = new XMLHttpRequest();
-        var url = 'http://localhost:5000/comsosDB/v1.0/documents';
+        var url = 'http://localhost:5001/comsosDB/v1.0/documents';
         var invocationHistoryText;
         
 
@@ -174,10 +174,9 @@
                     UpdateTextDivObject(AppendedText);
                 }
             }
-            else {
-                dump("currently the application is at" + invocation.readyState);
-            }
         }
+
+
         function UpdateTextDivObject(displayString) {
             var temp = document.createTextNode(displayString); 
             var textDiv = document.getElementById("textDiv");

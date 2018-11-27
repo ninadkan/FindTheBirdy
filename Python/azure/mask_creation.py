@@ -51,8 +51,6 @@ def GetMaskedImageImpl(_sourceFileShareFolderName, _sourceDirectoryName, _imageF
         else:
             return rv, "Mask value not set in logic!!!", None
 
-
-
 def GetRawSourceImageImpl(_sourceFileShareFolderName, _sourceDirectoryName, _imageFileName, loadMask=False, masks=None):
     rv = False
     rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
@@ -74,7 +72,7 @@ def GetRawSourceImageImpl(_sourceFileShareFolderName, _sourceDirectoryName, _ima
                 if (file_bytes is not None):
                     cv2_img = cv2.imdecode(file_bytes, 1 ) # don't know what 1 does but it sorta works
                     if (cv2_img is not None) :
-                        colorImage = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+                        colorImage = cv2.cvtColor(cv2_img, cv2.COLOR_RGB2BGR) #TODO Not sure this is needed, COLOR_BGR2RGB or might be reversing the image
                         if (colorImage is not None):
                             height, width = colorImage.shape[:2]
                             colourMask = colorImage[0:height, 0:width]

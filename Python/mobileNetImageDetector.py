@@ -33,7 +33,7 @@ _EXPERIMENTNAME = ''
 #Global Variable
 g_net = None
 verbosity = True
-detectedImages = []
+g_detectedImages = []
 
 # load our serialized _MODEL from disk
 def init(prototxt, model):
@@ -47,7 +47,8 @@ def init(prototxt, model):
 # implementation)
 
 def MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThreshold, imageTag):
-    global detectedImages 
+    global g_detectedImages 
+    g_detectedImages = []
     bRV = False
  
     blob = cv2.dnn.blobFromImage(imageFrame, scaleFactor, (shapeWeight, shapeWeight), [0,0,0], 1, crop=False)
@@ -69,7 +70,7 @@ def MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confT
             idx = int(detections[0, 0, i, 1])
             if (_CLASSES[idx] == imageTag):
                 bRV = True
-                detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence))})
+                g_detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence))})
                 if (verbosity == True):
                     print("")
                     print("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
@@ -102,11 +103,8 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
     '''
     start_time = time.time()
 
-
     outputFolder = os.path.join(outputFolder,experimentName)
     outputFolder = os.path.join(outputFolder,_DESTINATIONFOLDER)
-
-
 
     FILE_LIST = []
     for file in os.listdir(outputFolder):
@@ -144,7 +142,7 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
                         'param - scaleFactor' : scaleFactor , 
                         'param - numberOfIterations' : numberOfIterations,
                         'param - imageTag' : imageTag,
-                        'detectedItems': detectedImages
+                        'detectedItems': g_detectedImages
                     }
         obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
     return TotalBirdsFound                    

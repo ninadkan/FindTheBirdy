@@ -40,17 +40,17 @@
 
             <tr align="center" valign="middle">
                 <td align="right"><label class="col-md-12 control-label">Source Share</label></td>
-                <td align="left" colspan="2"><input id="txtSourceShare" name="txtSourceShare" value="experiment-data" /></td>
+                <td align="left" colspan="2"><input id="txtSourceShare" value="experiment-data" /></td>
             </tr>
 
             <tr align="center" valign="middle">
                 <td align="right"><label class="col-md-12 control-label">Source Directory</label></td>
-                <td align="left" colspan="2"><input class="btn-block" id="txtSourceDirectory" name="txtSourceDirectory" value="object-detection" /></td>
+                <td align="left" colspan="2"><input class="btn-block" id="txtSourceDirectory" value="object-detection" /></td>
             </tr>
 
             <tr align="center" valign="middle">
                 <td align="right"><label class="col-md-12 control-label">Experiment Name</label></td>
-                <td><select name="ExperimentCollection" id="ExperimentCollection" class="form-control col-md-12"></select></td>
+                <td><select id="ExperimentCollection" class="form-control col-md-12"></select></td>
             </tr>
 
             <tr align="center" valign="middle">
@@ -88,7 +88,6 @@
         <tbody>
             <tr valign="middle">
                 <th align="center" width="50%"></th>
-              
                 <th align="center" width="50%"></th>
             </tr>
             <tr valign="middle">
@@ -213,7 +212,7 @@
 
             var updatedTagJson = JSON.stringify(jsonData);
             _btnLoadExperiments.setAttribute("class", "btn btn-default");
-            InvokeWebAPIGeneric('GetAllExperimentsAndFirstFiles', updatedTagJson, handlerGetAllExperiments )
+            InvokeWebAPIGeneric('GetAllExperimentsWithMaskAndImageFile', updatedTagJson, handlerGetAllExperiments )
         }
 
         function InvokeWebAPIGeneric(urlAdd, dataval, handler) {

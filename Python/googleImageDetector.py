@@ -36,7 +36,7 @@ _IMAGE_TAG = "bird"
 verbosity = True
 _LOG_RESULT = True
 _EXPERIMENTNAME = ''
-detectedImages = []
+g_detectedImages = []
 
 
 def init():
@@ -82,7 +82,8 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
     numberOfIterations NO_OF_ITERATIONS = Maximum number of images to be searched. set to <0 for all
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
-    global detectedImages
+    global g_detectedImages
+    g_detectedImages = []
     start_time = time.time() 
     TotalBirdsFound = 0
 
@@ -105,7 +106,7 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
         bBirdFound, description, confidenceScore = DetectBirdInImage(pathToFileInDisk,confThreshold, imageTag )
         if (bBirdFound == True):
             TotalBirdsFound = TotalBirdsFound +1
-            detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidenceScore))})
+            g_detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidenceScore))})
             if (verbosity == True):
                 print("")
                 print("Image name = {0}, imageTag = {1} , Confidence Score = {2:0.4f}, Description = {3}".format(imageName, imageTag, confidenceScore, description))
@@ -124,7 +125,7 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
                         'param - confThreshold' : confThreshold, 
                         'param - numberOfIterations' : numberOfIterations,
                         'param - imageTag' : imageTag,
-                        'detectedItems': detectedImages
+                        'detectedItems': g_detectedImages
                     }
         obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
 

@@ -22,13 +22,14 @@ namespace WebAppObjectDetector.Db
         // for us the collection settings keeps on changing. 
         //private static readonly string CollectionId = ConfigurationManager.AppSettings["collection"];
         
-        private static HttpClient _httpClient; 
+        private static HttpClient _httpClient;
+        private static string _commonURL; 
 
         public static void Initialize()
         {
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
-            
+            _commonURL = "http://localhost:5001/comsosDB/v1.0/"; 
         }
 
 
@@ -37,7 +38,7 @@ namespace WebAppObjectDetector.Db
         {
             List<GenericItems> rv = new List<GenericItems>();
  
-            var url = "http://localhost:5000/comsosDB/v1.0/collections"; 
+            var url = _commonURL+ "collections"; 
             var response = _httpClient.GetStringAsync(new Uri(url)).Result;
             JObject o = JObject.Parse(response);
             // the result is returned in the Json format. but the first item is result. 
@@ -64,7 +65,7 @@ namespace WebAppObjectDetector.Db
             string strUrlEncoded = Uri.EscapeDataString(docId);
 
             // [ay attention, the url does not have ending /
-            var url = "http://localhost:5000/comsosDB/v1.0/document?docId="+strUrlEncoded;
+            var url = _commonURL + "document?docId=" +strUrlEncoded;
             var response = _httpClient.GetStringAsync(new Uri(url)).Result;
             JObject o = JObject.Parse(response);
 

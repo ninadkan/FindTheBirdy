@@ -48,9 +48,9 @@ class clsCosmosWrapper:
 
     def __init__(self, host='', key='', databaseId=''):
 
-        self.LISTCONTAININGTRUEIMAGES = 'ListContainingSomewhatTrueImages'
+        self.LISTCONTAININGTRUEIMAGES = 'userDetection'
         self.LABELLEDIMAGES = 'LabelledImages'
-        self.DETECTEDIMAGES = 'detectedImages'
+        
         self.host = ifNullReadAndAssignFromEnviron(host, 'COSMOSDB_HOST')
         assert(self.host is not None), "cosmosDB host not specified"
         self.key =  ifNullReadAndAssignFromEnviron(key, 'COSMOSDB_KEY')
@@ -80,8 +80,7 @@ class clsCosmosWrapper:
         
         assert (self.dbSelfLink is not None)
         return
-                
-
+               
     def getClient(self):
         return self.client
     def getHost(self):
@@ -150,6 +149,9 @@ class clsCosmosWrapper:
         return documentlist
 
     def returnDocument(self, documentId):
+        '''
+        documentID contains the completeId
+        '''
         self.preCheck()
         dObj = self.client.ReadItem(documentId)
         return dObj
@@ -157,11 +159,16 @@ class clsCosmosWrapper:
     def preCheck(self):
         assert(self.client is not None), "client set to Null!!!"
         assert(self.dbSelfLink is not None), "Database self link is set to Null!!!"
-        print()
         return
-        
-
+ 
+    ###########################################################################
     def insert_document_in_collection(self, collectionId, id, detectedItems):
+        '''
+        checks for existence of a document, If it exists, deletes it and inserts
+        a new record. 
+        collectionId : CosmosDB compatible CollectionID
+        id : Application compatible document Id
+        '''
         self.preCheck()
         docs = self.queryDocsForExistence(collectionId, id)
         # remove all the existing document first
@@ -169,120 +176,101 @@ class clsCosmosWrapper:
             self.client.DeleteItem(doc['_self'])
             
         # Not sure if we need to have a breather here first. 
-        dictObject = {'id': id,
-                       self.DETECTEDIMAGES : detectedItems}
+        dictObject = { 'id': id,
+                       self.LABELLEDIMAGES : detectedItems}
         doc_id = self.client.CreateItem(collectionId, dictObject)
         return doc_id
 
+    # https://github.com/Azure/azure-cosmos-python/blob/master/samples/IndexManagement/Program.py#L152-L169
+    def queryDocumentsForTrueImages(self, collection_link):
+        '''
+        Returns all the documents where the id = LISTCONTAININGTRUEIMAGES and 
+        collection_link is what's passed
+        '''        
+        return self.queryDocsForExistence(collection_link,self.LISTCONTAININGTRUEIMAGES )
+
+    def saveLabelledImageListImpl(self, labelledImages, experimentName ):
+        collection = self.queryCollectionsWithExperimentName(experimentName)
+        if collection is not None:
+            for coll in collection: # there should be only one
+                self.insert_document_in_collection(coll['_self'], 
+                    self.LISTCONTAININGTRUEIMAGES, 
+                    labelledImages )
+            # dictObject = {'id': self.LISTCONTAININGTRUEIMAGES,
+            #               self.LABELLEDIMAGES : LabelledImagesPassed}
+            # doc_id = self.client.CreateItem(coll['_self'], dictObject)
+            # coll = None
+            return
+        return 
+
+    def returnLabelledImageListImpl(self, experimentName):
+        print('returnLabelledImageListImpl')
+        collection = self.queryCollectionsWithExperimentName(experimentName)
+
+        if collection is not None:
+            print('collection')
+            for coll in collection: # there should be only one
+                print('coll')
+                docs = self.queryDocumentsForTrueImages(coll['_self'])
+                if docs is not None:
+                    for document in docs : # there should be only one
+                        return document[self.LABELLEDIMAGES]
+        l=[]
+        return l
+
+    def queryCollectionsWithExperimentName(self, experimentName):
+        collectionquery = {
+                "query": "SELECT * FROM r WHERE r.id=@id",
+                "parameters": [ { "name":"@id", "value": experimentName } ]
+                }
+        results = None
+        try:
+            
+            results = list(self.client.QueryContainers(self.dbSelfLink, collectionquery))
+            return results
+        except errors.HTTPFailure as e:
+            if e.status_code == 404:
+                print("Collection doesn't exist")
+                pass
+            elif e.status_code == 400:
+                # Can occur when we are trying to query on excluded paths
+                print("Bad Request exception occured: ", e)
+                pass
+            else:
+                print("Bad Request!")
+                raise
+        finally:
+            print()
+        return results
+
     def queryDocsForExistence(self, collection_link, docid):
+        '''
+        collectionId : CosmosDB compatible CollectionID
+        id : Application compatible document Id
+        '''
         self.preCheck()
         documentquery = {
                 "query": "SELECT * FROM r WHERE r.id=@id",
                 "parameters": [ { "name":"@id", "value": docid } ]
                 }
+        results = None
         try:
             results = list(self.client.QueryItems(collection_link, documentquery))
             return results
         except errors.HTTPFailure as e:
             if e.status_code == 404:
                 print("Document doesn't exist")
+                pass
             elif e.status_code == 400:
                 # Can occur when we are trying to query on excluded paths
                 print("Bad Request exception occured: ", e)
                 pass
             else:
+                print("Bad Request!")
                 raise
         finally:
             print()
-   
-
-
-    def saveGoodPhotoListToCosmosDB(self, LabelledImagesPassed):
-        assert(self.client is not None), "client set to Null!!!"
-        assert(self.dbSelfLink is not None), "Database self link is set to Null!!!"
-        
-        #print("\n5. List all Collection in a Database")
-        #print('Collections:')
-        collections = list(self.client.ReadContainers(self.dbSelfLink))
-        if not collections:
-            return
-        for collection in collections:
-            #print(collection['id']) 
-            dictObject = {'id': self.LISTCONTAININGTRUEIMAGES,
-                          self.LABELLEDIMAGES : LabelledImagesPassed}
-            doc_id = self.client.CreateItem(collection['_self'], dictObject)
-            
-            collection = None
-        return
-
-
-    # https://github.com/Azure/azure-cosmos-python/blob/master/samples/IndexManagement/Program.py#L152-L169
-    def QueryDocumentsForTrueImages(self, collection_link):
-        documentquery = {
-                "query": "SELECT * FROM r WHERE r.id=@id",
-                "parameters": [ { "name":"@id", "value": self.LISTCONTAININGTRUEIMAGES } ]
-                }
-        try:
-            results = list(self.client.QueryItems(collection_link, documentquery))
-            #print("Document(s) found by query: ")
-            #for doc in results:
-                #print(doc)
-            return results
-        except errors.HTTPFailure as e:
-            if e.status_code == 404:
-                print("Document doesn't exist")
-            elif e.status_code == 400:
-                # Can occur when we are trying to query on excluded paths
-                print("Bad Request exception occured: ", e)
-                pass
-            else:
-                raise
-        finally:
-            print()
-
-    def QueryCollectionsWithQuery(self, experimentName):
-        collectionquery = {
-                "query": "SELECT * FROM r WHERE r.id=@id",
-                "parameters": [ { "name":"@id", "value": experimentName } ]
-                }
-        try:
-            results = list(self.client.QueryContainers(self.dbSelfLink, collectionquery))
-            #print("Collection Found")
-            #for collection in results:
-                #print(collection)
-            return results
-        except errors.HTTPFailure as e:
-            if e.status_code == 404:
-                print("Collection doesn't exist")
-            elif e.status_code == 400:
-                # Can occur when we are trying to query on excluded paths
-                print("Bad Request exception occured: ", e)
-                pass
-            else:
-                raise
-        finally:
-            print()
-        return 
-
-    def savePhotoListToACollection(self, LabelledImagesPassed, experimentName ):
-        collection = self.QueryCollectionsWithQuery(experimentName)
-        for coll in collection: # there should be only one
-            dictObject = {'id': self.LISTCONTAININGTRUEIMAGES,
-                          self.LABELLEDIMAGES : LabelledImagesPassed}
-            doc_id = self.client.CreateItem(coll['_self'], dictObject)
-            coll = None
-            return
-        return 
-
-
-    def returnGoodPhotoList(self, experimentName):
-        collection = self.QueryCollectionsWithQuery(experimentName)
-        for coll in collection: # there should be only one
-            docs = self.QueryDocumentsForTrueImages(coll['_self'])
-            for document in docs : # there should be only one
-                return document[self.LABELLEDIMAGES]
-
-        return
+        return results
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

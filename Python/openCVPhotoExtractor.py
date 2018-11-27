@@ -23,10 +23,6 @@ g_destinationFolder = None
 g_verbosity = False
 #defaults - applicable for Windows version only. override these with Linux versions
 
-g_srcImageFolder = _SRCIMAGEFOLDER 
-g_destinationFolder = _DESTINATIONFOLDER
-
-g_filenameExtension = _FILENAMEEXTENSION = '.jpg'
 _HISTORYIMAGE = 10
 _VARTHRESHOLD = 25
 _NUMBEROFITERATIONS = -1
@@ -176,17 +172,26 @@ def processImages(  historyImage = _HISTORYIMAGE,
 
     # update the location where our image can be found
     global g_srcImageFolder
+    global g_destinationFolder
+    global g_filenameExtension
+
+
+    g_srcImageFolder = _SRCIMAGEFOLDER 
+    g_destinationFolder = _DESTINATIONFOLDER
+    g_filenameExtension = _FILENAMEEXTENSION = '.jpg'
+
+
+
+
     g_srcImageFolder = os.path.join(g_srcImageFolder,experimentName)
 
     # update the location where our output is to be written back
-    global g_destinationFolder
+    
     g_destinationFolder = os.path.join(g_srcImageFolder,g_destinationFolder)
 
     if not os.path.exists(g_destinationFolder):
         print("creating folder {0}".format(g_destinationFolder))
         os.makedirs(g_destinationFolder)
-
-
 
 
     # Our background subtractor

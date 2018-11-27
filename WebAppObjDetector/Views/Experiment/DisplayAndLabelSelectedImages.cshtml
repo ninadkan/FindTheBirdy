@@ -19,6 +19,8 @@
                 <th align="center" width="15%">Operations / Input</th>
                 <th align="center" width="70%">Media / Image</th>
             </tr>
+
+
             <tr valign="middle">
                 <td align="right"><label class="col-md-12 control-label">Refresh Load</label></td>
                 <td align="left"><button id="btnRefreshLoad" class="btn btn-info btn-block" onclick="btnRefreshLoadHandler()">Refresh Load</button></td>
@@ -315,7 +317,7 @@
             var body = dataVal;
             var collectionId = $('#selectedCollectionId').val();
             var urlEncodeCollectionId = encodeURIComponent(collectionId);
-            var url = 'http://localhost:5000/comsosDB/v1.0/insert_doc_collection?collId=' + urlEncodeCollectionId;
+            var url = 'http://localhost:5001/comsosDB/v1.0/insert_doc_collection?collId=' + urlEncodeCollectionId;
 
             if (invocation) {
                 invocation.open('POST', url, true);
@@ -353,7 +355,7 @@
             // in the end ensure that the data is copied to the updatedPresenceTag
             var collectionId = $('#selectedCollectionId').val();
             var urlEncodeCollectionId = encodeURIComponent(collectionId);
-            var url = 'http://localhost:5000/comsosDB/v1.0/get_doc_collection?collId=' + urlEncodeCollectionId + '&docId=' + _idUserDetector;
+            var url = 'http://localhost:5001/comsosDB/v1.0/get_doc_collection?collId=' + urlEncodeCollectionId + '&docId=' + _idUserDetector;
 
 
             if (invocation) {

@@ -5,13 +5,11 @@ from flask import make_response
 from flask import request
 from flask_cors import CORS
 from  cosmosDBWrapper import clsCosmosWrapper
+import json
 clsObj = None
 
 app = Flask(__name__)
 CORS(app)
-
-
-
 
 
 # tasks = [
@@ -155,14 +153,35 @@ def get_document_in_collection():
         abort(400)  
 
     global clsObj
-  
     result = clsObj.queryDocsForExistence(collectionId, docId)
     return jsonify(result)
-    
+
+@app.route('/comsosDB/v1.0/saveLabelledImageList', methods=['POST'])
+def saveLabelledImageList():
+    if not request.json or not 'labelledImages' in request.json \
+        or not 'experimentName' in request.json:
+        abort(400)
+
+    global clsObj
+    clsObj.saveLabelledImageListImpl(request.json['labelledImages'], request.json['experimentName'])
+    return make_response(jsonify({'OK': 'OK'}), 200)
+
+@app.route('/comsosDB/v1.0/returnLabelledImageList', methods=['POST'])
+def returnLabelledImageList():
+    if not request.json or not 'experimentName' in request.json:
+        abort(400)
+
+    global clsObj
+    rv = clsObj.returnLabelledImageListImpl(request.json['experimentName'])
 
 
+    print(rv)
+    if (rv == None):
+        return make_response(jsonify({'error': 'OK'}), 500)
+    else:
+        return make_response(json.dumps({'result': rv}), 200)
 
 
 if __name__ == '__main__':
     clsObj = clsCosmosWrapper()
-    app.run(debug=True)
+    app.run(debug=True, host='127.0.0.1', port=5001)

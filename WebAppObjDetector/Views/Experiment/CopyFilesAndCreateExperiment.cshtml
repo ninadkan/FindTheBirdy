@@ -205,7 +205,7 @@
             var updatedJson = JSON.stringify(jsonData);
             _btnGetNonProcessedExperiments.setAttribute("class", "btn btn-default");
             _btnGetUniqueExperimentNames.setAttribute("class", "btn btn-default");
-            InvokeWebAPIGeneric('GetAllUniqueExperimentNames', updatedJson, handlerGetUniqueExperimentNames);
+            InvokeWebAPIGeneric('GetAllSourceUniqueExperimentNames', updatedJson, handlerGetUniqueExperimentNames);
         }
 
         function handlerGetUniqueExperimentNames(evtXHR) {
