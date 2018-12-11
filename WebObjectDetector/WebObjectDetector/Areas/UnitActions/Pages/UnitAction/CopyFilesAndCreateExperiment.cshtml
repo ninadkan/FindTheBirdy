@@ -1,0 +1,424 @@
+﻿@{
+    ViewData["Title"] = "Copy Files and Create Experiments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Copy Files and Create Experiments</h2>
+<hr />
+
+@*https://getbootstrap.com/docs/3.3/css/*@
+
+
+<div class="form-horizontal">
+    <div class="form-group">
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="control-label">Source Share :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtSourceShare" value="linuxraspshare" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Source Directory :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtSourceDirectory" value="Share" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Destination Share :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtDestinationShare" value="experiment-data" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Destination Dir :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtDestinationDirectory" value="object-detection" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">File Filter :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtFileFilter" value=".jpg" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Experiment Name :</label>
+            </div>
+            <div class="col-md-2">
+                <select id="ExperimentCollection" class="form-control"></select>
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+            </div>
+            <div class="col-md-2">
+                <button id="btnGetUniqueExperimentNames" class="btn btn-primary btn-block" onclick="btnGetUniqueExperimentNamesHandler()">Get Unique Exp</button>
+            </div>
+            <div class="col-md-1">
+            </div>
+            <div class="col-md-2">
+                <button id="btnGetNonProcessedExperiments" class="btn btn-primary btn-block" onclick="btnGetNonProcessedExperimentsHandler()">Non Processed Exp</button>
+            </div>
+            <div class="col-md-1">
+            </div>
+            <div class="col-md-2">
+                <button id="btnCopyFiles" class="btn btn-primary btn-block" onclick="btnCopyFileHandler()">Copy Files</button>
+            </div>
+            <div class="col-md-2">
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6" align="right">
+                <label class="col-form-label">Result :</label>
+            </div>
+            <div class="col-md-6">
+                <label class="col-form-label" id="lblResult"></label>
+            </div>
+        </div>
+        <div>
+            <p></p>
+        </div>
+    </div>
+</div>
+
+
+
+
+@*<div id="devOperations">
+        <table class="table table-condensed" align="center">
+            <tbody>
+                <tr valign="middle">
+                    <th align="center" width="30%"></th>
+                    <th align="center" width="40%"></th>
+                    <th align="center" width="30%"></th>
+                </tr>
+
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Source Share</label></td>
+                    <td align="left" colspan="2"><input id="txtSourceShare" name="txtSourceShare" value="linuxraspshare" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Destination Share</label></td>
+                    <td align="left" colspan="2"><input class="btn-block" id="txtDestinationShare" name="txtDestinationShare" value="experiment-data" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Source Directory</label></td>
+                    <td align="left" colspan="2"><input class="btn-block" id="txtSourceDirectory" name="txtSourceDirectory" value="txtSourceDirectory" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Destination Directory</label></td>
+                    <td align="left" colspan="2"><input class="btn-block" id="txtDestinationDirectory" name="txtDestinationDirectory" value="object-detection" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">File Filter</label></td>
+                    <td align="left" colspan="2"><input id="txtFileFilter" name="txtFileFilter" value=".jpg" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Experiment Name</label></td>
+                    <td><select name="ExperimentCollection" id="ExperimentCollection" class="form-control col-md-12"></select></td>
+                </tr>
+
+                <tr>
+                    <td align="center"><button id="btnGetUniqueExperimentNames" class="btn btn-primary" onclick="btnGetUniqueExperimentNamesHandler()">Get Unique Experiment Names</button></td>
+                    <td align="center"><button id="btnGetNonProcessedExperiments" class="btn btn-primary" onclick="btnGetNonProcessedExperimentsHandler()">Get Non Processed Experiments</button></td>
+                    <td align="center"><button id="btnCopyFiles" class="btn btn-primary" onclick="btnCopyFileHandler()">Copy Files</button></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Result : </label></td>
+                    <td align="left" colspan="2" rowspan="2"><label id="lblResult" class="col-md-12 control-label"></label><p> </p><p> </p></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>*@
+
+
+
+
+@section Scripts {
+
+    <script>
+
+        var sourceShare = '';
+        var destinationShare = '';
+        var sourceDirectory = '';
+        var destinationDirectory = '';
+        var fileFilter = '';
+        var _experimentName = '';
+
+        var _btnGetUniqueExperimentNames;
+        var _btnGetNonProcessedExperiments;
+        var _btnCopyFiles;
+
+        $(function () // called when the body is ready
+        {
+            console.log("Home Run");
+            getAllValues();
+        });
+
+        function getAllValues() {
+            sourceShare = $('#txtSourceShare').val();
+            destinationShare = document.getElementById('txtDestinationShare').value;
+            sourceDirectory = document.getElementById('txtSourceDirectory').value;
+            destinationDirectory = document.getElementById('txtDestinationDirectory').value;
+            fileFilter = document.getElementById('txtFileFilter').value;
+
+            _btnGetUniqueExperimentNames = document.getElementById('btnGetUniqueExperimentNames');
+            _btnGetNonProcessedExperiments = document.getElementById('btnGetNonProcessedExperiments');
+            _btnCopyFiles = document.getElementById('btnCopyFiles');
+        }
+
+        function checkParameters() {
+            getAllValues();
+
+            if (sourceShare == null || sourceShare.length < 1) {
+                alert('Please enter a valid storage sourceShare name!');
+                return false;
+            }
+            if (destinationShare == null || destinationShare.length < 1) {
+                alert('Please enter a valid destinationShare Token!');
+                return false;
+            }
+
+            // check additional parameters
+            if (sourceDirectory == null || sourceDirectory.length < 1) {
+                alert('Please enter a valid Source Directory name!');
+                return false;
+            }
+
+            if (destinationDirectory == null || destinationDirectory.length < 1) {
+                alert('Please enter a valid Destination Directory name!');
+                return false;
+            }
+
+            if (fileFilter == null || fileFilter.length < 1) {
+                alert('Please enter a valid File Filter name!');
+                return false;
+            }
+            return true;
+        }
+
+        var invocation = new XMLHttpRequest();
+        var invocationHistoryText;
+
+        function InvokeWebAPIGeneric(urlAdd, dataval, handler) {
+            $("body").css("cursor", "progress");
+
+            var body = dataval;
+
+            var url = 'http://localhost:5000/azureStorage/v1.0/' + urlAdd;
+
+            if (invocation) {
+                invocation.open('POST', url, true);
+                invocation.setRequestHeader('Content-Type', 'application/json');
+                invocation.onreadystatechange = handler;
+                invocation.send(body);
+            }
+            else {
+                UpdateTextDivObject("No Invocation TookPlace At All");
+            }
+        }
+
+        /* ============================================================ */
+
+        function btnCopyFileHandler() {
+
+            console.log("btnCopyFileHandler");
+
+            var checkOK = checkParameters();
+            if (!checkOK)
+                return;
+
+            _experimentName = $('#ExperimentCollection option:selected').val();
+            if (_experimentName == null || _experimentName.length < 1) {
+                alert('Please enter a valid Experiment name!');
+                return false;
+            }
+
+            var jsonData = {
+                _sourceFileShareFolderName: sourceShare, _sourceDirectoryName: sourceDirectory,
+                _destinationFileShareFolderName: destinationShare, _destinationDirectoryName: destinationDirectory,
+                _ExperimentName: _experimentName, _fileExtensionFilter: fileFilter
+            };
+            var updatedJson = JSON.stringify(jsonData);
+            _btnCopyFiles.setAttribute("class", "btn btn-default");
+            InvokeWebAPIGeneric('CopySourceDestination', updatedJson, handlerCopySourceDestination);
+
+        }
+
+        function handlerCopySourceDestination(evtXHR) {
+            if (invocation.readyState == 4) {
+                if (invocation.status == 200) {
+                    var response = invocation.responseText;
+                    UpdateTextDivObject(response);
+                }
+                else {
+                    var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
+                    UpdateTextDivObject(AppendedText);
+                }
+                _btnCopyFiles.setAttribute("class", "btn btn-primary");
+                $("body").css("cursor", "default");
+            }
+        }
+
+        /* ============================================================ */
+        function btnGetUniqueExperimentNamesHandler() {
+            console.log("btnGetUniqueExperimentNamesHandler");
+            var checkOK = checkParameters();
+            if (!checkOK)
+                return;
+
+            var jsonData = {
+                _sourceFileShareFolderName: sourceShare,
+                _sourceDirectoryName: sourceDirectory,
+                _fileExtensionFilter: fileFilter
+            };
+            var updatedJson = JSON.stringify(jsonData);
+            _btnGetNonProcessedExperiments.setAttribute("class", "btn btn-default");
+            _btnGetUniqueExperimentNames.setAttribute("class", "btn btn-default");
+            InvokeWebAPIGeneric('GetAllSourceUniqueExperimentNames', updatedJson, handlerGetUniqueExperimentNames);
+        }
+
+        function handlerGetUniqueExperimentNames(evtXHR) {
+            if (invocation.readyState == 4) {
+                if (invocation.status == 200) {
+                    var response = invocation.responseText;
+                    UpdateTextDivObject(response)
+                    populateComboBox(response)
+                }
+                else {
+                    var AppendedText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
+                    UpdateTextDivObject(AppendedText);
+                }
+                _btnGetNonProcessedExperiments.setAttribute("class", "btn btn-primary");
+                _btnGetUniqueExperimentNames.setAttribute("class", "btn btn-primary");
+                $("body").css("cursor", "default");
+            }
+        }
+
+        function populateComboBox(response) {
+            $('#ExperimentCollection').empty();
+            var rv = $.parseJSON(response);
+            if (rv) {
+                var elapsedTime = rv["elapsedTime"];
+                $('#lblResult').text(elapsedTime);
+                var outerElements = rv["result"];
+                for (var i = 0, j = outerElements.length; i < j; i++) {
+                    var obj = outerElements[i];
+                    var option = '';
+                    option += '<option value="' + obj + '">' + obj + '</option>';
+                    $('#ExperimentCollection').append(option);
+                }
+            }
+        }
+        /* ============================================================ */
+        function btnGetNonProcessedExperimentsHandler() {
+            console.log("btnGetUniqueExperimentNamesHandler");
+            var checkOK = checkParameters();
+            if (!checkOK)
+                return;
+
+            experimentNames = []
+
+            var options = document.getElementById('ExperimentCollection').options;
+            for (var i = 0, j = options.length; i < j; i++) {
+                experimentNames.push(options[i].value);
+            }
+
+            var jsonData = {
+                _destinationFileShareFolderName: destinationShare,
+                _destinationDirectoryName: destinationDirectory,
+                _experimentNames: experimentNames
+            };
+            var updatedJson = JSON.stringify(jsonData);
+            // Not the best option....
+            //TODO:: improve how to pass parameter to handlers.
+            _btnGetNonProcessedExperiments.setAttribute("class", "btn btn-default");
+            _btnGetUniqueExperimentNames.setAttribute("class", "btn btn-default");
+            InvokeWebAPIGeneric('GetAllExperimentsFilesNotCopied', updatedJson, handlerGetUniqueExperimentNames);
+        }
+
+
+
+        /* ============================================================ */
+        function UpdateTextDivObject(displayString) {
+            //console.log(displayString);
+            //var temp = document.createTextNode(displayString);
+            //var textDiv = document.getElementById("lblResult");
+            //textDiv.appendChild(temp);
+
+            $('#lblResult').text(displayString);
+        }
+
+    </script>
+}

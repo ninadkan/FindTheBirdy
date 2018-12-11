@@ -6,63 +6,206 @@
 }
 
 <h2>Copy Files and Create Experiments</h2>
+<hr />
+
+@*https://getbootstrap.com/docs/3.3/css/*@
 
 
+<div class="form-horizontal">
+    <div class="form-group">
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="control-label">Source Share :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtSourceShare" value="linuxraspshare" />
+            </div>
+        </div>
 
-<div id="devOperations">
-    <table class="table table-condensed" align="center">
-        <tbody>
-            <tr valign="middle">
-                <th align="center" width="30%"></th>
-                <th align="center" width="40%"></th>
-                <th align="center" width="30%"></th>
-            </tr>
+        <div>
+            <p></p>
+        </div>
 
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Source Directory :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtSourceDirectory" value="Share" />
+            </div>
+        </div>
 
-            <tr align="center" valign="middle">
-                <td align="right"><label class="col-md-12 control-label">Source Share</label></td>
-                <td align="left" colspan="2"><input id="txtSourceShare" name="txtSourceShare" value="linuxraspshare" /></td>
+        <div>
+            <p></p>
+        </div>
 
-            </tr>
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Destination Share :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtDestinationShare" value="experiment-data" />
+            </div>
+        </div>
 
-            <tr align="center" valign="middle">
-                <td align="right"><label class="col-md-12 control-label">Destination Share</label></td>
-                <td align="left" colspan="2"><input class="btn-block" id="txtDestinationShare" name="txtDestinationShare" value="experiment-data" /></td>
-            </tr>
+        <div>
+            <p></p>
+        </div>
 
-            <tr align="center" valign="middle">
-                <td align="right"><label class="col-md-12 control-label">Source Directory</label></td>
-                <td align="left" colspan="2"><input class="btn-block" id="txtSourceDirectory" name="txtSourceDirectory" value="Share" /></td>
-            </tr>
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Destination Dir :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtDestinationDirectory" value="object-detection" />
+            </div>
+        </div>
 
-            <tr align="center" valign="middle">
-                <td align="right"><label class="col-md-12 control-label">Destination Directory</label></td>
-                <td align="left" colspan="2"><input class="btn-block" id="txtDestinationDirectory" name="txtDestinationDirectory" value="object-detection" /></td>
-            </tr>
+        <div>
+            <p></p>
+        </div>
 
-            <tr align="center" valign="middle">
-                <td align="right"><label class="col-md-12 control-label">File Filter</label></td>
-                <td align="left" colspan="2"><input id="txtFileFilter" name="txtFileFilter" value=".jpg" /></td>
-            </tr>
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">File Filter :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtFileFilter" value=".jpg" />
+            </div>
+        </div>
 
-            <tr align="center" valign="middle">
-                <td align="right"><label class="col-md-12 control-label">Experiment Name</label></td>
-                <td><select name="ExperimentCollection" id="ExperimentCollection" class="form-control col-md-12"></select></td>
-            </tr>
+        <div>
+            <p></p>
+        </div>
 
-            <tr>
-                <td align="center"><button id="btnGetUniqueExperimentNames" class="btn btn-primary" onclick="btnGetUniqueExperimentNamesHandler()">Get Unique Experiment Names</button></td>
-                <td align="center"><button id="btnGetNonProcessedExperiments" class="btn btn-primary" onclick="btnGetNonProcessedExperimentsHandler()">Get Non Processed Experiments</button></td>
-                <td align="center"><button id="btnCopyFiles" class="btn btn-primary" onclick="btnCopyFileHandler()">Copy Files</button></td>
-            </tr>
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Experiment Name :</label>
+            </div>
+            <div class="col-md-2">
+                <select id="ExperimentCollection" class="form-control"></select>
+            </div>
+        </div>
 
-            <tr align="center" valign="middle">
-                <td align="right"><label class="col-md-12 control-label">Result : </label></td>
-                <td align="left" colspan="2" rowspan="2"><label id="lblResult" class="col-md-12 control-label"></label><p> </p><p> </p></td>
-            </tr>
-        </tbody>
-    </table>
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+            </div>
+            <div class="col-md-2">
+                <button id="btnGetUniqueExperimentNames" class="btn btn-primary btn-block" onclick="btnGetUniqueExperimentNamesHandler()">Get Unique Exp</button>
+            </div>
+            <div class="col-md-1">
+            </div>
+            <div class="col-md-2">
+                <button id="btnGetNonProcessedExperiments" class="btn btn-primary btn-block" onclick="btnGetNonProcessedExperimentsHandler()">Non Processed Exp</button>
+            </div>
+            <div class="col-md-1">
+            </div>
+            <div class="col-md-2">
+                <button id="btnCopyFiles" class="btn btn-primary btn-block" onclick="btnCopyFileHandler()">Copy Files</button>
+            </div>
+            <div class="col-md-2">
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6" align="right">
+                <label class="col-form-label">Result :</label>
+            </div>
+            <div class="col-md-6">
+                <label class="col-form-label" id="lblResult"></label>
+            </div>
+        </div>
+        <div>
+            <p></p>
+        </div>
+    </div>
 </div>
+
+
+
+
+@*<div id="devOperations">
+        <table class="table table-condensed" align="center">
+            <tbody>
+                <tr valign="middle">
+                    <th align="center" width="30%"></th>
+                    <th align="center" width="40%"></th>
+                    <th align="center" width="30%"></th>
+                </tr>
+
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Source Share</label></td>
+                    <td align="left" colspan="2"><input id="txtSourceShare" name="txtSourceShare" value="linuxraspshare" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Destination Share</label></td>
+                    <td align="left" colspan="2"><input class="btn-block" id="txtDestinationShare" name="txtDestinationShare" value="experiment-data" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Source Directory</label></td>
+                    <td align="left" colspan="2"><input class="btn-block" id="txtSourceDirectory" name="txtSourceDirectory" value="txtSourceDirectory" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Destination Directory</label></td>
+                    <td align="left" colspan="2"><input class="btn-block" id="txtDestinationDirectory" name="txtDestinationDirectory" value="object-detection" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">File Filter</label></td>
+                    <td align="left" colspan="2"><input id="txtFileFilter" name="txtFileFilter" value=".jpg" /></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Experiment Name</label></td>
+                    <td><select name="ExperimentCollection" id="ExperimentCollection" class="form-control col-md-12"></select></td>
+                </tr>
+
+                <tr>
+                    <td align="center"><button id="btnGetUniqueExperimentNames" class="btn btn-primary" onclick="btnGetUniqueExperimentNamesHandler()">Get Unique Experiment Names</button></td>
+                    <td align="center"><button id="btnGetNonProcessedExperiments" class="btn btn-primary" onclick="btnGetNonProcessedExperimentsHandler()">Get Non Processed Experiments</button></td>
+                    <td align="center"><button id="btnCopyFiles" class="btn btn-primary" onclick="btnCopyFileHandler()">Copy Files</button></td>
+                </tr>
+
+                <tr align="center" valign="middle">
+                    <td align="right"><label class="col-md-12 control-label">Result : </label></td>
+                    <td align="left" colspan="2" rowspan="2"><label id="lblResult" class="col-md-12 control-label"></label><p> </p><p> </p></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>*@
+
+
+
 
 @section Scripts {
 
@@ -76,8 +219,8 @@
         var _experimentName = '';
 
         var _btnGetUniqueExperimentNames;
-        var _btnGetNonProcessedExperiments; 
-        var _btnCopyFiles; 
+        var _btnGetNonProcessedExperiments;
+        var _btnCopyFiles;
 
         $(function () // called when the body is ready
         {
@@ -240,7 +383,7 @@
                 }
             }
         }
-         /* ============================================================ */
+        /* ============================================================ */
         function btnGetNonProcessedExperimentsHandler() {
             console.log("btnGetUniqueExperimentNamesHandler");
             var checkOK = checkParameters();
@@ -253,15 +396,15 @@
             for (var i = 0, j = options.length; i < j; i++) {
                 experimentNames.push(options[i].value);
             }
- 
+
             var jsonData = {
                 _destinationFileShareFolderName: destinationShare,
                 _destinationDirectoryName: destinationDirectory,
                 _experimentNames: experimentNames
             };
             var updatedJson = JSON.stringify(jsonData);
-            // Not the best option.... 
-            //TODO:: improve how to pass parameter to handlers. 
+            // Not the best option....
+            //TODO:: improve how to pass parameter to handlers.
             _btnGetNonProcessedExperiments.setAttribute("class", "btn btn-default");
             _btnGetUniqueExperimentNames.setAttribute("class", "btn btn-default");
             InvokeWebAPIGeneric('GetAllExperimentsFilesNotCopied', updatedJson, handlerGetUniqueExperimentNames);
@@ -280,4 +423,4 @@
         }
 
     </script>
-    }
+}

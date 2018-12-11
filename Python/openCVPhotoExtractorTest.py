@@ -17,17 +17,17 @@ for keysToBeFound in ExportKeys:
         print("{0} Key not specified. Exiting".format(keysToBeFound))
         sys.exit(0)
 
-ExperimentNames = ['2018-11-14',
-                   '2018-11-15',
-                   '2018-11-16',
-                   '2018-11-17',
-                   '2018-11-18',
-                   '2018-11-19',
-                   '2018-11-20',
-                   '2018-11-21',
-                   '2018-11-22',
-                   '2018-11-23',
-                   '2018-11-24']   
+ExperimentNames = [
+#'2018-04-15', '2018-04-16', '2018-04-18', '2018-04-21', '2018-04-22', 
+#'2018-04-27', # ERROR - NO MASK FILE
+'2018-11-09',
+# '2018-11-10', '2018-11-11', '2018-11-12', '2018-11-13', '2018-11-14', 
+# '2018-11-15', '2018-11-16', 
+'2018-11-17', '2018-11-18', '2018-11-19', 
+'2018-11-20', '2018-11-21', '2018-11-22', '2018-11-23', '2018-11-24', 
+'2018-11-25', '2018-11-26', '2018-11-27', '2018-11-28', '2018-11-29',
+'2018-11-30']
+
 
 for ExperimentName  in ExperimentNames:
     #ExperimentName = os.environ.get('EXPERIMENT_NAME')
@@ -67,14 +67,14 @@ for ExperimentName  in ExperimentNames:
     import datetime
 
 
-    # for item in BoundingRectList:
-    #         delete_existing_files()
-    #         # premature end of JPEG was detected with 2018-04-22_0247. Remove that image 
-    #         l, tt,  t = processImages(boundingRectAreaThreshold = item, logResult=True, experimentName=ExperimentName)
-    #         print ("")
-    #         print("Bounding Rectangle value = {0}".format(item))                
-    #         print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))
-    #         #print ("True detection = {0:0.2f}, false +ve = {1:0.2f} , false negative = {2:0.2f}".format(tt, fp, fn))
+    for item in BoundingRectList:
+            delete_existing_files()
+            # premature end of JPEG was detected with 2018-04-22_0247. Remove that image 
+            l, tt,  t = processImages(boundingRectAreaThreshold = item,  logResult=True, experimentName=ExperimentName)
+            print ("")
+            print("Bounding Rectangle value = {0}".format(item))                
+            print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))
+            #print ("True detection = {0:0.2f}, false +ve = {1:0.2f} , false negative = {2:0.2f}".format(tt, fp, fn))
 
     from yoloBirdImageDetector import processImages as yoloTest, verbosity as yoloVerbosity
     Detector = "Yolo Detector"

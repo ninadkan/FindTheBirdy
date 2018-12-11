@@ -29,7 +29,10 @@ namespace WebAppObjectDetector.Db
         {
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
-            _commonURL = "http://localhost:5001/comsosDB/v1.0/"; 
+            _commonURL = "http://localhost:5001/comsosDB/v1.0/";
+
+
+            string stringGetAllOpenCVCount = "SELECT count(d.openCVDetectedImageName) as OpenCVImages FROM c JOIN d IN c.detectedItems WHERE c.id = 'openCVPhotoExtractor'";
         }
 
 

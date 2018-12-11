@@ -269,6 +269,198 @@ def deleteAllFiles(_sourceFileShareFolderName, _sourceDirectoryName, _fileExtens
                     copy = file_service.delete_file(_sourceFileShareFolderName, _sourceDirectoryName, imageFileName.name)
     return True, "OK"
 
+def DashBoardGetAllFilesInfoImpl(   _sourceFileShareFolderName, 
+                                    _sourceDirectoryNameList,
+                                    _destinationFileShareFolderName, 
+                                    _destinationDirectoryName,
+                                    _outputFolderName = 'output', 
+                                    _fileExtensionFilter='.jpg'):
+    '''
+    Mother of all functions and scans through each and every file and returns lots of information. Could take up-to 10 minutes to run
+    ''' 
+    start_time = datetime.datetime.now()  
+    print('phase1')
+    result, description, returnSourceDict = DashBoardGetAllSourceFilesInfoImpl(_sourceFileShareFolderName, _sourceDirectoryNameList, _fileExtensionFilter) 
+    if (result == True):
+        print('phase2')
+        result, description, returnDestinationDict = DashBoardGetAllDestinationFilesInfoImpl(
+                                                    _destinationFileShareFolderName, 
+                                                    _destinationDirectoryName,
+                                                    _outputFolderName ,
+                                                    _fileExtensionFilter,
+                                                    _returnDict = returnSourceDict)
+        if (result == True):
+            print('phase3')
+            # combine the two dictionaries
+            combinedDict = dict()
+            for key in returnSourceDict:    # assumed to contain superset of keys
+                if key not in combinedDict: 
+                    combinedDict[key] = [0,0,False, 0, 0, False, 0, 0]
+                combinedDict[key][0] = returnSourceDict[key][0]
+                combinedDict[key][1] = returnSourceDict[key][1]
+
+                if key in returnDestinationDict:
+                    combinedDict[key][2] = returnDestinationDict[key][2]
+                    combinedDict[key][3] = returnDestinationDict[key][3]
+                    combinedDict[key][4] = returnDestinationDict[key][4]
+                    combinedDict[key][5] = returnDestinationDict[key][5]
+                    combinedDict[key][6] = returnDestinationDict[key][6]
+                    combinedDict[key][7] = returnDestinationDict[key][7]
+            
+            return returnFormattedValue(start_time, True, "OK", combinedDict)
+        else:
+            return returnFormattedValue(start_time, result, description, None)
+    else:
+        returnFormattedValue(start_time, result, description, None)
+
+def DashBoardGetAllSourceFilesInfoImplWrapper(_sourceFileShareFolderName, _sourceDirectoryNameList, _fileExtensionFilter='.jpg'):
+    start_time = datetime.datetime.now()
+    result, description, returnDict = DashBoardGetAllSourceFilesInfoImpl(_sourceFileShareFolderName, _sourceDirectoryNameList, _fileExtensionFilter)
+    return returnFormattedValue(start_time, result, description, returnDict)
+
+
+def DashBoardGetAllSourceFilesInfoImpl(_sourceFileShareFolderName, _sourceDirectoryNameList, _fileExtensionFilter='.jpg'):
+    '''
+    This function is to be used @ the source folder, where the images are all clubbed together. and we want to extract out 
+    the various experiment names that have been created. 
+    In our context the _sourceFileShareFolderName = 'linuxraspshare' and '_sourceDirectoryName' = 'Share'
+    This could also be _sourceFileShareFolderName = 'linuxraspshare' and '_sourceDirectoryName' = 'backup' as this function 
+    now caters for
+    '''
+    start_time = datetime.datetime.now()
+    rv = False
+    # check the existence of first source folder
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryNameList[0])
+    if (rv == False):
+        return rv, description, None
+    returnDict = dict()
+
+    for _sourceDirectoryName in _sourceDirectoryNameList:
+        experimentList = list(file_service.list_directories_and_files(_sourceFileShareFolderName, _sourceDirectoryName))
+
+        if (not(experimentList is None and len(experimentList)<1)):
+            for i, imageFileName in enumerate(experimentList):
+                if (imageFileName.name.endswith(_fileExtensionFilter)):
+                    fileProperties = file_service.get_file_properties(_sourceFileShareFolderName, _sourceDirectoryName, imageFileName.name)
+                    fileLength = fileProperties.properties.content_length
+                    n = imageFileName.name.find('_')
+                    if (n > 0):
+                        expName = imageFileName.name[0:n]
+                        if expName not in returnDict:
+                            returnDict[expName] = [1,fileLength,False, 0, 0, False, 0, 0]
+                        else:
+                            returnDict[expName][0] += 1
+                            returnDict[expName][1] += fileLength
+    return True, "OK", returnDict
+
+
+
+def DashBoardGetAllDestinationFilesInfoImplWrapper( _destinationFileShareFolderName, 
+                                                    _destinationDirectoryName,
+                                                    _outputFolderName = 'output',
+                                                    _fileExtensionFilter='.jpg',
+                                                    _returnDict = None,
+                                                    _file_service = None):
+    start_time = datetime.datetime.now()
+    result, description, returnDict = DashBoardGetAllDestinationFilesInfoImpl( _destinationFileShareFolderName, 
+                                                                                _destinationDirectoryName,
+                                                                                _outputFolderName ,
+                                                                                _fileExtensionFilter,
+                                                                                _returnDict ,
+                                                                                _file_service )
+
+    return returnFormattedValue(start_time, result, description, returnDict)
+
+
+
+def DashBoardGetAllDestinationFilesInfoImpl(_destinationFileShareFolderName, 
+                                            _destinationDirectoryName,
+                                            _outputFolderName = 'output',
+                                            _fileExtensionFilter='.jpg',
+                                            _returnDict = None):
+    start_time = datetime.datetime.now()
+    rv = False
+    file_service = None
+    description = ''
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_destinationFileShareFolderName, _destinationDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    
+    returnDict = dict()
+    if _returnDict is not None:
+        returnDict = _returnDict
+    else:     
+        experimentList = list(file_service.list_directories_and_files(_destinationFileShareFolderName, _destinationDirectoryName))
+
+        # 1st pass, get all the experiment names, which are provided by the folder names
+        if (not(experimentList is None and len(experimentList)<1)):
+            for i, experimentName in enumerate(experimentList):
+                if experimentName.name not in returnDict:
+                        # Mask file exists
+                        # number of Files in the experiment root folder
+                        # size of the files in the experiment root folder
+                        # output folder exists
+                        # number of files in the output folder
+                        # size of files in the output folder.
+                        returnDict[experimentName.name] = [0, 0, False, 0, 0, False, 0, 0]
+    # 2nd pass, find all the properties of the images
+    for key in returnDict:
+        combinedFolderName = _destinationDirectoryName+"/"+ key
+        if (file_service.exists(_destinationFileShareFolderName,combinedFolderName, maskFileName)):
+            if _returnDict is None:
+                 returnDict[key][0] = 0
+                 returnDict[key][1] = 0
+            
+            returnDict[key][2] = True
+            numberOfFiles , sizeOfFiles =  getNumberOfFilesAndFileSize(file_service,_destinationFileShareFolderName, combinedFolderName , _fileExtensionFilter )
+            returnDict[key][3] = numberOfFiles
+            returnDict[key][4] = sizeOfFiles
+            combinedFolderName = _destinationDirectoryName+"/"+ key + "/" + _outputFolderName
+            if (file_service.exists(_destinationFileShareFolderName,combinedFolderName)):
+                returnDict[key][5] = True
+                numberOfFiles , sizeOfFiles =  getNumberOfFilesAndFileSize(file_service, _destinationFileShareFolderName, combinedFolderName, _fileExtensionFilter )
+                returnDict[key][6] = numberOfFiles
+                returnDict[key][7] = sizeOfFiles
+    
+    return True, "OK", returnDict
+
+
+def returnFormattedValue(start_time, result, description, returnDict):
+    if (result == True):
+        retValue = []
+        for key, value in returnDict.items():
+            item = {'ExperimentName': key, 'Properties': value}
+            retValue.append(item)
+
+        time_elapsed = datetime.datetime.now() - start_time 
+        elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+    
+        return True, elapsedTime,retValue
+    else:
+        return False, description, None
+
+
+def getNumberOfFilesAndFileSize(file_service, shareFolder, directoryName, _fileExtensionFilter):
+    
+    numberOfFiles = 0
+    sizeOfFiles = 0
+
+    experimentList = list(file_service.list_directories_and_files(shareFolder, directoryName))
+
+    if (not(experimentList is None and len(experimentList)<1)):
+        for i, imageFileName in enumerate(experimentList):
+            if (imageFileName.name.endswith(_fileExtensionFilter)):
+                numberOfFiles += 1
+                fileProperties = file_service.get_file_properties(shareFolder, directoryName, imageFileName.name)
+                fileLength = fileProperties.properties.content_length
+                sizeOfFiles += fileLength
+
+    return numberOfFiles, sizeOfFiles
+
+
+
+
+
 
 
 if __name__ == "__main__":

@@ -6,6 +6,11 @@ from flask import request
 from flask_cors import CORS
 from  cosmosDBWrapper import clsCosmosWrapper
 import json
+
+import sys
+sys.path.insert(0, '../')
+import common
+
 clsObj = None
 
 app = Flask(__name__)
@@ -113,73 +118,89 @@ def get_documents():
 
 @app.route('/comsosDB/v1.0/document', methods=['GET'])
 def get_document():
-    #print('get_document')
+    
     from urllib.parse import unquote
     docId = request.args.get('docId')
     if not docId:
         abort(400)
     docId = unquote(docId)
-    #print(docId)
+    
     global clsObj
    
     result = clsObj.returnDocument(docId)
     return jsonify(result)
 
-@app.route('/comsosDB/v1.0/insert_doc_collection', methods=['POST'])
-def insert_document_in_collection():
-    from urllib.parse import unquote
-    collectionId = request.args.get('collId')
-    if not collectionId:
-         abort(400)
+# @app.route('/comsosDB/v1.0/insert_doc_collection', methods=['POST'])
+# def insert_document_in_collection():
+#     from urllib.parse import unquote
+#     collectionId = request.args.get('collId')
+#     if not collectionId:
+#          abort(400)
 
-    if not 'id' in request.json or not 'detectedItems' in request.json:
-        abort(400)
-    global clsObj
-    result = clsObj.insert_document_in_collection(collectionId, request.json["id"], request.json["detectedItems"])
-    return jsonify(result)
+#     if not 'id' in request.json or not 'detectedItems' in request.json:
+#         abort(400)
+#     global clsObj
+#     result = clsObj.insert_document_in_collection(collectionId, request.json["id"], request.json["detectedItems"])
+#     return jsonify(result)
 
-@app.route('/comsosDB/v1.0/get_doc_collection', methods=['GET'])
-def get_document_in_collection():
-    print("Processing Insert Document")
+# @app.route('/comsosDB/v1.0/get_doc_collection', methods=['GET'])
+# def get_document_in_collection():
+#     print("Processing Insert Document")
 
-    from urllib.parse import unquote
-    collectionId = request.args.get('collId')
-    if not collectionId:
-        print('collectionid is not correct!!!')
-        abort(400)
-    docId = request.args.get('docId')
-    if not docId:
-        print('docId parameter is not correct!!!')
-        abort(400)  
+#     from urllib.parse import unquote
+#     collectionId = request.args.get('collId')
+#     if not collectionId:
+#         print('collectionid is not correct!!!')
+#         abort(400)
+#     docId = request.args.get('docId')
+#     if not docId:
+#         print('docId parameter is not correct!!!')
+#         abort(400)  
 
-    global clsObj
-    result = clsObj.queryDocsForExistence(collectionId, docId)
-    return jsonify(result)
+#     global clsObj
+#     result = clsObj.queryDocsForExistence(collectionId, docId)
+#     return jsonify(result)
 
 @app.route('/comsosDB/v1.0/saveLabelledImageList', methods=['POST'])
 def saveLabelledImageList():
-    if not request.json or not 'labelledImages' in request.json \
-        or not 'experimentName' in request.json:
+    if not request.json or not common._DETECTED_IMAGES_TAG in request.json \
+        or not common._EXPERIMENTNAME_TAG in request.json \
+        or not common._IMAGE_DETECTION_PROVIDER_TAG in request.json :
         abort(400)
 
     global clsObj
-    clsObj.saveLabelledImageListImpl(request.json['labelledImages'], request.json['experimentName'])
+    clsObj.saveLabelledImageListImpl(   request.json[common._IMAGE_DETECTION_PROVIDER_TAG],
+                                        request.json[common._EXPERIMENTNAME_TAG],
+                                        request.json)
     return make_response(jsonify({'OK': 'OK'}), 200)
 
 @app.route('/comsosDB/v1.0/returnLabelledImageList', methods=['POST'])
 def returnLabelledImageList():
-    if not request.json or not 'experimentName' in request.json:
+    if not request.json or not common._IMAGE_DETECTION_PROVIDER_TAG in request.json \
+        or not common._EXPERIMENTNAME_TAG in request.json:
         abort(400)
 
     global clsObj
-    rv = clsObj.returnLabelledImageListImpl(request.json['experimentName'])
+    rv = clsObj.returnLabelledImageListImpl(request.json[common._IMAGE_DETECTION_PROVIDER_TAG],
+                                            request.json[common._EXPERIMENTNAME_TAG])
 
 
-    print(rv)
+    
     if (rv == None):
         return make_response(jsonify({'error': 'OK'}), 500)
     else:
         return make_response(json.dumps({'result': rv}), 200)
+
+
+@app.route('/comsosDB/v1.0/returnAllExperimentResult', methods=['GET'])
+def returnAllExperimentResult():
+    global clsObj
+    rv = clsObj.returnAllExperimentResultImpl()
+    
+    if (rv == None):
+        return make_response(jsonify({'error': 'OK'}), 500)
+    else:
+        return jsonify(rv)
 
 
 if __name__ == '__main__':

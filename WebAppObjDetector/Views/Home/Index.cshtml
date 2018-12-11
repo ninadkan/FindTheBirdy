@@ -55,13 +55,21 @@
 
 <div class="row">
     <div class="col-md-3">
-        <h2>Experiment Operations</h2>
+        <h2>Dashboard</h2>
+        <ul>
+            <li>@Html.ActionLink("Project Results", "Results", "Dashboard")</li>
+            <li>@Html.ActionLink("Project Actions", "Actions", "Dashboard")</li>
+            <li>@Html.ActionLink("Performance n Scale", "PerformanceAndScale", "Dashboard")</li>
+            <li>@Html.ActionLink("Operations n Monitor", "OperationsAndMonitor", "Dashboard")</li>
+        </ul>
+    </div>
+    <div class="col-md-3">
+        <h2>Actions</h2>
         <ul>
             <li><a asp-controller="Experiment" asp-action="Index">All Experiments</a></li>
             <li><a asp-controller="Experiment" asp-action="CopyFilesAndCreateExperiment">Copy Files and Create Experiment</a></li>
             <li><a asp-controller="Experiment" asp-action="CreateViewUpdateMask">Create View Update Mask Tags for Image</a></li>
             <li><a asp-controller="Experiment" asp-action="SelectExperimentAndLabelImages">Select Experiment and Label Images</a></li>
-            
         </ul>
     </div>
 </div>

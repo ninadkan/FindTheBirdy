@@ -21,4 +21,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\lib\custom\xhttprequest\" />
+    <Folder Include="wwwroot\lib\custom\pagination\" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <UserSecretsId>aspnet-WebObjectDetector-7555D68B-C986-4CD8-9A25-B0DA1B678927</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.5" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Dashboard\Data\" />
+    <Folder Include="Areas\Dashboard\Models\" />
+    <Folder Include="Areas\Identity\Services\" />
+    <Folder Include="Areas\UnitActions\Data\" />
+    <Folder Include="Areas\UnitActions\Models\" />
+    <Folder Include="wwwroot\images\birdImages\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Areas\Dashboard\Views\_ViewStart.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Areas\UnitActions\Pages\_ViewStart.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Areas\UnitActions\Views\UnitAction\CopyFilesAndCreateExperiment.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Areas\UnitActions\Views\UnitAction\CreateViewUpdateMask.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Areas\UnitActions\Views\UnitAction\DisplayAndLabelSelectedImages.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Areas\UnitActions\Views\UnitAction\ImageMaskTag.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Areas\UnitActions\Views\UnitAction\SelectExperimentAndLabelImages.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Areas\UnitActions\Views\UnitAction\SinglePageView.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+
+</Project>

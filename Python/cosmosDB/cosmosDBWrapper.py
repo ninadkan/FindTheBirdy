@@ -29,6 +29,10 @@
 import azure.cosmos.cosmos_client as document_client
 import azure.cosmos.errors as errors
 import argparse
+
+import sys
+sys.path.insert(0, '../')
+import common
 #from pydocumentdb import document_client
 # import cosmosDatabaseManagement as dbMgmt 
 # import cosmosCollectionManagement as collMgmt 
@@ -47,9 +51,13 @@ def ifNullReadAndAssignFromEnviron(variableName, KEY):
 class clsCosmosWrapper:
 
     def __init__(self, host='', key='', databaseId=''):
-
-        self.LISTCONTAININGTRUEIMAGES = 'userDetection'
-        self.LABELLEDIMAGES = 'LabelledImages'
+        self.COLLECTIONAME = common._COLLECTIONAME
+        
+        self.ID_FOR_USER_DETECTION = common._ID_FOR_USER_DETECTION
+        self.DETECTED_IMAGES_TAG = common._DETECTED_IMAGES_TAG
+        
+        self.EXPERIMENTNAME = common._EXPERIMENTNAME_TAG
+        self.IMAGE_DETECTION_PROVIDER = common._IMAGE_DETECTION_PROVIDER_TAG
         
         self.host = ifNullReadAndAssignFromEnviron(host, 'COSMOSDB_HOST')
         assert(self.host is not None), "cosmosDB host not specified"
@@ -77,8 +85,30 @@ class clsCosmosWrapper:
         else:
             print("Creating database ...")
             self.dbSelfLink = self.client.CreateDatabase({"id": self.databaseId})['_self']
-        
         assert (self.dbSelfLink is not None)
+        
+        self.collectionLink = None
+        # find if any containers exist
+        collections = list(self.client.QueryContainers( self.dbSelfLink,
+            {"query": "SELECT * FROM r WHERE r.id=@id", "parameters": 
+            [{ "name":"@id", "value": self.COLLECTIONAME }]}))
+        if len(collections) > 0:
+            self.collectionLink = collections[0]['_self'] # take the first item
+        else:
+            self.collectionLink = self.client.CreateContainer(self.dbSelfLink, {"id": self.COLLECTIONAME})['_self']
+        
+        assert (self.collectionLink is not None)
+        self.sprocReadAllExperimentLink = None
+        sprocs = list(self.client.QueryStoredProcedures(self.collectionLink,
+            {
+                'query': 'SELECT * FROM root r WHERE r.id=@id',
+                'parameters':[
+                    { 'name':'@id', 'value':'returnAllExperimentList' }
+                ]
+            }))
+        assert(sprocs), "Unable to get returnAllExperimentList sproc"
+        self.sprocReadAllExperimentLink = sprocs[0]['_self']
+        assert (self.sprocReadAllExperimentLink is not None)
         return
                
     def getClient(self):
@@ -95,48 +125,8 @@ class clsCosmosWrapper:
     def setDatabaseId(value):
         self.databaseId = value
 
-    def logExperimentResult(self, collectionName , documentDict, doChecks=True):
-        '''
-        logs the informataion passed into cosmosDB
-        '''
-        
-        assert(collectionName is not None), "collectionName parameter is mandatory!"
-        assert(documentDict is not None), "documentDict parameter is mandatory!"
-        assert(self.client is not None), "client set to Null!!!"
-        assert(self.dbSelfLink is not None), "Database self link is set to Null!!!"
-        
-        
-        coll= None
-        if (doChecks == True):
-            # find if any containers exist
-            collections = list(self.client.QueryContainers( self.dbSelfLink,
-                {"query": "SELECT * FROM r WHERE r.id=@id", "parameters": 
-                [{ "name":"@id", "value": collectionName }]}))
-            if len(collections) > 0:
-                coll = collections[0] # take the first item
-            else:
-                coll = self.client.CreateContainer(self.dbSelfLink, {"id": collectionName})
-        assert(coll is not None), "Unable to get collection object"
-
-        # Made a decision to remove any previous instance with same ID
-
-        docID = documentDict['id']; 
-        docs = self.queryDocsForExistence(coll['_self'], docID)
-        # remove all the existing document first
-        for doc in docs:
-            self.client.DeleteItem(doc['_self'])
-        # Now create a new one
-        doc_id = self.client.CreateItem(coll['_self'], documentDict)
-
-        coll = None
-        db = None
-
-        # dObj = self.client.ReadItem(doc_id['_self'])
-        # clean resources
-        # self.client.DeleteItem(doc_id['_self'])
-        # self.client.DeleteContainer(coll['_self'])
-        # self.client.DeleteDatabase(db['_self'])
-        return 
+    def logExperimentResult(self, documentDict, removeExisting=True):
+        return self._insert_document_from_dict(documentDict, removeExisting)
 
     def returnAllCollection(self):
         self.preCheck()
@@ -148,114 +138,86 @@ class clsCosmosWrapper:
         documentlist = list(self.client.ReadItems(collectionLink, {'maxItemCount':10}))
         return documentlist
 
-    def returnDocument(self, documentId):
+    def returnDocument(self, documentLink):
         '''
         documentID contains the completeId
         '''
         self.preCheck()
-        dObj = self.client.ReadItem(documentId)
+        dObj = self.client.ReadItem(documentLink)
         return dObj
 
     def preCheck(self):
         assert(self.client is not None), "client set to Null!!!"
         assert(self.dbSelfLink is not None), "Database self link is set to Null!!!"
+        assert(self.collectionLink is not None), "Collection self link is set to Null!!!"
         return
+
  
     ###########################################################################
-    def insert_document_in_collection(self, collectionId, id, detectedItems):
+
+
+    def saveLabelledImageListImpl(self, providerId, experimentName, dictObject):
+        self._insert_document_in_collection(providerId, experimentName,dictObject)
+
+    ###########################################################################
+
+
+    def _insert_document_from_dict(self, dictObject, removeExisting=True):
+        self.preCheck()
+        assert(dictObject is not None), "dictObject parameter is mandatory!"
+
+        providerId = dictObject[common._IMAGE_DETECTION_PROVIDER_TAG]
+        experimentName = dictObject[common._EXPERIMENTNAME_TAG]
+
+        assert(providerId is not None), "providerId parameter is mandatory in Dictionary!"
+        assert(experimentName is not None), "experimentName parameter is mandatory in Dictionary!"
+        
+
+        return self._insert_document_in_collection(providerId, experimentName, dictObject, removeExisting)
+
+    ###########################################################################
+
+    def _insert_document_in_collection(self, providerId, experimentName, dictObject, removeExisting=True):
         '''
         checks for existence of a document, If it exists, deletes it and inserts
-        a new record. 
-        collectionId : CosmosDB compatible CollectionID
-        id : Application compatible document Id
+        a new record. checks for id as well as experiment name in the document. 
+        providerId : Application compatible document Id, providerName
         '''
         self.preCheck()
-        docs = self.queryDocsForExistence(collectionId, id)
+
+        if removeExisting == True:
+            self._removeExistingDocuments(providerId, experimentName)
+                
+        doc_id = self.client.CreateItem(self.collectionLink, dictObject)
+        return doc_id
+
+    ###########################################################################
+
+    def _removeExistingDocuments(self,providerId, experimentName):
+        docs = self._queryDocsForExistence(providerId, experimentName)
         # remove all the existing document first
         for doc in docs:
             self.client.DeleteItem(doc['_self'])
-            
-        # Not sure if we need to have a breather here first. 
-        dictObject = { 'id': id,
-                       self.LABELLEDIMAGES : detectedItems}
-        doc_id = self.client.CreateItem(collectionId, dictObject)
-        return doc_id
 
-    # https://github.com/Azure/azure-cosmos-python/blob/master/samples/IndexManagement/Program.py#L152-L169
-    def queryDocumentsForTrueImages(self, collection_link):
+ 
+    ###########################################################################
+    def returnLabelledImageListImpl(self, providerId, experimentName):
+        return self._queryDocsForExistence(providerId, experimentName)
+
+    ###########################################################################
+    def _queryDocsForExistence(self, providerId, experimentName):
         '''
-        Returns all the documents where the id = LISTCONTAININGTRUEIMAGES and 
-        collection_link is what's passed
-        '''        
-        return self.queryDocsForExistence(collection_link,self.LISTCONTAININGTRUEIMAGES )
-
-    def saveLabelledImageListImpl(self, labelledImages, experimentName ):
-        collection = self.queryCollectionsWithExperimentName(experimentName)
-        if collection is not None:
-            for coll in collection: # there should be only one
-                self.insert_document_in_collection(coll['_self'], 
-                    self.LISTCONTAININGTRUEIMAGES, 
-                    labelledImages )
-            # dictObject = {'id': self.LISTCONTAININGTRUEIMAGES,
-            #               self.LABELLEDIMAGES : LabelledImagesPassed}
-            # doc_id = self.client.CreateItem(coll['_self'], dictObject)
-            # coll = None
-            return
-        return 
-
-    def returnLabelledImageListImpl(self, experimentName):
-        print('returnLabelledImageListImpl')
-        collection = self.queryCollectionsWithExperimentName(experimentName)
-
-        if collection is not None:
-            print('collection')
-            for coll in collection: # there should be only one
-                print('coll')
-                docs = self.queryDocumentsForTrueImages(coll['_self'])
-                if docs is not None:
-                    for document in docs : # there should be only one
-                        return document[self.LABELLEDIMAGES]
-        l=[]
-        return l
-
-    def queryCollectionsWithExperimentName(self, experimentName):
-        collectionquery = {
-                "query": "SELECT * FROM r WHERE r.id=@id",
-                "parameters": [ { "name":"@id", "value": experimentName } ]
-                }
-        results = None
-        try:
-            
-            results = list(self.client.QueryContainers(self.dbSelfLink, collectionquery))
-            return results
-        except errors.HTTPFailure as e:
-            if e.status_code == 404:
-                print("Collection doesn't exist")
-                pass
-            elif e.status_code == 400:
-                # Can occur when we are trying to query on excluded paths
-                print("Bad Request exception occured: ", e)
-                pass
-            else:
-                print("Bad Request!")
-                raise
-        finally:
-            print()
-        return results
-
-    def queryDocsForExistence(self, collection_link, docid):
-        '''
-        collectionId : CosmosDB compatible CollectionID
-        id : Application compatible document Id
         '''
         self.preCheck()
+        selectQuery = "SELECT * FROM r WHERE r." + self.IMAGE_DETECTION_PROVIDER +  "=@providerId and r." + self.EXPERIMENTNAME + "=@experimentID"
         documentquery = {
-                "query": "SELECT * FROM r WHERE r.id=@id",
-                "parameters": [ { "name":"@id", "value": docid } ]
+                "query": selectQuery ,
+                "parameters": [ { "name":"@providerId", "value": providerId } ,
+                                {"name":"@experimentID", "value": experimentName}]
                 }
         results = None
         try:
-            results = list(self.client.QueryItems(collection_link, documentquery))
+            results = list(self.client.QueryItems(self.collectionLink, documentquery))
             return results
         except errors.HTTPFailure as e:
             if e.status_code == 404:
@@ -271,6 +233,12 @@ class clsCosmosWrapper:
         finally:
             print()
         return results
+
+    def returnAllExperimentResultImpl(self):
+        self.preCheck()
+        # need to get the sproc_link 
+        return self.client.ExecuteStoredProcedure(self.sprocReadAllExperimentLink, None)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

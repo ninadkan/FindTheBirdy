@@ -5,7 +5,7 @@ import os
 import sys
 from pathlib import Path
 
-from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
+import common
 
 # https://github.com/Microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Computer%20Vision%20API%20Example.ipynb 
 # https://anaconda.org/conda-forge/requests
@@ -17,11 +17,10 @@ _region = 'westeurope' #Here you enter the region of your subscription
 #tag
 _url = 'https://{}.api.cognitive.microsoft.com/vision/v2.0/tag'.format(_region)
 _maxNumRetries = 10
-
 _CONF_THRESHOLD = 0.5
 _NO_OF_ITERATIONS = -1
 
-_IMAGE_TAG = "bird"
+
 verbosity = True
 _LOG_RESULT = True
 _EXPERIMENTNAME = ''
@@ -64,10 +63,10 @@ def processRequest( json, data, headers, params ):
     return result
 
 def processImages(  _key = '', 
-                    outputFolder = _SRCIMAGEFOLDER,
+                    outputFolder = common._SRCIMAGEFOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     numberOfIterations = _NO_OF_ITERATIONS,
-                    imageTag = _IMAGE_TAG,
+                    imageTag = common._IMAGE_TAG,
                     logResult = _LOG_RESULT,
                     experimentName = _EXPERIMENTNAME):
     '''
@@ -89,7 +88,7 @@ def processImages(  _key = '',
           
 
     outputFolder = os.path.join(outputFolder,experimentName)
-    outputFolder = os.path.join(outputFolder,_DESTINATIONFOLDER)
+    outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
 
 
     FILE_LIST = []
@@ -143,7 +142,7 @@ def processImages(  _key = '',
                             if (tagName == imageTag):
                                 bBirdFound = True
                                 TotalBirdsFound = TotalBirdsFound +1
-                                g_detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence))})
+                                g_detectedImages.append({common._IMAGE_NAME_TAG:imageName, common._CONFIDENCE_SCORE_TAG:float('{0:.4f}'.format(confidence))})
                                 if (verbosity == True):
                                     print("")
                                     print("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
@@ -155,7 +154,7 @@ def processImages(  _key = '',
                                         bBirdFound = True
                                         TotalBirdsFound = TotalBirdsFound +1
                                         TotalHintBirdScore = TotalHintBirdScore +1
-                                        g_detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence)), 'Hint': TotalHintBirdScore})
+                                        g_detectedImages.append({ common._IMAGE_NAME_TAG:imageName, common._CONFIDENCE_SCORE_TAG:float('{0:.4f}'.format(confidence)), 'Hint': TotalHintBirdScore})
                                         if (verbosity == True):
                                             print("")
                                             print("Image name = {0}, imageTag = {1} , Confidence Score = {2} - Hint Option".format(imageName, imageTag, confidence))
@@ -166,18 +165,19 @@ def processImages(  _key = '',
         import datetime
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
-        dictObject ={   'id': __name__,
-                        'DateTime': str(datetime.datetime.now()),
-                        'elapsedTime': elapsed_time,
+        dictObject ={   common._IMAGE_DETECTION_PROVIDER_TAG : __name__,
+                        common._EXPERIMENTNAME_TAG : experimentName,
+                        common._DATETIME_TAG : str(datetime.datetime.now()),
+                        common._ELAPSED_TIME_TAG : elapsed_time,
+                        common._DETECTED_IMAGES_TAG: g_detectedImages,
                         'result - totalNumberOfRecords': len(FILE_LIST),
                         'result - birdFound' : TotalBirdsFound,
                         'result - Hint bird Found' : TotalHintBirdScore, 
                         'param - confThreshold' : confThreshold, 
                         'param - numberOfIterations' : numberOfIterations,
-                        'param - imageTag' : imageTag,
-                        'detectedItems': g_detectedImages
+                        'param - imageTag' : imageTag
                     }
-        obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
+        obj.logExperimentResult(documentDict= dictObject)
     
     return TotalBirdsFound
 

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import time
 
-from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
+import common
 
 # initialize the list of class labels MobileNet SSD was trained to
 # detect, then generate a set of bounding box colors for each class
@@ -20,12 +20,11 @@ _MOBILE_NET_FOLDER = Path("./mobileNet/")
 
 _PROTOTXT = os.path.join(_MOBILE_NET_FOLDER, 'MobileNetSSD_deploy.prototxt.txt')
 _MODEL = os.path.join(_MOBILE_NET_FOLDER,'MobileNetSSD_deploy.caffemodel')
-#common DEFAULTS
+
 _CONF_THRESHOLD = 0.5
 _SHAPE_WEIGHT = 224
 _SCALE_FACTOR = 1/255
 _NO_OF_ITERATIONS = -1 
-_IMAGE_TAG = "bird"
 _LOG_RESULT = True
 _EXPERIMENTNAME = ''
 
@@ -70,14 +69,14 @@ def MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confT
             idx = int(detections[0, 0, i, 1])
             if (_CLASSES[idx] == imageTag):
                 bRV = True
-                g_detectedImages.append({'ImageName':imageName, 'ConfidenceSore':float('{0:.4f}'.format(confidence))})
+                g_detectedImages.append({common._IMAGE_NAME_TAG:imageName, common._CONFIDENCE_SCORE_TAG:float('{0:.4f}'.format(confidence))})
                 if (verbosity == True):
                     print("")
                     print("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
                 break
     return bRV
 
-def processImages(  outputFolder = _SRCIMAGEFOLDER,
+def processImages(  outputFolder = common._SRCIMAGEFOLDER,
                     confThreshold = _CONF_THRESHOLD, 
                     shapeWeight = _SHAPE_WEIGHT,
                     scaleFactor = _SCALE_FACTOR , 
@@ -85,7 +84,7 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
                     model = _MODEL, 
                     prototxt = _PROTOTXT, 
                     numberOfIterations = _NO_OF_ITERATIONS,
-                    imageTag = _IMAGE_TAG,
+                    imageTag = common._IMAGE_TAG,
                     logResult = _LOG_RESULT,
                     experimentName = _EXPERIMENTNAME):
     
@@ -104,7 +103,7 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
     start_time = time.time()
 
     outputFolder = os.path.join(outputFolder,experimentName)
-    outputFolder = os.path.join(outputFolder,_DESTINATIONFOLDER)
+    outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
 
     FILE_LIST = []
     for file in os.listdir(outputFolder):
@@ -132,19 +131,20 @@ def processImages(  outputFolder = _SRCIMAGEFOLDER,
         import datetime
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
-        dictObject ={  'id': __name__,
-                        'DateTime': str(datetime.datetime.now()),
-                        'elapsedTime': elapsed_time,
+        dictObject ={   common._IMAGE_DETECTION_PROVIDER_TAG : __name__,
+                        common._EXPERIMENTNAME_TAG : experimentName,
+                        common._DATETIME_TAG : str(datetime.datetime.now()),
+                        common._ELAPSED_TIME_TAG : elapsed_time,
+                        common._DETECTED_IMAGES_TAG : g_detectedImages,
                         'result - totalNumberOfRecords': len(FILE_LIST),
                         'result - birdFound' : TotalBirdsFound,
                         'param - confThreshold' : confThreshold, 
                         'param - shapeWeight' : shapeWeight,
                         'param - scaleFactor' : scaleFactor , 
                         'param - numberOfIterations' : numberOfIterations,
-                        'param - imageTag' : imageTag,
-                        'detectedItems': g_detectedImages
+                        'param - imageTag' : imageTag
                     }
-        obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
+        obj.logExperimentResult(documentDict= dictObject)
     return TotalBirdsFound                    
 
 

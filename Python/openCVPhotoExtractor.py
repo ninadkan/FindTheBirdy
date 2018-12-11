@@ -12,7 +12,7 @@ import json
 
 
 from pathlib import Path
-from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
+import common 
 
 # Global parameters
 g_fileList = []
@@ -130,7 +130,7 @@ def WriteOutputFile(imgColour, imageFileName, x, y, w, h, detectedImages, Paddin
     BottomX = x + (3*Padding)  + w if ((x + (3*Padding)  + w)<= wt) else wt
     BottomY = y + (6*Padding) + h if ((y + (6*Padding) + h) <= ht) else ht
     
-    detectedImages.append({'openCVDetectedImageName':imageFileName,
+    detectedImages.append({ common._IMAGE_NAME_TAG:imageFileName,
                             'TopX': TopX, 
                             'TopY': TopY, 
                             'BottomX' : BottomX, 
@@ -138,8 +138,9 @@ def WriteOutputFile(imgColour, imageFileName, x, y, w, h, detectedImages, Paddin
     #crop the frame
     frame = imCrop[TopY:BottomY, TopX:BottomX]
 
-    outputFile = os.path.join(g_destinationFolder,imageFileName)
-    cv2.imwrite(outputFile,frame)           
+    if frame is not None and frame.size > 0: # otherwise we had couple of instances when the image file was of size 0!!!
+        outputFile = os.path.join(g_destinationFolder,imageFileName)
+        cv2.imwrite(outputFile,frame)           
     return frame
 
 def processImages(  historyImage = _HISTORYIMAGE, 
@@ -176,8 +177,8 @@ def processImages(  historyImage = _HISTORYIMAGE,
     global g_filenameExtension
 
 
-    g_srcImageFolder = _SRCIMAGEFOLDER 
-    g_destinationFolder = _DESTINATIONFOLDER
+    g_srcImageFolder = common._SRCIMAGEFOLDER 
+    g_destinationFolder = common._DESTINATIONFOLDER
     g_filenameExtension = _FILENAMEEXTENSION = '.jpg'
 
 
@@ -283,15 +284,6 @@ def processImages(  historyImage = _HISTORYIMAGE,
                                     # assume that boundingRectArea and boundingRect area are related. 
                                 break 
         
-            # if (bBirdShouldBeDetected == True):
-            #     if (bOpenCVBirdDetected == True):
-            #         true_true = true_true + 1
-            #     else:
-            #         false_negative = false_negative +1
-            # else: # Now the bird should not be detected
-            #     if (bOpenCVBirdDetected == True):
-            #         false_positive = false_positive +1
-
             if (g_verbosity == True):
                 print("")
                 print(">>> Debugging image = {0}, Contour Length = {1:0.4f}, last boundingRectArea = {2:0.4f}, OpenCVDetected = {3}, diff = {4:0.4f}".format(imageFileName, contour_length, boundingRectArea, bOpenCVBirdDetected, diff))
@@ -302,8 +294,11 @@ def processImages(  historyImage = _HISTORYIMAGE,
         import datetime
         from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
-        dictObject = {  'id': __name__,
-                        'DateTime': str(datetime.datetime.now()),
+        dictObject = {  common._IMAGE_DETECTION_PROVIDER_TAG : __name__,
+                        common._EXPERIMENTNAME_TAG : experimentName,
+                        common._DATETIME_TAG : str(datetime.datetime.now()),
+                        common._ELAPSED_TIME_TAG : elapsed_time,
+                        common._DETECTED_IMAGES_TAG : detectedImages,
                         'result-totalNumberOfRecords': len(g_fileList),
                         'TotalNumberOfImagesDetected' : TotalNumberOfImagesDetected,
                         # 'result-true_true': true_true,
@@ -315,10 +310,9 @@ def processImages(  historyImage = _HISTORYIMAGE,
                         'param-boundingRectAreaThreshold' : boundingRectAreaThreshold, 
                         'param-contourCountThreshold' : contourCountThreshold,
                         'param-maskDiffThreshold' : maskDiffThreshold,
-                        'param-partOfFileName' : partOfFileName,
-                        'detectedItems': detectedImages
+                        'param-partOfFileName' : partOfFileName
                         }
-        obj.logExperimentResult(collectionName = experimentName, documentDict= dictObject)
+        obj.logExperimentResult(documentDict= dictObject)
     return len(g_fileList), TotalNumberOfImagesDetected,  elapsed_time  #, true_true, false_positive, false_negative
 
 if __name__ == "__main__":
@@ -334,9 +328,9 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="command")
     process_parser = subparsers.add_parser("processImages", help=processImages.__doc__)
 
-    process_parser.add_argument("srcImageFolder", nargs='?', default=_SRCIMAGEFOLDER, help="Source Folder")
+    process_parser.add_argument("srcImageFolder", nargs='?', default=common._SRCIMAGEFOLDER, help="Source Folder")
     process_parser.add_argument("filenameExtension", nargs='?',default=_FILENAMEEXTENSION, help="file extension that needs to be copied")
-    process_parser.add_argument("destinationFolder", nargs='?', default=_DESTINATIONFOLDER, help="Destination Folder")
+    process_parser.add_argument("destinationFolder", nargs='?', default=common._DESTINATIONFOLDER, help="Destination Folder")
     process_parser.add_argument("historyImage", nargs='?', default=_HISTORYIMAGE, help="The amount of images used to construct mean background")
     process_parser.add_argument("varThreshold", nargs='?',default=_VARTHRESHOLD, help="Gray file threshold")
     process_parser.add_argument("numberOfIterations", nargs='?', default=_NUMBEROFITERATIONS, help="Number of files to be scanned. -1 for all, 0 for one")
