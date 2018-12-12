@@ -15,34 +15,31 @@
     <Folder Include="Areas\Dashboard\Data\" />
     <Folder Include="Areas\Dashboard\Models\" />
     <Folder Include="Areas\Identity\Services\" />
-    <Folder Include="Areas\UnitActions\Data\" />
-    <Folder Include="Areas\UnitActions\Models\" />
+    <Folder Include="Areas\UnitAction\Data\" />
+    <Folder Include="Areas\UnitAction\Models\" />
     <Folder Include="wwwroot\images\birdImages\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Areas\Dashboard\Views\_ViewStart.cshtml">
+    <Content Update="Areas\UnitAction\Pages\_ViewStart.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Areas\UnitActions\Pages\_ViewStart.cshtml">
+    <Content Update="Areas\UnitAction\Views\UnitAction\CopyFilesAndCreateExperiment.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Areas\UnitActions\Views\UnitAction\CopyFilesAndCreateExperiment.cshtml">
+    <Content Update="Areas\UnitAction\Views\UnitAction\CreateViewUpdateMask.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Areas\UnitActions\Views\UnitAction\CreateViewUpdateMask.cshtml">
+    <Content Update="Areas\UnitAction\Views\UnitAction\DisplayAndLabelSelectedImages.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Areas\UnitActions\Views\UnitAction\DisplayAndLabelSelectedImages.cshtml">
+    <Content Update="Areas\UnitAction\Views\UnitAction\ImageMaskTag.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Areas\UnitActions\Views\UnitAction\ImageMaskTag.cshtml">
+    <Content Update="Areas\UnitAction\Views\UnitAction\SelectExperimentAndLabelImages.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Areas\UnitActions\Views\UnitAction\SelectExperimentAndLabelImages.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Areas\UnitActions\Views\UnitAction\SinglePageView.cshtml">
+    <Content Update="Areas\UnitAction\Views\UnitAction\SinglePageView.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
   </ItemGroup>

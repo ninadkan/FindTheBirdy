@@ -20,21 +20,25 @@
     <li class="dropdown">
         <a data-toggle="dropdown" class="dropdown-toggle">Project Dashboard <b class="caret"></b></a>
         <ul role="menu" class="dropdown-menu">
-            <li><a asp-area="Dashboard" asp-page="/Dashboard/Results">Review all Results</a></li>
-            <li><a asp-area="Dashboard" asp-page="/Dashboard/PendingActions">Pending Actions</a></li>
+            <li><a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Index">Index</a></li>
+            <li><a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Results">Review all Results</a></li>
+            <li><a asp-area="Dashboard" asp-controller="Dashboard" asp-action="Actions">Pending Actions</a></li>
             <li class="divider"></li>
-            <li><a asp-area="Dashboard" asp-page="/Dashboard/PerformanceAndScale">Performance and Scale</a></li>
-            <li><a asp-area="Dashboard" asp-page="/Dashboard/OperationsAndMonitor">Monitoring and Log</a></li>
+            <li><a asp-area="Dashboard" asp-controller="Dashboard" asp-action="PerformanceAndScale">Performance and Scale</a></li>
+            <li><a asp-area="Dashboard" asp-controller="Dashboard" asp-action="OperationsAndMonitor">Monitoring and Log</a></li>
         </ul>
     </li>
     <li class="dropdown">
         <a data-toggle="dropdown" class="dropdown-toggle">Unit Actions<b class="caret"></b></a>
         <ul role="menu" class="dropdown-menu">
-            <li><a asp-area="UnitAction" asp-page="/UnitAction/SinglePageView">Review All Experiments</a></li>
-            <li><a asp-area="UnitAction" asp-page="/UnitAction/CopyFilesAndCreateExperiment">Create Experiments</a></li>
+            <li><a asp-area="UnitAction" asp-controller="UnitAction" asp-action="SinglePageView">Review All Experiments</a></li>
+            <li><a asp-area="UnitAction" asp-controller="UnitAction" asp-action="CopyFilesAndCreateExperiment">Create Experiments</a></li>
             <li class="divider"></li>
-            <li><a asp-area="UnitAction" asp-page="/UnitAction/CreateViewUpdateMask">Mask Images</a></li>
-            <li><a asp-area="UnitAction" asp-page="/UnitAction/SelectExperimentAndLabelImages">Label Images</a></li>
+            <li><a asp-area="UnitAction" asp-controller="UnitAction" asp-action="CreateViewUpdateMask">Mask Images</a></li>
+            <li><a asp-area="UnitAction" asp-controller="UnitAction" asp-action="SelectExperimentAndLabelImages">Label Images</a></li>
+            <li class="divider"></li>
+            <li><a asp-area="UnitAction" asp-controller="UnitAction" asp-action="ImageMaskTag">Image Mask Images</a></li>
+            <li><a asp-area="UnitAction" asp-controller="UnitAction" asp-action="DisplayAndLabelSelectedImages">Display and Label Images</a></li>
         </ul>
     </li>
 </ul>
@@ -65,7 +69,5 @@ else
     <ul class="nav navbar-nav navbar-right">
         <li><a asp-area="Identity" asp-page="/Account/Register">Register</a></li>
         <li><a asp-area="Identity" asp-page="/Account/Login">Login</a></li>
-        <li><a asp-area="UnitActions" asp-page="/UnitAction/SinglePageView">Single Page View</a></li>
-        <li><a asp-area="UnitActions" asp-page="/UnitAction/CopyFilesAndCreateExperiment">Create Experiments</a></li>
     </ul>
 }

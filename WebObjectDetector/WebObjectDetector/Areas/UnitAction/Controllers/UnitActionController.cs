@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebObjectDetector.Areas.UnitAction.Controllers
 {
-    [Area("UnitActions")]
+    [Authorize]
+    [Area("UnitAction")]
     public class UnitActionController : Controller
     {
         public IActionResult Index()
@@ -39,6 +41,24 @@ namespace WebObjectDetector.Areas.UnitAction.Controllers
 
 
         public IActionResult SelectExperimentAndLabelImages()
+        {
+            return View();
+        }
+
+
+        public IActionResult DisplayAndLabelSelectedImages()
+        {
+            return View();
+        }
+
+
+        public IActionResult ImageMaskTag()
+        {
+            return View();
+        }
+
+
+        public IActionResult SinglePageView()
         {
             return View();
         }

@@ -69,6 +69,11 @@ namespace WebObjectDetector
                 //name: "areaRoute",
                 //template: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
+                routes.MapRoute(
+                   name: "areas",
+                   template: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+                 );
+
 
 
                 routes.MapRoute(
