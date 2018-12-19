@@ -259,9 +259,6 @@ class clsOpenCVProcessImages:
                     print(">>> Debugging image = {0}, Contour Length = {1:0.4f}, last boundingRectArea = {2:0.4f}, OpenCVDetected = {3}, diff = {4:0.4f}".format(imageFileName, contour_length, boundingRectArea, bOpenCVBirdDetected, diff))
 
         elapsed_time = time.time() - start_time
-
-        self.WriteLogsToDatabase(experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected)
-
         return len(self.listOfImagesToBeProcessed), TotalNumberOfImagesDetected,  elapsed_time  #, true_true, false_positive, false_negative
 
     def createMask(self):
