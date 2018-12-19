@@ -1,0 +1,830 @@
+    1  sudo apt-get update
+    2  sudo apt-get install software-properties-common
+    3  sudo apt-get-repository ppa:x2go/stable
+    4  sudo add-get-repository ppa:x2go/stable
+    5  sudo add-apt-repository ppa:x2go/stable
+    6  sudo apt-get update
+    7  sudo apt-get install x2goserver x2goserver-xsession
+    8  sudo apt-get update
+    9  sudo apt-get install x2goserver x2goserver-xsession
+   10  sudo apt-get install xfce4
+   11  history 
+   12  history >> install_x2goserver.sh
+   13  vi install_x2goserver.sh 
+   14  exit
+   15  df
+   16  df -a
+   17  cls
+   18  clear
+   19  df -a
+   20  df
+   21  cd /mnt
+   22  ls
+   23  cat DATALOSS_WARNING_README.txt 
+   24  cd lost+found/
+   25  cd /
+   26  cd 
+   27  cd /
+   28  ls
+   29  cd /mnt
+   30  lsscsi
+   31  sudp apt install lsscsi
+   32  sudo apt install lsscsi
+   33  lsscsi
+   34  cd /dev/dsa
+   35  df
+   36  dmesg | grep SCSI
+   37  sudo fdisk /dev/sdc
+   38  df
+   39  sudo mkfs -t ext4 /dev/sdc1
+   40  sudo mkdir /datadrive
+   41  ls
+   42  cd /
+   43  ls
+   44  rm - rf datadrive
+   45  rm -rf datadrive
+   46  sudo rm -rf datadrive
+   47  mkdrive data
+   48  sudo mkdir /data
+   49  sudo mount /dev/sdc1 /data
+   50  sudo blkid
+   51  sudo vi /etc/fstab
+   52  sudo nano /etc/fstab
+   53  sudo blkid
+   54  cd /
+   55  sudo vi /etc/fstab
+   56  df
+   57  cd /data
+   58  ls
+   59  cd ..
+   60  dmesg | grep SCSI
+   61  sudo blkid
+   62  lsscci
+   63  lsscsi
+   64  cd /data
+   65  sudo du -h --max-depth=1
+   66  df
+   67  cd /mnt
+   68  ls
+   69  df -h
+   70  curl
+   71  cd /data
+   72  curl -O curl -O https://repo.continuum.io/archive/Anaconda3-5.3.0-Linux-x86_64.sh
+   73  curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
+   74  ls -al
+   75  chown /data
+   76  chown -R ninadk /data
+   77  sudo chown -R ninadk /data
+   78  ls -al
+   79  curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
+   80  chmod +x ./Anaconda3-5.3.0-Linux-x86_64.sh 
+   81  clear
+   82  ./Anaconda3-5.3.0-Linux-x86_64.sh 
+   83  df
+   84  code
+   85  history
+   86  cd
+   87  cat .bashrc
+   88  exit
+   89  source activate
+   90  conda create -n py36 python=3.6
+   91  cd /data
+   92  ls
+   93  git
+   94  source activate py36
+   95  deactivate
+   96  source deactivate
+   97  source activate py36
+   98  cd
+   99  source activate py36
+  100  conda install opencv
+  101  git clone https://ninadkanthi.visualstudio.com/DefaultCollection/_git/ComputerVision
+  102  cd ComputerVision/
+  103  ls
+  104  cd data
+  105  ls
+  106  cd ..
+  107  cd images
+  108  ls
+  109  cd ..
+  110  python template.py 
+  111  conda install matplotlib
+  112  python template.py 
+  113  ls
+  114  cd
+  115  pwd
+  116  mkdir Share
+  117  (py36) ninadk@ninadk-devserver:~$    78  ls -al
+  118  78: command not found
+  119  (py36) ninadk@ninadk-devserver:~$    79  curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
+  120  79: command not found
+  121  (py36) ninadk@ninadk-devserver:~$    80  chmod +x ./Anaconda3-5.3.0-Linux-x86_64.sh 
+  122  80: command not found
+  123  (py36) ninadk@ninadk-devserver:~$ 
+  124  clear
+  125  vi mountazureshare.sh
+  126  ls
+  127  cd ComputerVision/
+  128  ls
+  129  cat push_repository.sh 
+  130  cat git_commit.sh 
+  131  ./git_commit.sh 
+  132  cd images
+  133  ls
+  134  xs ..
+  135  cd ..
+  136  ls
+  137  cd data
+  138  ls
+  139  cd dnn
+  140  ls
+  141  cd ..
+  142  cd 7-machine-learning/
+  143  ls
+  144  cd ..
+  145  cd opencv-python-sample-code/
+  146  ls
+  147  cd tutorial_code/
+  148  ls
+  149  cd ..
+  150  cd 
+  151  ls
+  152  mv createavi.sh azureshare.sh
+  153  vi azureshare.sh 
+  154  chmod +x azureshare.sh 
+  155  ./azureshare.sh 
+  156  vi azureshare.sh 
+  157  ./azureshare.sh 
+  158  vi azureshare.sh 
+  159  ./azureshare.sh 
+  160  cd backup/
+  161  ls
+  162  clear
+  163  cd
+  164  rm -rd backup/
+  165  ls
+  166  ./azureshare.sh 
+  167  vi backup/
+  168  rm -rf backup/
+  169  ls
+  170  vi azureshare.sh 
+  171  ./azureshare.sh 
+  172  ls
+  173  rm -rf backup/
+  174  mkdir backup
+  175  vi azureshare.sh 
+  176  ./azureshare.sh 
+  177  vi azureshare.sh 
+  178  ./azureshare.sh 
+  179  cat azureshare.sh 
+  180  vi azureshare.sh 
+  181  ./azureshare.sh 
+  182  tail -f /var/log/kern.log
+  183  vi azureshare.sh
+  184  ./azureshare.sh 
+  185  tail -f /var/log/kern.log
+  186  cat azureshare.sh 
+  187  nmap
+  188  clear
+  189  cat azureshare.sh 
+  190  sudo mount -t cifs //nkdsvm.file.core.windows.net/linuxraspshare/backup /home/ninadk/backup -o vers=3.0,username=nkdsvm,password=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==,dir_mode=0777,file_mode=0777
+  191  vi azureshare.sh 
+  192  history
+  193  vi azureshare.sh 
+  194  cd backup/
+  195  ls
+  196  cp 2018_04_15_* ~/ComputerVision/GardenPhotos/
+  197  cp 2018_04_16_* ~/ComputerVision/GardenPhotos/
+  198  cp 2018-04-16* ~/ComputerVision/GardenPhotos/
+  199  cp 2018-04-15* ~/ComputerVision/GardenPhotos/
+  200  cp 2018-04-14* ~/ComputerVision/GardenPhotos/
+  201  cp 2018-04-24* ~/ComputerVision/GardenPhotos/
+  202  cp 2018-04-23* ~/ComputerVision/GardenPhotos/
+  203  cp 2018-04-22* ~/ComputerVision/GardenPhotos/
+  204  cp 2018-04-21* ~/ComputerVision/GardenPhotos/
+  205  cp 2018-04-20* ~/ComputerVision/GardenPhotos/
+  206  cp 2018-04-25* ~/ComputerVision/GardenPhotos/
+  207  df
+  208  cd ..
+  209  mv ~/ComputerVision/GardenPhotos/ /data
+  210  cd /data
+  211  ls
+  212  cd GardenPhotos/
+  213  ls
+  214  cd ..
+  215  cd
+  216  sudo umount /home/ninadk/backup
+  217  vi azureshare.sh 
+  218  mv azureshare.sh  ~/ComputerVision/
+  219  ls
+  220  cd ComputerVision/
+  221  ls
+  222  cat azureshare.sh 
+  223  exit
+  224  sudo apt install nmap
+  225  nmap nkdsvm.file.core.windows.net
+  226  cd ComputerVision/
+  227  cd data
+  228  ls
+  229  cd ..
+  230  cd 
+  231  cd ComputerVision/
+  232  ls
+  233  cd image
+  234  cd images
+  235  ls
+  236  cd ..
+  237  mkdir GardenPhotos
+  238  exit
+  239  source activate py36
+  240  cd ComputerVision/
+  241  jupyter notebook
+  242  git status
+  243  cd 
+  244  ssh-keygen
+  245  cd .ssh
+  246  ls
+  247  cat id_rsa.pub 
+  248  cd 
+  249  cd ComputerVision/
+  250  git status
+  251  ls
+  252  cat git_commit.sh 
+  253  git log
+  254  cd 1-gui-features/
+  255  git status
+  256  git checkout Drawing\ Functions.ipynb
+  257  git status
+  258  cd ..
+  259  ls
+  260  ./git_commit.sh "Restarting the project afterdownloading the images"
+  261  clear
+  262  git status
+  263  git push origin master
+  264  git cimmit -m "add the azureshare file"
+  265  git commit  -m "add the azureshare file"
+  266  git push origin master
+  267  ecal $(sssh-agent -s)
+  268  eval  $(ssh-agent -s)
+  269  ssd-add ~/.ssh/id_rsa
+  270  ssh-add ~/.ssh/id_rsa
+  271  git push origin master
+  272  git remote set-url origin Ninadkanthi@vs-ssh.visualstudio.com:v3/Ninadkanthi/ComputerVision/ComputerVision
+  273  git push origin master
+  274  exit
+  275  sudo vi /etc/apt/sources.list
+  276  cat /stc/apt/sources.list.d
+  277  ls /stc/apt/
+  278  ls /etc/apt/
+  279  cd sources.list.d
+  280  sudo cd /etc/apt/sources.list.d/
+  281  cd /etc/apt/sources.list.d/
+  282  ls
+  283  cat vscode.list 
+  284  sudo vi chrome.list
+  285  cat chrome.list
+  286  wget https://dl.google.com/linux/linux_signing_key.pub
+  287  sudo wget https://dl.google.com/linux/linux_signing_key.pub
+  288  sudo apt-key add linux_signing_key.pub
+  289  sudo apt update
+  290  ls
+  291  sudo apt install google-chrome-stable
+  292  mv linux_signing_key.pub ~/
+  293  sudo mv linux_signing_key.pub ~/
+  294  cd 
+  295  history
+  296  source activate py36
+  297  df
+  298  clear
+  299  df
+  300  cd ComputerVision/
+  301  ls
+  302  source activate py36
+  303  code template.py
+  304  cd /data
+  305  ls
+  306  cd 
+  307  cd ComputerVision/
+  308  python diffimage.py 
+  309  code diffimage.py 
+  310  ls
+  311  cd BirdDetector/
+  312  git branch
+  313  git branch master
+  314  git checkout master
+  315  git pull origin master
+  316  git checkout branch
+  317  git checkout azure
+  318  cd Python/
+  319  ls
+  320  git checkout master
+  321  ls
+  322  cd BirdDetector/
+  323  cd Python/
+  324  cd yolo/
+  325  ls
+  326  cat download.cmd 
+  327  wget https://pjreddie.com/media/files/yolov3.weights -O ./yolov3.weights
+  328  ls
+  329  activate 
+  330  conda activate
+  331  conda create -n py27 python=2.7
+  332  activate py27
+  333  conda activate py27
+  334  pip install google-cloud-vision
+  335  conda list
+  336  pip install google-cloud-automl
+  337  conda list
+  338  export GOOGLE_APPLICATION_CREDENTIALS=key.json
+  339  export
+  340  cd ..
+  341  ls
+  342  python imageDetectorTest.py 
+  343  cd ..
+  344  git status
+  345  git branch
+  346  git checkout azure
+  347  git status
+  348  code .gitignore
+  349  git status
+  350  clear
+  351  git status
+  352  git add .
+  353  git status
+  354  git commit -m "Azure commit - All workinggit status!"
+  355  git push origin master
+  356  ls
+  357  cd BirdDetector
+  358  md BirdDetector
+  359  mkdir BirdDetector
+  360  cd BirdDetector/
+  361  git init
+  362  git remote add https://github.com/ninadkan/FindTheBirdy.git
+  363  git remote add origin https://github.com/ninadkan/FindTheBirdy.git
+  364  git pull origin master
+  365  git log
+  366  ls
+  367  cd Pythoon
+  368  cd Python
+  369  ls
+  370  code openCVPhotoExtractor.py 
+  371  git branch
+  372  git branch azure
+  373  git checkout azure
+  374  git branch
+  375  conda activate py36
+  376  pip install azure-storage-file
+  377  conda list
+  378  cd azure
+  379  python azureFileShareTest.py 
+  380  cd ..
+  381  cd utilities
+  382  ls
+  383  code copyBirdPhotos.py 
+  384  python azureFileShareTest.py 
+  385  cd ..
+  386  cd azure
+  387  python azureFileShareTest.py 
+  388  cd ..
+  389  code googleImageDetector.py
+  390  code azureImageDetector.py 
+  391  cd azure
+  392  dir
+  393  python azureFileShareTest.py 
+  394  export AZURE_ACN_NAME=nkdsvm
+  395  python azureFileShareTest.py 
+  396  export AZURE_ACN_STRG_KEY=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==
+  397  python azureFileShareTest.py 
+  398  sudo mount -t cifs //nkdsvm.file.core.windows.net/experiment-findthebird/original /home/ninadk/BirdDetector/Data -o vers=3.0,username=nkdsvm,password=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==,dir_mode=0777,file_mode=0777
+  399  cd ..
+  400  mkdir Data
+  401  sudo mount -t cifs //nkdsvm.file.core.windows.net/experiment-findthebird/original /home/ninadk/BirdDetector/Data -o vers=3.0,username=nkdsvm,password=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==,dir_mode=0777,file_mode=0777
+  402  cd Data
+  403  ls
+  404  cd ..
+  405  cd Python/
+  406  ls
+  407  code openCVPhotoExtractorTest.py 
+  408  python openCVPhotoExtractorTest.py 
+  409  set
+  410  export
+  411  cd azure
+  412  dir
+  413  python azureFileShareTest.py 
+  414  cd ..
+  415  ls
+  416  cat azureshare
+  417  cat azureshare.sh
+  418  sudo unmount /home/ninadk/Data
+  419  sudo umount /home/ninadk/Data
+  420  sudo umount /home/ninadk/data
+  421  sudo umount /home/ninadk/BirdDetector/Data
+  422  cd ..
+  423  ls
+  424  cd Data
+  425  ls
+  426  rm Data
+  427  cd ..
+  428  rm Data
+  429  rm -R Data
+  430  ls
+  431  mkdir data
+  432  sudo mount -t cifs //nkdsvm.file.core.windows.net/experiment-findthebird/data /home/ninadk/BirdDetector/data -o vers=3.0,username=nkdsvm,password=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==,dir_mode=0777,file_mode=0777
+  433  cd data/
+  434  ls
+  435  cd outputopencv/
+  436  ls
+  437  cd ..
+  438  ls -ad
+  439  ls /ad
+  440  cd ..
+  441  cd Python/
+  442  python openCVPhotoExtractorTest.py 
+  443  python imageDetectorTest.py 
+  444  export AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
+  445  python imageDetectorTest.py 
+  446  conda env list
+  447  histpry
+  448  clear
+  449  cd BirdDetector/
+  450  git status
+  451  git checkout master
+  452  git status
+  453  code .gitignore
+  454  git status
+  455  ls
+  456  cd Python
+  457  ls
+  458  cd ..
+  459  got commit -m "Commiting master from Linux"
+  460  git commit -m "Commiting master from Linux"
+  461  git push origin master
+  462  remote: Invalid username or password.
+  463  fatal: Authentication failed for 'https://github.com/ninadkan/FindTheBirdy.git/'
+  464  ninadk@ninadk-devserver:~/BirdDetector$ git push origin master
+  465  Username for 'https://github.com': ninadkan
+  466  Password for 'https://ninadkan@github.com': 
+  467  remote: Invalid username or password.
+  468  fatal: Authentication failed for 'https://github.com/ninadkan/FindTheBirdy.git/'
+  469  ninadk@ninadk-devserver:~/BirdDetector$ git push origin master
+  470  Username for 'https://github.com': ninadkan
+  471  Password for 'https://ninadkan@github.com': c7ec89a503c63232fe6689a8040006fc586d710b
+  472  clear
+  473  c7ec89a503c63232fe6689a8040006fc586d710b
+  474  git push origin master
+  475  cd
+  476  ssh-keygen
+  477  cd .ssh
+  478  ls
+  479  code id_rsa.pub
+  480  cd ..
+  481  cd BirdDetector/
+  482  ssh -T git@github.com
+  483  git push origin master
+  484  git remove -v
+  485  git remote -v
+  486  git remote add origin git@github.com:ninadkan/FindTheBirdy.git
+  487  git remote remove origin
+  488  git remote add origin git@github.com:ninadkan/FindTheBirdy.git
+  489  git remote -v
+  490  git push origin msater
+  491  git push origin master
+  492  git push origin branch
+  493  git checkpout branch
+  494  git checkout branch
+  495  git checkout azure
+  496  git stash .gitignore
+  497  git stash pop 
+  498  git status
+  499  git add .
+  500  git status "Adding .gitignore to the master"
+  501  git commit -m  "Adding .gitignore to the master"
+  502  git push origin master
+  503  git checkout branch
+  504  git checkout azure
+  505  git status
+  506  git add .
+  507  git commit -m "azure commit"
+  508  git push origin azure
+  509  git merge azure
+  510  git checkout master
+  511  git branch
+  512  git status
+  513  ls
+  514  cd Python
+  515  ls
+  516  ls -o
+  517  code *.py
+  518  git log
+  519  clear
+  520  git checkout azure
+  521  ls
+  522  ls -o
+  523  code *.py
+  524  activate py36
+  525  conda activate py36
+  526  export
+  527  ls
+  528  python openCVPhotoExtractorTest.py 
+  529  ls
+  530  python imageDetectorTest.py 
+  531  export AZURE_VISION_API_KEY=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==
+  532  python imageDetectorTest.py 
+  533  export AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
+  534  python imageDetectorTest.py 
+  535  deactivate
+  536  conda deactivate
+  537  conda activate py27
+  538  export AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
+  539  export GOOGLE_APPLICATION_CREDENTIALS=key.json
+  540  python imageDetectorTest.py 
+  541  ls
+  542  git checkout key.json
+  543  git checkout master
+  544  cd ..
+  545  git status
+  546  code .gitignore
+  547  git status
+  548  code .gitignore
+  549  git status
+  550  git rm Python/azureCommon.py
+  551  git rm Python/azureshare.sh
+  552  git add 
+  553  git add Python/imageDetectorTest.py
+  554  git status
+  555  git add .gitignore
+  556  git checkout 
+  557  git checkout Python/googleImageDetector.pyc
+  558  git status
+  559  git branch
+  560  git status
+  561  git commit -m "saving all working azure"
+  562  git push origin azure
+  563  git checkout master
+  564  get merge azure
+  565  git merge azure
+  566  code .gitignore
+  567  git merge azure
+  568  git status
+  569  git add .
+  570  git status
+  571  git commit -m "merging azure and master"
+  572  git status
+  573  git push origin master
+  574  rm key.json
+  575  cd Python
+  576  rm key.json 
+  577  cd ..
+  578  git status
+  579  git add .
+  580  git commit - "removing key.json file"
+  581  git commit -m "removing key.json file"
+  582  git push master origin
+  583  git push origin master
+  584  git checkout azure
+  585  ls
+  586  cd Python/
+  587  ls
+  588  cd ..
+  589  git checkout master
+  590  git merge azure
+  591  git branch -d azure
+  592  git push origin master
+  593  conda activate py27
+  594  env list
+  595  conda list
+  596  git status
+  597  cd BirdDetector/
+  598  git status
+  599  clear
+  600  git log
+  601  git checkout 
+  602  git checkout ec92e3442e105aaf279fdef21ad90f373797fc5f
+  603  ls
+  604  cd Python
+  605  git stash
+  606  code openCVPhotoExtractorTest.py 
+  607  python openCVPhotoExtractorTest.py 
+  608  conda activate py36
+  609  python openCVPhotoExtractorTest.py 
+  610  code imageDetectorTest.py 
+  611  python openCVPhotoExtractorTest.py 
+  612  python imageDetectorTest.py 
+  613  export
+  614  export AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
+  615  python imageDetectorTest.py 
+  616  export GOOGLE_APPLICATION_CREDENTIALS=key.json
+  617  ls *.cmd
+  618  cat gcloudMakeKey.cmd 
+  619  gcloud iam service-accounts keys create key.json --iam-account vision-quickstart@findthebird-ninadk.iam.gserviceaccount.com
+  620  python imageDetectorTest.py 
+  621  cd ..
+  622  git status
+  623  ls
+  624  git add .
+  625  git status
+  626  git remove python/key.json
+  627  git checkout python/key.json
+  628  git status
+  629  git add .
+  630  git status
+  631  git commit -m "adding bug fixes to os release"
+  632  git status
+  633  git log
+  634  git status
+  635  git log
+  636  git stash
+  637  git log
+  638  git checkout master
+  639  git branch linuxFix a7155d4
+  640  git branch
+  641  git checkout master
+  642  git merge a1755d4
+  643  git merge linuxFix
+  644  git status
+  645  ls
+  646  cd python
+  647  ls
+  648  cd ..
+  649  rm -r python
+  650  git status
+  651  git add .
+  652  git status -m "Saving linux bug changes"
+  653  git commit  -m "Saving linux bug changes"
+  654  git push origin master
+  655  ls
+  656  cd Python
+  657  cd yolo
+  658  ls
+  659  rm -r yolov3.weights 
+  660  cd ..
+  661  git status
+  662  ls -h
+  663  ls -l
+  664  ls -al
+  665  cd Python
+  666  ls -al
+  667  cd ..
+  668  rm -r .git
+  669  rm -rf .git
+  670  git push origin master
+  671  git init
+  672  git status
+  673  ls
+  674  git add .
+  675  git status
+  676  git commit -m "starting afresh on Linux machine"
+  677  rm -rf .git
+  678  ls
+  679  rm README.md 
+  680  ls
+  681  ls -al
+  682  sudo umount data
+  683  ls
+  684  cd data
+  685  ls
+  686  cd ..
+  687  git init
+  688  code LinuxStart.txt
+  689  git status
+  690  git add .
+  691  git commit -m "starting new from Linux"
+  692  git remote add origin git@github.com:ninadkan/FindTheBirdy.git
+  693  git pull origin master
+  694  code .gitignore
+  695  git status
+  696  git add .
+  697  cd Python
+  698  git openCVPhotoExtractorTest.py
+  699  code openCVPhotoExtractorTest.py 
+  700  git status
+  701  git add .
+  702  git commit -m "Woorking version on both machines"
+  703  git push origin master
+  704  ls -al
+  705  cd azure
+  706  export
+  707  code azureFileShareTest.py 
+  708  export AZURE_ACN_NAME=nkdsvm
+  709  export AZURE_ACN_STRG_KEY=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==
+  710  python azureFileShareTest.py 
+  711  sudo mount -t cifs //nkdsvm.file.core.windows.net/experiment-findthebird/data /home/ninadk/BirdDetector/data -o vers=3.0,username=nkdsvm,password=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==,dir_mode=0777,file_mode=0777
+  712  cd ..
+  713  git status
+  714  git add .
+  715  git commit -m "removing key information from utilities file"
+  716  git push origin master
+  717  git status
+  718  conda activate pu27
+  719  conda activate py27
+  720  conda list
+  721  conda deactivate
+  722  conda activate py36
+  723  cd BirdDetector/
+  724  pip install conda-api-core
+  725  pip install google-cloud-automl
+  726  pip install google-cloud-vision
+  727  conda list
+  728  cd Python/
+  729  export GOOGLE_APPLICATION_CREDENTIALS=key.json
+  730  python imageDetectorTest.py 
+  731  conda install pathlib
+  732  cd ..
+  733  git pull origin master
+  734  cd ..
+  735  ls
+  736  cat azureshare.sh
+  737  sudo mount -t cifs //nkdsvm.file.core.windows.net/experiment-findthebird/data /home/ninadk/BirdDetector/data -o vers=3.0,username=nkdsvm,password=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==,dir_mode=0777,file_mode=0777
+  738  cd BirdDetector/
+  739  cd data
+  740  ls
+  741  cd outputopencv/
+  742  ls
+  743  cd ..
+  744  cd python
+  745  cd ..
+  746  cd Python/
+  747  python openCVPhotoExtractorTest.py 
+  748  code openCVPhotoExtractorTest.py 
+  749  python openCVPhotoExtractorTest.py 
+  750  conda install progressbar
+  751  python imageDetectorTest.py 
+  752  export AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
+  753  python imageDetectorTest.py 
+  754  echo ----------   once done, you can unmount it with command >>sudo umount /home/ninadk/data
+  755  sudo mount -t cifs //nkdsvm.file.core.windows.net/experiment-findthebird/data /home/ninadk/BirdDetector/data -o vers=3.0,username=nkdsvm,password=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==,dir_mode=0777,file_mode=0777
+  756  expor
+  757  export
+  758  python imageDetectorTest.py 
+  759  ls
+  760  code  gcloudMakeKey.cmd 
+  761  gcloud iam service-accounts keys create key.json --iam-account vision-quickstart@findthebird-ninadk.iam.gserviceaccount.com
+  762  export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
+  763  export
+  764  echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+  765  sudo cat /etc/apt/sources.list.d/google-cloud-sdk.list
+  766  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+  767  cd 
+  768  sudo apt-get update && sudo apt-get install google-cloud-sdk
+  769  cd BirdDetector/
+  770  cd ..
+  771  gcloud init
+  772  cd BirdDetector/python/
+  773  gcloud iam service-accounts keys create key.json --iam-account vision-quickstart@findthebird-ninadk.iam.gserviceaccount.com
+  774  python imageDetectorTest.py 
+  775  cd ..
+  776  git status
+  777  git add .
+  778  git status
+  779  code .gitignore
+  780  git status
+  781  code .gitignore
+  782  git checkout python/key.json
+  783  git checkout python/sudo
+  784  git checkout python/yolo/yolov3.weights
+  785  git status
+  786  git reset HEAD python/key.json
+  787  git status
+  788  git rm -r --cached
+  789  git rm -r --cached .
+  790  git status
+  791  git add .
+  792  git commmit -m "working version with python folder renamed to Python"
+  793  git commit -m "working version with python folder renamed to Python"
+  794  git status
+  795  git add .
+  796  git commit -m "removing weights file"
+  797  git push origin master
+  798  git status
+  799  git pull origin master
+  800  code .gitignore
+  801  git rm -r --cached .
+  802  git status
+  803  git log
+  804  git status
+  805  git reset HEAD .
+  806  git status
+  807  git push origin master
+  808  git pull origin master
+  809  git status
+  810  git log
+  811  clear
+  812  git log
+  813  cd BirdDetector/
+  814  ls
+  815  git status
+  816  git pull origin master
+  817  mkdir Docker
+  818  cd ..
+  819  ls
+  820  cat cfgBirdDetector.cfg 
+  821  cd BirdDetector/
+  822  cd Docker
+  823  conda activate py36
+  824  conda list
+  825  hostory
+  826  history
+  827  history | cut -c -8 >> installlHistory
+  828  code installlHistory 
+  829  history installlHistory
+  830  history > installlHistory
