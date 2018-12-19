@@ -129,7 +129,7 @@ class clsOpenCVObjectDetector:
                         detectedImages.append(jsonObject)
         
         elapsed_time = time.time() - start_time
-        self.WriteLogsToDatabase(experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount)
+        self.WriteLogsToDatabase(self.experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount)
 
         return len(fileList), 0,  elapsed_time
 
