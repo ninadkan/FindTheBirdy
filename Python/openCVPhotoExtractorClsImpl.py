@@ -153,7 +153,7 @@ class clsOpenCVObjectDetector:
                             'param-numberOfImagesToProcess' : -1, 
                             'param-boundingRectAreaThreshold' : objProc.get_boundingRectAreaThreshold(), 
                             'param-contourCountThreshold' : objProc.get_contourCountThreshold(),
-                            'param-maskDiffThreshold' : sobjProc.get_maskDiffThreshold(),
+                            'param-maskDiffThreshold' : objProc.get_maskDiffThreshold(),
                             'param-partOfFileName' : partOfFileName
                             }
             obj.logExperimentResult(documentDict= dictObject)
