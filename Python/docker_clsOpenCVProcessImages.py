@@ -25,8 +25,6 @@ _CONTOURCOUNTTHRESHOLD = 15
 _MASKDIFFTHRESHOLD = 2
 
 _WRITEOUTPUT = True # should we write the output file to destination folder or not
-_LOGRESULT = True   # Should we write the results to CosmosDB or not. This is dependent on _WRITEOUTPUT values.
-                    # as it looks at the files copied into destination folder
 _VERBOSE = True     # verbosity. Set to True whilst debugging. Rest set to false. 
 
 
@@ -51,8 +49,7 @@ class clsOpenCVProcessImages:
         # Logging Paramters
         self.writeOutput=_WRITEOUTPUT
         self.verbosity = _VERBOSE
-        # To log result or not
-        self.logResult = _LOGRESULT
+
         return
 
     def get_numImagesToCreateMeanBackground(self):
@@ -65,8 +62,7 @@ class clsOpenCVProcessImages:
         return self.contourCountThreshold
     def get_maskDiffThreshold(self):
         return self.maskDiffThreshold
-    def get_logResult(self):
-        return self.logResult 
+
     def get_writeOutput(self):
         return self.writeOutput
     def get_verbosity(self):
@@ -93,9 +89,7 @@ class clsOpenCVProcessImages:
     def set_verbosity(self, value):
         self.verbosity = value
         return
-    def set_logResult(self, value):
-        self.logResult = value
-        return         
+    
 
     def processImages(  self, 
                         offset, 
@@ -319,29 +313,7 @@ class clsOpenCVProcessImages:
 
         return
 
-    def WriteLogsToDatabase(self, experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected):
-        if (self.logResult == True):
-            import datetime
-            from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
-
-            obj = clsCosmosWrapper()
-            dictObject = {  common._IMAGE_DETECTION_PROVIDER_TAG : __name__,
-                            common._EXPERIMENTNAME_TAG : experimentName,
-                            common._DATETIME_TAG : str(datetime.datetime.now()),
-                            common._ELAPSED_TIME_TAG : elapsed_time,
-                            common._DETECTED_IMAGES_TAG : detectedImages,
-                            'result-totalNumberOfRecords': len(self.listOfImagesToBeProcessed),
-                            'TotalNumberOfImagesDetected' : TotalNumberOfImagesDetected,
-                            'param-numImagesToCreateMeanBackground' : self.numImagesToCreateMeanBackground, 
-                            'param-grayImageThreshold' : self.grayImageThreshold, 
-                            'param-numberOfImagesToProcess' : -1, 
-                            'param-boundingRectAreaThreshold' : self.boundingRectAreaThreshold, 
-                            'param-contourCountThreshold' : self.contourCountThreshold,
-                            'param-maskDiffThreshold' : self.maskDiffThreshold,
-                            'param-partOfFileName' : partOfFileName
-                            }
-            obj.logExperimentResult(documentDict= dictObject)
-    
+ 
 
     def WriteOutputFile(self,imgColour, imageFileName, x, y, w, h, detectedImages, Padding=15):
         '''
@@ -435,8 +407,6 @@ if __name__ == "__main__":
     process_parser.add_argument(common._ARGS_CONTOUR_COUNT_THRESHOLD, type=int,  nargs='?',default=_CONTOURCOUNTTHRESHOLD, help="Maximum number of contours that an image can have")
     process_parser.add_argument(common._ARGS_MASK_DIFF_THRESHOLD, type=int,  nargs='?', default=_MASKDIFFTHRESHOLD, help="Minimum difference between two masks to distinguish two images")
     process_parser.add_argument(common._ARGS_WRITE_OUTPUT, nargs='?', default=_WRITEOUTPUT, help="True specifies that images should be copied to output folder")
-    process_parser.add_argument(common._ARGS_LOG_RESULT, nargs='?', default=_LOGRESULT, help="True specifies that results should be copied to Azure cosmos DB")
-
     
     args = parser.parse_args()
     if args.command == "processImages":
@@ -447,7 +417,6 @@ if __name__ == "__main__":
         # print("contourCountThreshold: {0}".format(args.contourCountThreshold))
         # print("maskDiffThreshold: {0}".format(args.maskDiffThreshold))
         # print("writeOutput: {0}".format(args.writeOutput))
-        # print("logResult: {0}".format(args.logResult))
         # print("verbose: {0}".format(args.verbose))
         # print("srcImageFolder: {0}".format(args.srcImageFolder))
         # print("experimentName: {0}".format(args.experimentName))
@@ -465,7 +434,6 @@ if __name__ == "__main__":
         objProc.set_contourCountThreshold(args.contourCountThreshold)
         objProc.set_maskDiffThreshold(args.maskDiffThreshold)
         objProc.set_writeOutput(args.writeOutput)
-        objProc.set_logResult(args.logResult)
 
         if (args.verbose):
             objProc.set_verbosity(True)
