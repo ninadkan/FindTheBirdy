@@ -1,11 +1,10 @@
 #OpenCVPhotoExtractorTest
 import time
-from openCVPhotoExtractor import processImages, g_verbosity
-from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER
-import platform 
+from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER, _FileShare, _FileShareName
+import openCVPhotoExtractorClsImpl
+import azureFS.azureFileShareTest as fs
+import platform
 
-
-#ExportKeys = ['COSMOSDB_HOST', 'COSMOSDB_KEY', 'COSMOSDB_DATABASE', 'AZURE_VISION_API_KEY', 'GOOGLE_APPLICATION_CREDENTIALS', 'EXPERIMENT_NAME']
 ExportKeys = ['COSMOSDB_HOST', 'COSMOSDB_KEY', 'COSMOSDB_DATABASE', 'AZURE_VISION_API_KEY', 'GOOGLE_APPLICATION_CREDENTIALS']
 # try to load it from the environmental variables
 
@@ -17,16 +16,8 @@ for keysToBeFound in ExportKeys:
         print("{0} Key not specified. Exiting".format(keysToBeFound))
         sys.exit(0)
 
-ExperimentNames = [
-#'2018-04-15', '2018-04-16', '2018-04-18', '2018-04-21', '2018-04-22', 
-#'2018-04-27', # ERROR - NO MASK FILE
-'2018-11-09',
-# '2018-11-10', '2018-11-11', '2018-11-12', '2018-11-13', '2018-11-14', 
-# '2018-11-15', '2018-11-16', 
-'2018-11-17', '2018-11-18', '2018-11-19', 
-'2018-11-20', '2018-11-21', '2018-11-22', '2018-11-23', '2018-11-24', 
-'2018-11-25', '2018-11-26', '2018-11-27', '2018-11-28', '2018-11-29',
-'2018-11-30']
+#ExperimentNames = ['2018-04-16']
+ExperimentNames = ['2018-12-10', '2018-12-12']
 
 
 for ExperimentName  in ExperimentNames:
@@ -40,28 +31,35 @@ for ExperimentName  in ExperimentNames:
 
 
     def delete_existing_files():
-        import os
 
-        files = os.path.join(_SRCIMAGEFOLDER,ExperimentName)
-        files = os.path.join(files, _DESTINATIONFOLDER)
-        
+        if (_FileShare == False):
+            import os
 
-        if NIX_DEFINED:
-            files = os.path.join(files,'*')
-            print(files)
-            cpCommand = "rm -r " +  files
+            files = os.path.join(_SRCIMAGEFOLDER,ExperimentName)
+            files = os.path.join(files, _DESTINATIONFOLDER)
+            
+
+            if NIX_DEFINED:
+                files = os.path.join(files,'*')
+                print(files)
+                cpCommand = "rm -r " +  files
+            else:
+                files = os.path.join(files,'*.*')
+                print(files)
+                cpCommand = "del /q " + files
+
+            try:
+                print(cpCommand)
+                os.system(cpCommand)
+            except Exception as e:
+                print(e)
+            return
         else:
-        
-            files = os.path.join(files,'*.*')
-            print(files)
-            cpCommand = "del /q " + files
-
-        try:
-            print(cpCommand)
-            os.system(cpCommand)
-        except Exception as e:
-            print(e)
-        return 
+            srcImageFolder = _SRCIMAGEFOLDER + "/" + ExperimentName
+            destinationFolder = srcImageFolder + "/" + _DESTINATIONFOLDER
+            print(destinationFolder)
+            brv, desc, ret  = fs.removeAllFiles(_FileShareName, destinationFolder)
+            assert(brv == True), "Unable to create/locate output directory " + destinationFolder
 
     import time
     import datetime
@@ -70,7 +68,8 @@ for ExperimentName  in ExperimentNames:
     for item in BoundingRectList:
             delete_existing_files()
             # premature end of JPEG was detected with 2018-04-22_0247. Remove that image 
-            l, tt,  t = processImages(boundingRectAreaThreshold = item,  logResult=True, experimentName=ExperimentName)
+            procObject = openCVPhotoExtractorClsImpl.clsOpenCVObjectDetector(experimentName=ExperimentName)
+            l, tt,  t = procObject.processImages(imageBatchSize=25)
             print ("")
             print("Bounding Rectangle value = {0}".format(item))                
             print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))

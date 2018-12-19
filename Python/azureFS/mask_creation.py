@@ -7,7 +7,7 @@ import os
 import json
 import io
 
-from azureCommon import preCheck, maskFileName
+from .azureCommon import preCheck, maskFileName
 
 def GetMaskedImageImpl(_sourceFileShareFolderName, _sourceDirectoryName, _imageFileName, _maskTags):
     '''
@@ -88,6 +88,62 @@ def GetRawSourceImageImpl(_sourceFileShareFolderName, _sourceDirectoryName, _ima
                     return rv, "Unable to decode convert to byteArray :" + _imageFileName, None
             else:
                 return rv, "Null content obtained from the image source file", None
+
+
+def GetRawImage(_sourceFileShareFolderName, _sourceDirectoryName, _imageFileName):
+    rv = False
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    else: 
+        if (file_service.exists(_sourceFileShareFolderName, _sourceDirectoryName, _imageFileName) == False):
+            return rv, "Image file does not exist", None
+        else:
+            # load our source file
+            output_stream = io.BytesIO()
+            fileImage = file_service.get_file_to_stream(_sourceFileShareFolderName, _sourceDirectoryName, 
+                                            _imageFileName, output_stream)
+
+            content_length = fileImage.properties.content_length
+            if (content_length is not None and content_length > 0):
+                output_stream.seek(0)
+                file_bytes = np.asarray(bytearray(output_stream.read()), dtype=np.uint8)
+                if (file_bytes is not None):
+                    cv2_img = cv2.imdecode(file_bytes, 1 )
+                    if (cv2_img is not None) :
+                        return True, "OK", cv2_img #cv2.imencode('.jpg',colourMask)                        
+                    else:
+                        return rv, "Unable to decode : " + _imageFileName, None
+                else :
+                    return rv, "Unable to decode convert to byteArray :" + _imageFileName, None
+            else:
+                return rv, "Null content obtained from the image source file", None
+
+
+def GetRawImageAsBytes(_sourceFileShareFolderName, _sourceDirectoryName, _imageFileName):
+    rv = False
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_sourceFileShareFolderName, _sourceDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    else: 
+        if (file_service.exists(_sourceFileShareFolderName, _sourceDirectoryName, _imageFileName) == False):
+            return rv, "Image file does not exist", None
+        else:
+            # load our source file
+            output_stream = io.BytesIO()
+            fileImage = file_service.get_file_to_stream(_sourceFileShareFolderName, _sourceDirectoryName, 
+                                            _imageFileName, output_stream)
+            content_length = fileImage.properties.content_length
+            if (content_length is not None and content_length > 0):
+                output_stream.seek(0)
+                file_bytes = output_stream.read()
+                if (file_bytes is not None):
+                    return True, "OK", file_bytes             
+                else :
+                    return rv, "Unable to get byte byteArray :" + _imageFileName, None
+            else:
+                return rv, "Null content obtained from the image source file", None
+
 
 
 

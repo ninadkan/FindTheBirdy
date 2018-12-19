@@ -6,6 +6,9 @@ import sys
 from pathlib import Path
 
 import common
+import azureFS.azureFileShareTest as fs
+import azureFS.mask_creation as mask
+
 
 # https://github.com/Microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Computer%20Vision%20API%20Example.ipynb 
 # https://anaconda.org/conda-forge/requests
@@ -87,13 +90,20 @@ def processImages(  _key = '',
             sys.exit(0)
           
 
-    outputFolder = os.path.join(outputFolder,experimentName)
-    outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
-
-
     FILE_LIST = []
-    for file in os.listdir(outputFolder):
-        FILE_LIST.append(file)
+    if (common._FileShare == False):
+        outputFolder = os.path.join(outputFolder,experimentName)
+        outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
+        for file in os.listdir(outputFolder):
+            FILE_LIST.append(file)
+    else:
+        outputFolder = outputFolder + "/" + experimentName
+        outputFolder = outputFolder + "/" + common._DESTINATIONFOLDER
+
+        brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, outputFolder)
+        if (brv == True):
+            for i, imageFileName in enumerate(lst):
+                FILE_LIST.append(imageFileName.name)
     
     TotalBirdsFound = 0
     TotalHintBirdScore = 0
@@ -102,10 +112,16 @@ def processImages(  _key = '',
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
         print('.', end='', flush=True)
-        pathToFileInDisk= os.path.join(outputFolder,imageName)
-    
-        with open( pathToFileInDisk, 'rb' ) as f:
-            data = f.read()
+
+        data = None
+        if (common._FileShare == False):
+            pathToFileInDisk= os.path.join(outputFolder,imageName)
+            with open( pathToFileInDisk, 'rb' ) as f:
+                data = f.read()
+        else:
+            brv, desc, data = mask.GetRawImageAsBytes(common._FileShareName, outputFolder, imageName)
+            assert(brv == True), "Error Get Raw Image" + imageName
+
             
         # Computer Vision parameters
         #analyze

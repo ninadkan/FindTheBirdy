@@ -8,6 +8,9 @@ import time
 
 import common
 
+import azureFS.azureFileShareTest as fs
+import azureFS.mask_creation as mask
+
 # initialize the list of class labels MobileNet SSD was trained to
 # detect, then generate a set of bounding box colors for each class
 _CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
@@ -102,12 +105,21 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
     '''
     start_time = time.time()
 
-    outputFolder = os.path.join(outputFolder,experimentName)
-    outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
-
     FILE_LIST = []
-    for file in os.listdir(outputFolder):
-        FILE_LIST.append(file)
+    if (common._FileShare == False):
+        outputFolder = os.path.join(outputFolder,experimentName)
+        outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
+        for file in os.listdir(outputFolder):
+            FILE_LIST.append(file)
+    else:
+        outputFolder = outputFolder + "/" + experimentName
+        outputFolder = outputFolder + "/" + common._DESTINATIONFOLDER
+
+        brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, outputFolder)
+        if (brv == True):
+            for i, imageFileName in enumerate(lst):
+                FILE_LIST.append(imageFileName.name)
+
     # initialize Yolo client 
     init(prototxt, model)
     
@@ -117,9 +129,15 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
         print('.', end='', flush=True)
-        pathToFileInDisk= os.path.join(outputFolder,imageName)
-        imageFrame = cv2.imread(pathToFileInDisk)
-        assert(imageFrame is not None), "Unable to load " + pathToFileInDisk
+
+        imageFrame = None
+        if (common._FileShare == False):
+            imageFrame = cv2.imread(os.path.join(outputFolder,imageName))
+        else:
+            brv, desc, imageFrame = mask.GetRawImage(common._FileShareName, outputFolder, imageName)
+            assert(brv == True), "Unable to load " + imageName
+
+        assert(imageFrame is not None), "Unable to load " + imageName
 
         bBirdFound =  MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThreshold, imageTag)
         if (bBirdFound == True):

@@ -25,6 +25,9 @@ from pathlib import Path
 import time
 
 import common 
+
+import azureFS.azureFileShareTest as fs
+import azureFS.mask_creation as mask
 #global object
 g_client = None
 
@@ -45,13 +48,22 @@ def init():
     g_client = vision.ImageAnnotatorClient()
 
 
-def DetectBirdInImage( pathToFileInDisk,confThreshold, imageTag):
+def DetectBirdInImage( outputFolder,imageName,confThreshold, imageTag):
     global g_client
     assert(g_client is not None), "Invoke init before calling run"
     bRV = False
      # Loads the image into memory
-    with io.open(pathToFileInDisk, 'rb') as image_file:
-        content = image_file.read()
+
+    content = None
+    if (common._FileShare == False):
+        with io.open(os.path.join(outputFolder,imageName), 'rb') as image_file:
+            content = image_file.read()
+    else:
+        brv, desc, content = mask.GetRawImageAsBytes(common._FileShareName, outputFolder, imageName)
+        assert(brv == True), "Error Get Raw Image" + imageName
+
+    
+    assert(content is not None), "Unable to read image file " + imageName
 
     image = types.Image(content=content)
 
@@ -87,21 +99,28 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
 
     init()
 
-    outputFolder = os.path.join(outputFolder,experimentName)
-    outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
-
     FILE_LIST = []
-    for file in os.listdir(outputFolder):
-        FILE_LIST.append(file)
+    if (common._FileShare == False):
+        outputFolder = os.path.join(outputFolder,experimentName)
+        outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
+        for file in os.listdir(outputFolder):
+            FILE_LIST.append(file)
+    else:
+        outputFolder = outputFolder + "/" + experimentName
+        outputFolder = outputFolder + "/" + common._DESTINATIONFOLDER
+        brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, outputFolder)
+        if (brv == True):
+            for i, imageFileName in enumerate(lst):
+                FILE_LIST.append(imageFileName.name)
+
 
     for i, imageName in enumerate(FILE_LIST):
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
         # Not allowed in python 2.7
         # print('.', end='', flush=True)
-        pathToFileInDisk= os.path.join(outputFolder,imageName)
-    
-        bBirdFound, description, confidenceScore = DetectBirdInImage(pathToFileInDisk,confThreshold, imageTag )
+   
+        bBirdFound, description, confidenceScore = DetectBirdInImage(outputFolder,imageName,confThreshold, imageTag )
         if (bBirdFound == True):
             TotalBirdsFound = TotalBirdsFound +1
             g_detectedImages.append({common._IMAGE_NAME_TAG:imageName, common._CONFIDENCE_SCORE_TAG:float('{0:.4f}'.format(confidenceScore))})

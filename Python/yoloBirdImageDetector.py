@@ -6,6 +6,9 @@ from pathlib import Path
 import time
 import common
 
+import azureFS.azureFileShareTest as fs
+import azureFS.mask_creation as mask
+
 
 # Initialize DEFAULTS
 _CONF_THRESHOLD = 0.5
@@ -148,13 +151,22 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
     g_detectedImages = []
     start_time = time.time()
 
-
-    outputFolder = os.path.join(outputFolder,experimentName)
-    outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
-
     FILE_LIST = []
-    for file in os.listdir(outputFolder):
-        FILE_LIST.append(file)
+    if (common._FileShare == False):
+        outputFolder = os.path.join(outputFolder,experimentName)
+        outputFolder = os.path.join(outputFolder,common._DESTINATIONFOLDER)
+        for file in os.listdir(outputFolder):
+            FILE_LIST.append(file)
+    else:
+        outputFolder = outputFolder + "/" + experimentName
+        outputFolder = outputFolder + "/" + common._DESTINATIONFOLDER
+
+        brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, outputFolder)
+        if (brv == True):
+            for i, imageFileName in enumerate(lst):
+                FILE_LIST.append(imageFileName.name)
+
+
     # initialize Yolo client 
     init(classesFile, modelConfiguration, modelWeights)
     
@@ -164,9 +176,17 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
         print('.', end='', flush=True)
-        pathToFileInDisk= os.path.join(outputFolder,imageName)
-        imageFrame = cv2.imread(pathToFileInDisk)
-        assert(imageFrame is not None), "Unable to load " + pathToFileInDisk
+
+        imageFrame = None
+
+        if (common._FileShare == False):
+            pathToFileInDisk= os.path.join(outputFolder,imageName)
+            imageFrame = cv2.imread(pathToFileInDisk)
+        else:
+            brv, desc, imageFrame = mask.GetRawImage(common._FileShareName, outputFolder, imageName)
+            assert(brv == True), "Unable to load " + imageName
+
+        assert(imageFrame is not None), "Unable to load " + imageName
 
         bBirdFound =  YoloBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThreshold, imageTag, nmsThreshold)
         if (bBirdFound == True):

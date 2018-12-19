@@ -1,8 +1,10 @@
 
 import os
 import sys
+
+#import azure.storage.file as azureFs
 from azure.storage.file import FileService
-from azureCommon import preCheck, maskFileName
+from .azureCommon import preCheck, maskFileName
 import json
 import datetime
   
@@ -263,10 +265,11 @@ def deleteAllFiles(_sourceFileShareFolderName, _sourceDirectoryName, _fileExtens
             return False, "No files found @ source"
         else:
             for i, imageFileName in enumerate(fileList):
-                if (imageFileName.name.endswith(_fileExtensionFilter)):
-                    source = "https://{0}.file.core.windows.net/{1}/{2}/{3}".format(_accountName, _sourceFileShareFolderName,
-                                                                        _sourceDirectoryName, imageFileName.name )
-                    copy = file_service.delete_file(_sourceFileShareFolderName, _sourceDirectoryName, imageFileName.name)
+                if (_fileExtensionFilter is not None ):
+                    if (imageFileName.name.endswith(_fileExtensionFilter)):
+                        rv = file_service.delete_file(_sourceFileShareFolderName, _sourceDirectoryName, imageFileName.name)
+                else:
+                    rv =file_service.delete_file(_sourceFileShareFolderName, _sourceDirectoryName, imageFileName.name)
     return True, "OK"
 
 def DashBoardGetAllFilesInfoImpl(   _sourceFileShareFolderName, 
@@ -318,7 +321,6 @@ def DashBoardGetAllSourceFilesInfoImplWrapper(_sourceFileShareFolderName, _sourc
     result, description, returnDict = DashBoardGetAllSourceFilesInfoImpl(_sourceFileShareFolderName, _sourceDirectoryNameList, _fileExtensionFilter)
     return returnFormattedValue(start_time, result, description, returnDict)
 
-
 def DashBoardGetAllSourceFilesInfoImpl(_sourceFileShareFolderName, _sourceDirectoryNameList, _fileExtensionFilter='.jpg'):
     '''
     This function is to be used @ the source folder, where the images are all clubbed together. and we want to extract out 
@@ -353,8 +355,6 @@ def DashBoardGetAllSourceFilesInfoImpl(_sourceFileShareFolderName, _sourceDirect
                             returnDict[expName][1] += fileLength
     return True, "OK", returnDict
 
-
-
 def DashBoardGetAllDestinationFilesInfoImplWrapper( _destinationFileShareFolderName, 
                                                     _destinationDirectoryName,
                                                     _outputFolderName = 'output',
@@ -370,8 +370,6 @@ def DashBoardGetAllDestinationFilesInfoImplWrapper( _destinationFileShareFolderN
                                                                                 _file_service )
 
     return returnFormattedValue(start_time, result, description, returnDict)
-
-
 
 def DashBoardGetAllDestinationFilesInfoImpl(_destinationFileShareFolderName, 
                                             _destinationDirectoryName,
@@ -424,7 +422,6 @@ def DashBoardGetAllDestinationFilesInfoImpl(_destinationFileShareFolderName,
     
     return True, "OK", returnDict
 
-
 def returnFormattedValue(start_time, result, description, returnDict):
     if (result == True):
         retValue = []
@@ -439,9 +436,7 @@ def returnFormattedValue(start_time, result, description, returnDict):
     else:
         return False, description, None
 
-
 def getNumberOfFilesAndFileSize(file_service, shareFolder, directoryName, _fileExtensionFilter):
-    
     numberOfFiles = 0
     sizeOfFiles = 0
 
@@ -457,11 +452,88 @@ def getNumberOfFilesAndFileSize(file_service, shareFolder, directoryName, _fileE
 
     return numberOfFiles, sizeOfFiles
 
+def getListOfAllFiles(_destinationFileShareFolderName, _destinationDirectoryName):
+    start_time = datetime.datetime.now()
+    rv = False
+    file_service = None
+    description = ''
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_destinationFileShareFolderName, _destinationDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    
+    experimentList = list(file_service.list_directories_and_files(_destinationFileShareFolderName, _destinationDirectoryName))
+    time_elapsed = datetime.datetime.now() - start_time 
+    elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+    
+    return True, elapsedTime, experimentList
 
+def isFile(_destinationFileShareFolderName, _destinationDirectoryName, fileName):
+    start_time = datetime.datetime.now()
+    rv = False
+    file_service = None
+    description = ''
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_destinationFileShareFolderName, _destinationDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    
+    rv = file_service.exists(_destinationFileShareFolderName, _destinationDirectoryName, fileName)
+    time_elapsed = datetime.datetime.now() - start_time 
+    elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+    
+    return True, elapsedTime, rv
 
+def createDirectory(_destinationFileShareFolderName, _destinationDirectoryName):
+    start_time = datetime.datetime.now()
+    rv = False
+    file_service = None
+    description = ''
+    rv, description, file_service, _accountName, _accountKey  = preCheck(_destinationFileShareFolderName, _destinationDirectoryName, False)
+    if (rv == False):
+        return rv, description, None
 
+    if (file_service.exists(_destinationFileShareFolderName, directory_name=_destinationDirectoryName) == False):
+        rv= file_service.create_directory(_destinationFileShareFolderName, _destinationDirectoryName)    
 
+    time_elapsed = datetime.datetime.now() - start_time 
+    elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+    
+    return True, elapsedTime, rv
 
+def removeAllFiles(_destinationFileShareFolderName, _destinationDirectoryName):
+    start_time = datetime.datetime.now()
+    rv, desc = deleteAllFiles(_destinationFileShareFolderName, _destinationDirectoryName, None)
+    time_elapsed = datetime.datetime.now() - start_time 
+    elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+    return True, elapsedTime, rv
+
+def getMaskFileContent(_destinationFileShareFolderName, _destinationDirectoryName):
+    start_time = datetime.datetime.now()
+    rv, description, file_service, _accountName, _accountKey = preCheck(_destinationFileShareFolderName, _destinationDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    else:
+        maskContent = ''
+        # check if maskFile exists and load its content
+        if (file_service.exists(_destinationFileShareFolderName, _destinationDirectoryName, maskFileName) != False):
+            fileMask = file_service.get_file_to_text(_destinationFileShareFolderName, _destinationDirectoryName , maskFileName)
+            if (fileMask is not None and fileMask.content is not None and len(fileMask.content) >0 ):
+                maskContent = json.loads(fileMask.content)
+        time_elapsed = datetime.datetime.now() - start_time 
+        elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+        return True, elapsedTime, maskContent
+
+def saveFileImage(_destinationFileShareFolderName, _destinationDirectoryName, fileName, byteArray ):
+    start_time = datetime.datetime.now()
+    rv, description, file_service, _accountName, _accountKey = preCheck(_destinationFileShareFolderName, _destinationDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    else:
+        # create file from the byteArray passed. Will need to check if this can be read back later. 
+        # Return value is in the call-back which is not triggered
+        file_service.create_file_from_bytes(_destinationFileShareFolderName, _destinationDirectoryName, fileName, byteArray)
+        time_elapsed = datetime.datetime.now() - start_time 
+        elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+        return True, elapsedTime, 0
 
 if __name__ == "__main__":
     CopySourceDestination('linuxraspshare', 'Share', 'experiment-data', 'object-detection', '2018-11-09_')

@@ -118,11 +118,11 @@ class clsCosmosWrapper:
     def getDatabaseId(self):
         return self.databaseId    
 
-    def setHost(value):
+    def setHost(self, value):
         self.Host = value
-    def setKey(value):
+    def setKey(self, value):
         self.key = value
-    def setDatabaseId(value):
+    def setDatabaseId(self, value):
         self.databaseId = value
 
     def logExperimentResult(self, documentDict, removeExisting=True):
@@ -262,7 +262,7 @@ if __name__ == "__main__":
         TRACE_PRINT = True
 
     if args.command == "logExperimentResult":
-        objRun = cosmosWrapper() #(args.host, args.key. args.databaseId)
+        objRun = clsCosmosWrapper() #(args.host, args.key. args.databaseId)
         import datetime
         dictObject = {  'id': 'SomeFileName' + "_" + str(datetime.datetime.now()),  # this cannot be a numeric number!!!
                         'elapsedTime': "12:10:10",
