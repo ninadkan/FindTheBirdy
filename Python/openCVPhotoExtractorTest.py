@@ -17,7 +17,7 @@ for keysToBeFound in ExportKeys:
         sys.exit(0)
 
 #ExperimentNames = ['2018-04-16']
-ExperimentNames = ['2018-12-10', '2018-12-12']
+ExperimentNames = ['2018-12-14']
 
 
 for ExperimentName  in ExperimentNames:
