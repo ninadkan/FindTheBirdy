@@ -387,23 +387,23 @@ if __name__ == "__main__":
     process_parser = subparsers.add_parser("processImages", help=clsOpenCVProcessImages.processImages.__doc__)
 
     # necessary arguments
-    process_parser.add_argument(common._ARGS_EXPERIMENT_NAME,nargs='?',help="Name of folder where experiment images are copied")
-    process_parser.add_argument(common._ARGS_OFFSET, type=int, nargs='?', default=0, help="offset from image list")
-    process_parser.add_argument(common._ARGS_BATCH_SIZE, type=int, nargs='?', default=common._BATCH_SIZE, help="Number of images to be scanned in one execution")
-    process_parser.add_argument(common._ARGS_NUMBER_OF_IMAGES_TO_PROCESS, type=int, nargs='?', default=-1, help="Number of files to be scanned. -1 for all, 0 for one")    
-    process_parser.add_argument(common._ARGS_SRC_IMAGE_FOLDER, nargs='?', default=common._SRCIMAGEFOLDER, help="Source Folder")
-    process_parser.add_argument(common._ARGS_DESTINATION_FOLDER, nargs='?', default=common._DESTINATIONFOLDER, help="Destination Folder")
-    process_parser.add_argument(common._ARGS_FILE_NAME_EXTENSTION, nargs='?',default=common._FILENAMEEXTENSION, help="file extension that needs to be copied")
-    process_parser.add_argument(common._ARGS_PART_OF_FILE_NAME, nargs='?',default=common._PARTOFFILENAME, help="If you want to subselect file from the images folder, specify the partial name here")
+    process_parser.add_argument("-exn", common._ARGS_EXPERIMENT_NAME,nargs='?',help="Name of folder where experiment images are copied", required=True)
+    process_parser.add_argument("-oft", common._ARGS_OFFSET, type=int, nargs='?', default=0, help="offset from image list")
+    process_parser.add_argument("-bsz", common._ARGS_BATCH_SIZE, type=int, nargs='?', default=common._BATCH_SIZE, help="Number of images to be scanned in one execution")
+    process_parser.add_argument("-nip", common._ARGS_NUMBER_OF_IMAGES_TO_PROCESS, type=int, nargs='?', default=-1, help="Number of files to be scanned. -1 for all, 0 for one")    
+    process_parser.add_argument("-sif", common._ARGS_SRC_IMAGE_FOLDER, nargs='?', default=common._SRCIMAGEFOLDER, help="Source Folder")
+    process_parser.add_argument("-dif", common._ARGS_DESTINATION_FOLDER, nargs='?', default=common._DESTINATIONFOLDER, help="Destination Folder")
+    process_parser.add_argument("-fnx", common._ARGS_FILE_NAME_EXTENSTION, nargs='?',default=common._FILENAMEEXTENSION, help="file extension that needs to be copied")
+    process_parser.add_argument("-pfn", common._ARGS_PART_OF_FILE_NAME, nargs='?',default=common._PARTOFFILENAME, help="If you want to subselect file from the images folder, specify the partial name here")
 
 
     # extra arguments
-    process_parser.add_argument(common._ARGS_NUM_IMAGES_TO_CREATE_BKGRND, type=int, nargs='?', default=_NUMIMAGESTOCREATEMEANBACKGROUND, help="The amount of images used to construct mean background")
-    process_parser.add_argument(common._ARGS_GRAY_THRESHOLD, type=int, nargs='?',default=_GRAYIMAGETHRESHOLD, help="Gray file threshold")
-    process_parser.add_argument(common._ARGS_BOUNDING_RECT_AREA_THRESHOLD,type=int,  nargs='?', default=_BOUNDINGRECTANGLETHRESHOLD, help="minimum area of that a contour rectangle needs to have")
-    process_parser.add_argument(common._ARGS_CONTOUR_COUNT_THRESHOLD, type=int,  nargs='?',default=_CONTOURCOUNTTHRESHOLD, help="Maximum number of contours that an image can have")
-    process_parser.add_argument(common._ARGS_MASK_DIFF_THRESHOLD, type=int,  nargs='?', default=_MASKDIFFTHRESHOLD, help="Minimum difference between two masks to distinguish two images")
-    process_parser.add_argument(common._ARGS_WRITE_OUTPUT, nargs='?', default=_WRITEOUTPUT, help="True specifies that images should be copied to output folder")
+    process_parser.add_argument("-nib", common._ARGS_NUM_IMAGES_TO_CREATE_BKGRND, type=int, nargs='?', default=_NUMIMAGESTOCREATEMEANBACKGROUND, help="The amount of images used to construct mean background")
+    process_parser.add_argument("-gth", common._ARGS_GRAY_THRESHOLD, type=int, nargs='?',default=_GRAYIMAGETHRESHOLD, help="Gray file threshold")
+    process_parser.add_argument("-bar", common._ARGS_BOUNDING_RECT_AREA_THRESHOLD,type=int,  nargs='?', default=_BOUNDINGRECTANGLETHRESHOLD, help="minimum area of that a contour rectangle needs to have")
+    process_parser.add_argument("-cct", common._ARGS_CONTOUR_COUNT_THRESHOLD, type=int,  nargs='?',default=_CONTOURCOUNTTHRESHOLD, help="Maximum number of contours that an image can have")
+    process_parser.add_argument("-mdt", common._ARGS_MASK_DIFF_THRESHOLD, type=int,  nargs='?', default=_MASKDIFFTHRESHOLD, help="Minimum difference between two masks to distinguish two images")
+    process_parser.add_argument("-awt", common._ARGS_WRITE_OUTPUT, nargs='?', default=_WRITEOUTPUT, help="True specifies that images should be copied to output folder")
     
     args = parser.parse_args()
     if args.command == "processImages":
