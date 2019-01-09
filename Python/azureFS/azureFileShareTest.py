@@ -4,7 +4,7 @@ import sys
 
 #import azure.storage.file as azureFs
 from azure.storage.file import FileService
-from .azureCommon import preCheck, maskFileName
+from azureCommon import preCheck, maskFileName
 import json
 import datetime
   

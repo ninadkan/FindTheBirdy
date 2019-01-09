@@ -7,7 +7,7 @@ import os
 import json
 import io
 
-from .azureCommon import preCheck, maskFileName
+from azureCommon import preCheck, maskFileName
 
 def GetMaskedImageImpl(_sourceFileShareFolderName, _sourceDirectoryName, _imageFileName, _maskTags):
     '''
