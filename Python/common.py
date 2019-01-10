@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 _FileShare = True # if this is set, it is assumed that the mount/share is not used and https:// is to be used. 
-_UseDocker = True
+_UseDocker = True # if this is true, then we switch to invoking docker to process images. 
 
 _SRCIMAGEFOLDER = None
 _DESTINATIONFOLDER = None

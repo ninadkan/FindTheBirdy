@@ -20,6 +20,8 @@ import azureFS.azureFileShareTest as fs
 
 _LOGRESULT = True   # Should we write the results to CosmosDB or not. This is dependent on _WRITEOUTPUT values.
                     # as it looks at the files copied into destination folder
+_MAX_NUM_OF_DOCKER_CONTAINERS = int(3)
+_SLEEP_TIME_BEFFORE_CHECK = int(10) # # seems like a good value, remember its in seconds; me thinks 
 
 
 
@@ -99,29 +101,32 @@ class clsOpenCVObjectDetector:
         if (len(fileList) > 0):
             # create chunks for the filelist That is created
             l = len(fileList)
+            # Batch size of one would be used here
             if (common._UseDocker == False):
-                for pos in range(0, l , imageBatchSize):
+                for pos in range(0, l , l):
                     objProc = ds.clsOpenCVProcessImages()
+                    objProc.set_verbosity(False)
                     objProc.processImages(  offset = pos, 
                                             imageSrcFolder = self.srcImageFolder,  
                                             imageDestinationFolder = self.destinationFolder, 
                                             experimentName = self.experimentName, 
-                                            imageBatchSize = imageBatchSize, 
+                                            imageBatchSize = l, 
                                             partOfFileName=  partOfFileName)
             else:
                 # use docker to manage the image processing, should I not be doing separate threading? 
                 import docker
-               
                 client = docker.from_env()
                 dictOfDockerContainerIds = dict()
                 # the environment variable needs to be passed as following 
                 # environment={'FOO': 'BAR'},
                 # https://github.com/docker/docker-py/blob/master/tests/unit/models_containers_test.py
 
+               
+                imageBatchSize = int(l/_MAX_NUM_OF_DOCKER_CONTAINERS) # change it here to make the comparision betwenn the two options equal. 
+
                 envString=dict()
                 envString['EXPERIMENT_NAME']= str(self.experimentName)
-                
-
+                envString['BATCH_SIZE'] = int(imageBatchSize)
                 
                 for pos in range(0, l , imageBatchSize):
                     dockerImageName = "imagedetector:0.2"
@@ -129,7 +134,7 @@ class clsOpenCVObjectDetector:
                     #print (envString)
                     container = client.containers.run(dockerImageName, detach=True, environment=envString)
                     #print(container.id)
-                    # indicating the Container has not exited as yet                    
+                    # set dictionary flag indicating the Container has not exited as yet                    
                     dictOfDockerContainerIds[container.id] = False
 
                 print("All containers are now running...")
@@ -137,14 +142,11 @@ class clsOpenCVObjectDetector:
 
                 while (allContainersHaveExited == False):
                     # print('Sleeping...')
-                    time.sleep(5) # seems like a good value, remember its in seconds; me thinks 
+                    time.sleep(_SLEEP_TIME_BEFFORE_CHECK) 
                     allContainersHaveExited = True
                     for key, value in dictOfDockerContainerIds.items():
-                        
-                        
                         if (value == False): # indicating that the container at last status check was still running
                             localContainer = client.containers.get(key)
-                            #localContainer = localContainer.reload()
                             if (localContainer is not None):
                                 #print(localContainer.logs())
                                 print(key + " : " + str(value) +  " : " + localContainer.status)
@@ -154,7 +156,7 @@ class clsOpenCVObjectDetector:
                                     allContainersHaveExited = False
                             else:
                                 # WTF
-                                print("Container Missing" + key)
+                                print("Container Missing ::" + key)
         else:
             assert (False), "Error Loading file list" 
         
