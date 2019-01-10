@@ -9,6 +9,7 @@ import cv2
 import os
 import time
 import json
+import time
 
 
 from pathlib import Path
@@ -108,24 +109,52 @@ class clsOpenCVObjectDetector:
                                             imageBatchSize = imageBatchSize, 
                                             partOfFileName=  partOfFileName)
             else:
-                # use docker to manage the image processing 
+                # use docker to manage the image processing, should I not be doing separate threading? 
                 import docker
+               
                 client = docker.from_env()
-                listOfDockerContainerIds = []
-                for pos in range(0, l , imageBatchSize):
-                    container = client.containers.run("detector-v2", detach=True)
-                    print(container.id)
-                    listOfDockerContainerIds.append(container.id)
+                dictOfDockerContainerIds = dict()
+                # the environment variable needs to be passed as following 
+                # environment={'FOO': 'BAR'},
+                # https://github.com/docker/docker-py/blob/master/tests/unit/models_containers_test.py
 
-                for containerId in listOfDockerContainerIds:
-                    localContainer = client.containers.get(containerId)
-                    print(localContainer.logs())
-                    
+                envString=dict()
+                envString['EXPERIMENT_NAME']= str(self.experimentName)
                 
 
+                
+                for pos in range(0, l , imageBatchSize):
+                    dockerImageName = "imagedetector:0.2"
+                    envString['OFFSET'] = int(pos)
+                    #print (envString)
+                    container = client.containers.run(dockerImageName, detach=True, environment=envString)
+                    #print(container.id)
+                    # indicating the Container has not exited as yet                    
+                    dictOfDockerContainerIds[container.id] = False
 
+                print("All containers are now running...")
+                allContainersHaveExited = False
 
-
+                while (allContainersHaveExited == False):
+                    # print('Sleeping...')
+                    time.sleep(5) # seems like a good value, remember its in seconds; me thinks 
+                    allContainersHaveExited = True
+                    for key, value in dictOfDockerContainerIds.items():
+                        
+                        
+                        if (value == False): # indicating that the container at last status check was still running
+                            localContainer = client.containers.get(key)
+                            #localContainer = localContainer.reload()
+                            if (localContainer is not None):
+                                #print(localContainer.logs())
+                                print(key + " : " + str(value) +  " : " + localContainer.status)
+                                if (localContainer.status == "exited"): #update the value
+                                    dictOfDockerContainerIds[key] = True
+                                else: 
+                                    allContainersHaveExited = False
+                            else:
+                                # WTF
+                                print("Container Missing" + key)
         else:
             assert (False), "Error Loading file list" 
         

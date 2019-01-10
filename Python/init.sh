@@ -85,14 +85,14 @@ if ! [[ -z "${PART_OF_FILE_NAME}" ]]; then
 fi
 
 
-echo ${e1}
-echo ${e2}
-echo ${e3}
-echo ${e4}
-echo ${e5}
-echo ${e6}
-echo ${e7}
-echo ${e8}
+# echo ${e1}
+# echo ${e2}
+# echo ${e3}
+# echo ${e4}
+# echo ${e5}
+# echo ${e6}
+# echo ${e7}
+# echo ${e8}
 
 eFinal="${e0}${e1}${e2}${e3}${e4}${e5}${e6}${e7}${e8}"
 echo ${eFinal}
