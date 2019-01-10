@@ -94,22 +94,43 @@ class clsOpenCVObjectDetector:
             else:
                 print("fs.getListOfAllFiles returned False")
 
-
+        
         if (len(fileList) > 0):
             # create chunks for the filelist That is created
             l = len(fileList)
-            for pos in range(0, l , imageBatchSize):
-                objProc = ds.clsOpenCVProcessImages()
-                objProc.processImages(  offset = pos, 
-                                        imageSrcFolder = self.srcImageFolder,  
-                                        imageDestinationFolder = self.destinationFolder, 
-                                        experimentName = self.experimentName, 
-                                        imageBatchSize = imageBatchSize, 
-                                        partOfFileName=  partOfFileName)
+            if (common._UseDocker == False):
+                for pos in range(0, l , imageBatchSize):
+                    objProc = ds.clsOpenCVProcessImages()
+                    objProc.processImages(  offset = pos, 
+                                            imageSrcFolder = self.srcImageFolder,  
+                                            imageDestinationFolder = self.destinationFolder, 
+                                            experimentName = self.experimentName, 
+                                            imageBatchSize = imageBatchSize, 
+                                            partOfFileName=  partOfFileName)
+            else:
+                # use docker to manage the image processing 
+                import docker
+                client = docker.from_env()
+                listOfDockerContainerIds = []
+                for pos in range(0, l , imageBatchSize):
+                    container = client.containers.run("detector-v2", detach=True)
+                    print(container.id)
+                    listOfDockerContainerIds.append(container.id)
+
+                for containerId in listOfDockerContainerIds:
+                    localContainer = client.containers.get(containerId)
+                    print(localContainer.logs())
+                    
+                
+
+
+
+
         else:
             assert (False), "Error Loading file list" 
+        
 
-
+        
         # Write the log thingy now
         detectedImages = []
         TotalNumberOfImagesDetected = 0
@@ -132,6 +153,8 @@ class clsOpenCVObjectDetector:
         self.WriteLogsToDatabase(self.experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount)
 
         return len(fileList), 0,  elapsed_time
+
+
 
 
     def WriteLogsToDatabase(self, experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount):

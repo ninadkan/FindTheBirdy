@@ -2,6 +2,7 @@ from pathlib import Path
 
 
 _FileShare = True # if this is set, it is assumed that the mount/share is not used and https:// is to be used. 
+_UseDocker = True
 
 _SRCIMAGEFOLDER = None
 _DESTINATIONFOLDER = None
