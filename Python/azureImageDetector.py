@@ -24,7 +24,7 @@ _CONF_THRESHOLD = 0.5
 _NO_OF_ITERATIONS = -1
 
 
-verbosity = True
+verbosity = False
 _LOG_RESULT = True
 _EXPERIMENTNAME = ''
 g_detectedImages = []

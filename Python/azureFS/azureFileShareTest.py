@@ -144,7 +144,20 @@ def GetAllExperimentsFilesNotCopiedImpl(_destinationFileShareFolderName, _destin
 
     time_elapsed = datetime.datetime.now() - start_time 
     elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
-    return True, elapsedTime, returnList    
+    return True, elapsedTime, returnList
+
+def TestGetAllExperimentNames(_destinationFileShareFolderName, _destinationDirectoryName):
+    start_time = datetime.datetime.now()
+    rv, description, file_service, _accountName, _accountKey = preCheck(_destinationFileShareFolderName, _destinationDirectoryName)
+    if (rv == False):
+        return rv, description, None
+    else:
+        experimentList = list(file_service.list_directories_and_files(_destinationFileShareFolderName, directory_name=_destinationDirectoryName))
+        time_elapsed = datetime.datetime.now() - start_time 
+        elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
+        return True, elapsedTime, experimentList
+        
+
 
 def GetAllSourceUniqueExperimentNamesImpl(_sourceFileShareFolderName, _sourceDirectoryName, _fileExtensionFilter='.jpg'):
     '''

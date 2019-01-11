@@ -149,7 +149,7 @@ class clsOpenCVObjectDetector:
                             localContainer = client.containers.get(key)
                             if (localContainer is not None):
                                 #print(localContainer.logs())
-                                print(key + " : " + str(value) +  " : " + localContainer.status)
+                                #print(key + " : " + str(value) +  " : " + localContainer.status)
                                 if (localContainer.status == "exited"): #update the value
                                     dictOfDockerContainerIds[key] = True
                                 else: 

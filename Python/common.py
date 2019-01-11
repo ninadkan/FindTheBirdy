@@ -23,7 +23,7 @@ _PARTOFFILENAME = ''
 _BATCH_SIZE =25
 
 
-_COLLECTIONAME = 'ImageDetectionResults'
+_COLLECTIONAME = 'ResultsImageDetection'
 _DATETIME_TAG = "DateTime"
 _ELAPSED_TIME_TAG = "ElapsedTime"
 _IMAGE_TAG = "bird"

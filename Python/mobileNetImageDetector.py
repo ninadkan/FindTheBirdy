@@ -34,7 +34,7 @@ _EXPERIMENTNAME = ''
 
 #Global Variable
 g_net = None
-verbosity = True
+verbosity = False
 g_detectedImages = []
 
 # load our serialized _MODEL from disk
