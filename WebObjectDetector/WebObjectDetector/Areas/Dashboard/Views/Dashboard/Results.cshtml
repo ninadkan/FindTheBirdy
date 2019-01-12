@@ -366,16 +366,18 @@
                     populateDefaultOutput(output);
                     var experimentName = resultElement["ExperimentName"];
 
+                    var user = 0;
+                    var openCV = 0;
+                    var yolo = 0;
+                    var mobile = 0;
+                    var azure = 0;
+                    var google = 0;
+
+
                     output[2] = experimentName; // Populate the Experiment Value
                     var DetectionResult = resultElement["DetectionResult"];
                     if (DetectionResult && DetectionResult.length > 0) {
 
-                        var user = 0;
-                        var openCV = 0;
-                        var yolo = 0;
-                        var mobile = 0;
-                        var azure = 0;
-                        var google = 0;
 
                         DetectionResult.forEach(function (detectionResultElement) {
                             var DetectorName = detectionResultElement["DetectorName"];
