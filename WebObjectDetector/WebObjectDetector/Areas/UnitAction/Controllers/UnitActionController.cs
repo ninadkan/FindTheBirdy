@@ -45,6 +45,11 @@ namespace WebObjectDetector.Areas.UnitAction.Controllers
             return View();
         }
 
+        public IActionResult SelectExperimentDisplayImagesAndLabel()
+        {
+            return View();
+        }
+
 
         public IActionResult DisplayAndLabelSelectedImages()
         {

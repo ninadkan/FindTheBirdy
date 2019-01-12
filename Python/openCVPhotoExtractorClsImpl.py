@@ -155,37 +155,38 @@ class clsOpenCVObjectDetector:
                                 else: 
                                     allContainersHaveExited = False
                             else:
-                                # WTF
+                                # WTF !!
                                 print("Container Missing ::" + key)
-        else:
-            assert (False), "Error Loading file list" 
+        # else: # this should not be an error when there are no files which've been copied. 
+            #assert (False), "Error Loading file list" 
         
 
         
         # Write the log thingy now
-        detectedImages = []
-        TotalNumberOfImagesDetected = 0
+        TotalNumberOfImagesDetected, detectedImages = self.totalNumberOfImagesDetected()
+        elapsed_time = time.time() - start_time
+        self.WriteLogsToDatabase(self.experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount)
 
+        return len(fileList), TotalNumberOfImagesDetected,  elapsed_time
+
+    
+    def totalNumberOfImagesDetected(self):
+        internalTotalNumberOfImagesDetected = 0
+        internaldetectedImages = []
         if (common._FileShare == False):
             for file in os.listdir(self.destinationFolder):
                 jsonObject = {common._IMAGE_NAME_TAG: file, common._CONFIDENCE_SCORE_TAG:1}
-                detectedImages.append(jsonObject)
-                TotalNumberOfImagesDetected +=1
+                internaldetectedImages.append(jsonObject)
+                internalTotalNumberOfImagesDetected +=1
         else:
             brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, self.destinationFolder)
             if (brv == True):
                 if (not(lst is None or len(lst)<1)):
                     for i, imageFileName in enumerate(lst):
-                        TotalNumberOfImagesDetected +=1
+                        internalTotalNumberOfImagesDetected +=1
                         jsonObject = {common._IMAGE_NAME_TAG: imageFileName.name, common._CONFIDENCE_SCORE_TAG:1}
-                        detectedImages.append(jsonObject)
-        
-        elapsed_time = time.time() - start_time
-        self.WriteLogsToDatabase(self.experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount)
-
-        return len(fileList), 0,  elapsed_time
-
-
+                        internaldetectedImages.append(jsonObject)
+        return internalTotalNumberOfImagesDetected, internaldetectedImages
 
 
     def WriteLogsToDatabase(self, experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount):

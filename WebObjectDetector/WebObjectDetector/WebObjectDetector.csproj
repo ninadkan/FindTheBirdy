@@ -18,6 +18,7 @@
     <Folder Include="Areas\UnitAction\Data\" />
     <Folder Include="Areas\UnitAction\Models\" />
     <Folder Include="wwwroot\images\birdImages\" />
+    <Folder Include="wwwroot\lib\azure\dist\" />
   </ItemGroup>
 
   <ItemGroup>

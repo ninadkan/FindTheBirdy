@@ -245,14 +245,13 @@
                 _destinationDirectoryName: _destinationDirectory,
                 _outputFolderName: _outputFolder
             };
-           
             var updatedTagJson = JSON.stringify(jsonData);
             pushElement(obj.id);
             InvokeWebAPIGeneric('GetAllDestinationExperimentNamesWithOutputFiles', updatedTagJson, handlerGetAllExperiments)
         }
 
         function btnLoadImageHandler(obj) {
-            console.log('btnLoadImageHandler');
+            //console.log('btnLoadImageHandler');
             if (!precheckLoadingImages()) return;
 
             var jsonData = {
@@ -261,7 +260,7 @@
                 _imageFileName: _imageName
             };
             var updatedJson = JSON.stringify(jsonData);
-            console.log(updatedJson);
+            //console.log(updatedJson);
 
             pushElement(obj.id);
             InvokeWebAPIImageGeneric('GetRawSourceImage', updatedJson, HandlerGetRawImage);
@@ -270,7 +269,7 @@
         var _ID_FOR_USER_DETECTION = 'userDetection';
 
         function btnLoadTagHandler(obj) {
-            console.log('btnLoadTagHandler');
+            //console.log('btnLoadTagHandler');
 
             if (!precheckLoadingImages()) return;
             _imageLabelTag = []; // TODO:: we might be losing some previous unsaved entries!!!
@@ -279,13 +278,13 @@
                 ExperimentName: _experimentName
             };
             var updatedTagJson = JSON.stringify(dataVal);
-            console.log(updatedTagJson);
+            //console.log(updatedTagJson);
             pushElement(obj.id);
             InvokeWebAPICosmosDb('returnLabelledImageList', updatedTagJson, handlerCosmosDBReturnImageList); 
         }
 
         function btnSaveTagHandler(obj) {
-            console.log('btnSavePresenceTagHandler');
+            //console.log('btnSavePresenceTagHandler');
 
             if (!precheckLoadingImages()) return
              
@@ -311,13 +310,13 @@
                             detectedItems: objArray
             };
             var updatedTagJson = JSON.stringify(dataVal);
-            console.log(updatedTagJson);
+            //console.log(updatedTagJson);
             pushElement(obj.id);
             InvokeWebAPICosmosDb('saveLabelledImageList', updatedTagJson, handlerCosmosDBSaveImageList); 
         }
 
         function btnStartStopTimerHandler(obj) {
-            console.log('btnStartStopTimerHandler');
+            //console.log('btnStartStopTimerHandler');
             existingText = $('#btnStartStopTimer').text();
             if (existingText == _startTimer) {
                 var timerValue = $('#txtTimer').val();
@@ -336,7 +335,7 @@
         }
 
         function btnAddLabelHandler(obj) {
-            console.log('btnAddLabelHandler');
+            //console.log('btnAddLabelHandler');
             if (_imageLabelTag.indexOf(_currentFileName) >= 0) {
                 // ignore. Already exists
             }
@@ -344,7 +343,7 @@
         }
 
         function btnRemoveLabelHandler(obj) {
-            console.log('btnRemoveLabelHandler');
+            //console.log('btnRemoveLabelHandler');
             var index = _imageLabelTag.indexOf(_currentFileName);
             if (index > -1) {
                 _imageLabelTag.splice(index, 1);
@@ -361,7 +360,7 @@
 
      /* ======================= ...  Event Handlers  =========================== */
         function TimerHandler() {
-            console.log("Timer Invoked");
+            //console.log("Timer Invoked");
             // select the next item from the comboBox
             var currentValue = $('#ImageCollection option:selected').val(); 
             $('#ImageCollection option:selected').next().attr('selected', 'selected');
@@ -424,6 +423,7 @@
 
         function populateComboBox(response) {
             $('#ExperimentCollection').empty();
+            
             var result = $.parseJSON(response);
             $('#lblResult').html(result['elapsedTime']);
             var resultPassed = result['result'];
@@ -471,20 +471,20 @@
             if (invocation.readyState == 4) {
                 if (invocation.status == 200) {
                     if (invocation.response) {
-                        console.log('invocation.response');
+                        //console.log('invocation.response');
                         _dynamicImage.src = window.URL.createObjectURL(invocation.response);
                         _dynamicImage.onload = imgOnLoad;
                     }
                     else {
                         var errorText = "No Invocation response received";
-                        console.log(errorText);
+                        //console.log(errorText);
                         $('#lblResult').html(errorText);
                     }
                 }
                 else {
                         var errorText = "Invocation Errors Occured " + invocation.readyState + " and the status is " + invocation.status;
                     $('#lblResult').html(errorText);
-                    console.log(errorText);
+                    //console.log(errorText);
                 }
                 popElement();
                 $("body").css("cursor", "default");
@@ -538,7 +538,7 @@
         }
 
         function handlerCosmosDBReturnImageList(evtXHR) {
-            console.log('handlerCosmosDBReturnImageList');
+            //console.log('handlerCosmosDBReturnImageList');
             if (invocationCosmos.readyState == 4) {
                 if (invocationCosmos.status == 200) {
                     if (invocationCosmos.response) {
@@ -558,12 +558,12 @@
 
             if (invocationCosmos.readyState == invocation.HEADERS_RECEIVED){
                 var contentType = invocationCosmos.getResponseHeader("Content-Type");
-                console.log(contentType); 
+                //console.log(contentType); 
             }
         }
 
         function loadCurrentLabels(response) {
-            console.log('loadCurrentLabels');
+            //console.log('loadCurrentLabels');
             _imageLabelTag = []; 
             var tp = $.parseJSON(response);
             if (tp) {
@@ -574,7 +574,7 @@
                         if (detectedItems) {
                             for (var i = 0; i < detectedItems.length; i++) {
                                 if (detectedItems[i]) {
-                                    console.log(detectedItems[i]["ImageName"]);
+                                    //console.log(detectedItems[i]["ImageName"]);
                                     _imageLabelTag.push(detectedItems[i]["ImageName"]);
                                 }
                             }
@@ -600,8 +600,7 @@
 
 
     </script>
-
-    }
+}
 
 
 

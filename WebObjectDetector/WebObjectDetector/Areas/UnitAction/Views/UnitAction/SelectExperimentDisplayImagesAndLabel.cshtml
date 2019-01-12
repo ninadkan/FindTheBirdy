@@ -1,0 +1,812 @@
+﻿
+@{
+    ViewData["Title"] = "SelectExperimentDisplayImagesAndLabel";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Select Experiment, Display Images And Label</h2>
+<hr />
+
+
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Azure File Share :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtAzureFileShareAccount" value="nkdsvm" />
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">SAS Key :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtSAS" value='' />
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Destination Share :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtDestinationShare" value="experiment-data" />
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Destination Directory :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtDestinationDirectory" value="object-detection" />
+    </div>
+</div>
+
+
+<div class="row ">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Experiment Name :</label>
+    </div>
+    <div class="col-md-2">
+        <select id="ExperimentCollection" class="form-control"></select>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Output Folder :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtOutputFolder" value="output" />
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Cosmos DB Name:</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtDbExperimentName" value="experiment-find-the-birdy" disabled />
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Document Id :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtDocumentId" value="userDetector" disabled />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Operations:</label>
+    </div>
+    <div class="col-md-2">
+        <button id="btnLoadExperiments" class="btn btn-primary" onclick="btnLoadExperimentsHandler(this)">Load Experiments</button>
+    </div>
+    <div class="col-md-2">
+        <button id="btnLoadTag" class="btn btn-primary" onclick="btnLoadTagHandler(this)" disabled>Load Tags</button>
+    </div>
+    <div class="col-md-2">
+        <button id="btnSaveTag" class="btn btn-primary" onclick="btnSaveTagHandler(this)" disabled>Save Tags</button>
+    </div>
+</div>
+
+<div class="row form-group">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Operation Result  :</label>
+    </div>
+    <div class="col-md-6">
+        <label class="form-control btn-block" id="lblResult"></label>
+    </div>
+</div>
+
+<div id="dynamicImages">
+    <div class="row">
+        <div class="col-md-2 nopad text-center">
+            <label class="image-checkbox" id="1">
+                <img class="img-responsive img-thumbnail" src="https://dummyimage.com/600x400/000/fff">
+                <input type="checkbox" value="" />
+                <i class="fa fa-check hidden"></i>
+            </label>
+        </div>
+        <div class="col-md-2 nopad text-center">
+            <label class="image-checkbox" id="2">
+                <img class="img-responsive" src="https://dummyimage.com/600x400/000/fff" />
+                <input type="checkbox" id="2" value="" />
+                <i class="fa fa-check hidden"></i>
+            </label>
+        </div>
+        <div class="col-md-2 nopad text-center">
+            <label class="image-checkbox" id="3">
+                <img class="img-responsive" src="https://dummyimage.com/600x400/000/fff" />
+                <input type="checkbox" id="3" value="" />
+                <i class="fa fa-check hidden"></i>
+            </label>
+        </div>
+        <div class="col-md-2 nopad text-center">
+            <label class="image-checkbox" id="4">
+                <img class="img-responsive" src="https://dummyimage.com/600x400/000/fff" />
+                <input type="checkbox" id="4" value="" />
+                <i class="fa fa-check hidden"></i>
+            </label>
+        </div>
+        <div class="col-md-2 nopad text-center">
+            <label class="image-checkbox" id="5">
+                <img class="img-responsive" src="https://dummyimage.com/600x400/000/fff" />
+                <input type="checkbox" id="5" value="" />
+                <i class="fa fa-check hidden"></i>
+            </label>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+<script>
+
+/* ================== Push - Pull Functionality ================== */
+
+    var _lastButton = [];
+    var _lastButtonClass = [];
+
+    function pushElement(elementID) {
+        var element = document.getElementById(elementID);
+        if (element) {
+            _lastButton.push(element);
+            _lastButtonClass.push(element.getAttribute("class"));
+            element.setAttribute("class", "btn btn-default");
+            $("body").css("cursor", "progress");
+        }
+    }
+
+    function popElement() {
+        var element = _lastButton.pop();
+        var elementClass = _lastButtonClass.pop();
+        if (element) {
+            element.setAttribute("class", elementClass);
+        }
+        $("body").css("cursor", "default");
+    }
+
+/* ================== Push - Pull Functionality ================== */
+/* ================== Tag - unTag Functionality ================== */
+    // image gallery
+    // init the state from the input
+    $(".image-checkbox").each(function () {
+        if ($(this).find('input[type="checkbox"]').first().attr("checked")) {
+            $(this).addClass('image-checkbox-checked');
+        }
+        else {
+            $(this).removeClass('image-checkbox-checked');
+        }
+    });
+
+    // sync the state to the input
+    $(".image-checkbox").on("click", function (e) {
+        $(this).toggleClass('image-checkbox-checked');
+        var $checkbox = $(this).find('input[type="checkbox"]');
+        $checkbox.prop("checked", !$checkbox.prop("checked"))
+        e.preventDefault();
+    });
+
+    //function btnClickImageHandler(obj) {
+    //    $('#3').toggleClass('image-checkbox-checked');
+    //    var $checkbox = $('#3').find('input[type="checkbox"]');
+    //    $checkbox.prop("checked", !$checkbox.prop("checked"))
+    //}
+
+/* ================== Tag - unTag Functionality ================== */
+/* ================== Ready and Click Handlers  ================== */
+    $(function () // called when the body is ready
+    {
+        console.log("Ready");
+        $('#ExperimentCollection').on('change', onExperimentCollChanged);
+    });
+
+    function btnLoadExperimentsHandler(obj) {
+        getExperimentNames();
+    }
+
+    function onExperimentCollChanged() {
+        var comboBox = document.getElementById("ExperimentCollection");
+        _currentExperimentName = comboBox.options[comboBox.selectedIndex].text.trim();
+
+        if (_currentExperimentName != null || _currentExperimentName.length > 0) {
+            btnLoadTagHandler(document.getElementById('btnLoadTag'));
+        }
+    }
+
+    function btnLoadTagHandler(obj) {
+        loadTagValues(obj);
+    }
+
+    function btnSaveTagHandler(obj) {
+        console.log("btnSaveTagHandler");
+    }
+/* ====================== Ready and Click Handlers  ======================== */
+/* ====================== Loading Tag Values  ============================== */
+    var _ID_FOR_USER_DETECTION = 'userDetection';
+    var _imageLabelTag = [];
+
+    function loadTagValues(obj) {
+        // lets first load all the images relavant to the current experiment + output folder. 
+        // Two variables, _outputImageFiles and _imageLabelTag are populated after successful invocation of this function. 
+        if (!getImageFileNames()) {
+            return false;
+        }
+
+        _imageLabelTag = []; // TODO:: we might be losing some previous unsaved entries!!!
+        var dataVal = {
+            ImageDetectionProvider: _ID_FOR_USER_DETECTION,
+            ExperimentName: _currentExperimentName
+        };
+        var updatedTagJson = JSON.stringify(dataVal);
+        pushElement(obj.id);
+        InvokeWebAPICosmosDb('returnLabelledImageList', updatedTagJson, handlerCosmosDBReturnImageList);
+    }
+
+/* ====================== Loading Tag Values  ============================== */
+/* ====================== Web API functinality ============================= */
+    var invocationCosmos = new XMLHttpRequest();
+
+
+    function InvokeWebAPICosmosDb(urlAdd, dataval, handler) {
+        var url = 'http://localhost:5001/comsosDB/v1.0/' + urlAdd;
+
+        if (invocationCosmos) {
+            invocationCosmos.open('POST', url, true);
+            invocationCosmos.setRequestHeader('Content-Type', 'application/json');
+            invocationCosmos.onreadystatechange = handler;
+            invocationCosmos.send(dataval);
+        }
+        else {
+            var errorMsg = "No Invocation TookPlace At All";
+            $('#lblResult').html(errorMsg);
+        }
+    }
+
+    function handlerCosmosDBReturnImageList(evtXHR) {
+        //console.log('handlerCosmosDBReturnImageList');
+        if (invocationCosmos.readyState == 4) {
+            if (invocationCosmos.status == 200) {
+                if (invocationCosmos.response) {
+                    $('#lblResult').html(invocationCosmos.response);
+                    loadCurrentLabels(invocationCosmos.response);
+                }
+                else {
+                    $('#lblResult').html("Null invocationCosmos.response");
+                }
+            }
+            else {
+                var AppendedText = "Invocation Errors Occured " + invocationCosmos.readyState + " and the status is " + invocationCosmos.status;
+                $('#lblResult').html(AppendedText);
+            }
+            popElement();
+        }
+    }
+
+    function loadCurrentLabels(response) {
+        //console.log('loadCurrentLabels');
+        _imageLabelTag = [];
+        var tp = $.parseJSON(response);
+        if (tp) {
+            var result = tp["result"];
+            if (result) {
+                for (var j = 0; j < result.length; j++) {           // only one item is contained in the array
+                    var detectedItems = result[j]["detectedItems"]; // leap of faith
+                    if (detectedItems) {
+                        for (var i = 0; i < detectedItems.length; i++) {
+                            if (detectedItems[i]) {
+                                _imageLabelTag.push(detectedItems[i]["ImageName"]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Me just thinks this makes a better solution. 
+        sleep(500).then(() => {
+            loadImages();
+        });
+    }
+
+
+    function sleep(time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+    }
+
+/* ====================== Web API functinality ============================= */
+/* ====================== Load images ====================================== */
+
+    function loadImages() {
+        if (_outputImageFiles.length > 0) {
+            var fileUri = 'https://' + _account + '.file.core.windows.net' + "/" + _destinationShare + "/" + _destinationFolder + "/" + _currentExperimentName + "/" + _outputFolder + "/";
+            for (var i = 0; i < _outputImageFiles.length; i++) {
+                var completeUri = fileUri + _outputImageFiles[i] + _sas; 
+
+                console.log(completeUri);
+                var element = $('#' + i.toString().trim());
+                if (element) {
+                    var imgElement = element.find('img');
+                    if (imgElement) {
+                        console.log(i.toString());
+                        imgElement.attr("src", completeUri);
+                    }
+                }
+            }
+        }
+        else {
+            $('#lblResult').html('loadImages : outputFile length = 0');
+        }
+    }
+
+
+/* ======================= Load images ====================================== */
+/* ======================= Azure File Share Functions ======================= */
+
+    var _account = '';
+    var _sas = '';
+    var _outputImageFiles = [];
+    var _experimentNames = [];
+    var _destinationShare = '';
+    var _destinationFolder = '';
+    var _currentExperimentName = '';
+    var _outputFolder = ''; 
+    var _fileExtension = ".jpg"; 
+
+
+    function getExperimentNames() {
+        var fileService = getFileService();
+        if (!fileService)
+            return;
+
+        if (!checkExperimentNameParameters())
+            return null;
+
+        $("body").css("cursor", "progress");
+        fileService.listFilesAndDirectoriesSegmented(_destinationShare, _destinationFolder, null, function (error, results) {
+            if (error) {
+                console.log(error);
+                $("body").css("cursor", "default");
+            } else {
+                _experimentNames = [];
+                $('#ExperimentCollection').empty();
+                _outputImageFiles = [];
+                if (results.entries.directories.length < 1) {
+                    console.log('no directories returned !!! length = 0');
+                }
+                else {
+                        
+                        for (var i = 0, file; file = results.entries.directories[i]; i++) {
+                            _experimentNames.push(file.name);
+                            var option = '';
+                            option += '<option value="' + file.name + '">' + file.name + '</option>';
+                            $('#ExperimentCollection').append(option);
+                    }
+                    onExperimentCollChanged();
+                }
+            }
+        });
+        $("body").css("cursor", "default");
+    }
+
+    function checkExperimentNameParameters() {
+        _destinationShare = $('#txtDestinationShare').val();
+
+        if (_destinationShare == null || _destinationShare.trim().length < 1) {
+            alert('Please enter a valid storage destination share name!');
+            return false;
+        }
+
+        _destinationFolder = $('#txtDestinationDirectory').val();
+
+        if (_destinationFolder == null || _destinationFolder.trim().length < 1) {
+            alert('Please enter a valid destination folder name!');
+            return false;
+        }
+        return true;
+    }
+
+    function getImageFileNames() {
+        var fileService = getFileService();
+        if (!fileService)
+            return false;
+
+        if (!checkExperimentNameParameters())
+            return false;
+
+        if (!checkImageFilesParameters())
+            return false;
+
+
+        $("body").css("cursor", "progress");
+        var df = _destinationFolder + "/" + _currentExperimentName + "/" + _outputFolder; 
+        console.log(df); 
+        fileService.listFilesAndDirectoriesSegmented(_destinationShare, df, null, function (error, results) {
+            console.log('getImageFileNames');
+            if (error) {
+                console.log(error);
+            } else {
+                _outputImageFiles = [];
+                if (results.entries.files.length < 1) {
+                    console.log('no files returned !!! length = 0');
+                }
+                else {
+                    for (var i = 0, file; file = results.entries.files[i]; i++) {
+                        if (file.name.includes(_fileExtension)) {
+                            _outputImageFiles.push(file.name);
+                            console.log(file.name);
+                        }
+                    }
+                }
+            }
+        });
+        $("body").css("cursor", "default");
+        return true; 
+    }
+
+    function checkImageFilesParameters() {
+        _outputFolder = $('#txtOutputFolder').val();
+
+        if (_outputFolder == null || _outputFolder.trim().length < 1) {
+            alert('Please enter a valid output folder name!');
+            return false;
+        }
+
+        var comboBox = document.getElementById("ExperimentCollection");
+        _currentExperimentName = comboBox.options[comboBox.selectedIndex].text.trim();
+
+        if (_currentExperimentName == null || _currentExperimentName.length < 1) {
+            alert('Please select a valid experiment name!');
+            return false;
+        }
+        return true;
+    }
+
+    function getFileService() {
+        if (!checkFileShareParameters())
+            return null;
+
+        fileUri = 'https://' + _account + '.file.core.windows.net';
+        var fileService = AzureStorage.File.createFileServiceWithSas(fileUri, _sas).withFilter(new AzureStorage.File.ExponentialRetryPolicyFilter());
+        return fileService;
+    }
+
+    function checkFileShareParameters() {
+        _account = $('#txtAzureFileShareAccount').val();
+
+        if (_account == null || _account.trim().length < 1) {
+            alert('Please enter a valid storage account name!');
+            return false;
+        }
+
+        _sas = $('#txtSAS').val();
+
+        if (_sas == null || _sas.trim().length < 1) {
+            alert('Please enter a valid SAS Token!');
+            return false;
+        }
+        return true;
+    }
+
+
+  
+//        var account = document.getElementById('account').value;
+//        var sas = document.getElementById('sas').value;
+//        var fileShare = '';
+//        var currentPath = '';
+//        var fileUri = '';
+//        var currentPath = [];
+
+//            function checkParameters() {
+//            account = document.getElementById('account').value;
+//        sas = document.getElementById('sas').value;
+
+//                if (account == null || account.length < 1)
+//                {
+//            alert('Please enter a valid storage account name!');
+//        return false;
+//    }
+//                if (sas == null || sas.length < 1)
+//                {
+//            alert('Please enter a valid SAS Token!');
+//        return false;
+//    }
+
+//    return true;
+//}
+
+//            function getFileService() {
+//                if (!checkParameters())
+//            return null;
+
+//        fileUri = 'https://' + account + '.file.core.windows.net';
+//        var fileService = AzureStorage.File.createFileServiceWithSas(fileUri, sas).withFilter(new AzureStorage.File.ExponentialRetryPolicyFilter());
+//        return fileService;
+//    }
+
+//    function refreshFileShareList()
+//            {
+//                var fileService = getFileService();
+//        if (!fileService)
+//            return;
+
+//        document.getElementById('result').innerHTML = 'Loading...';
+//                fileService.listSharesSegmented(null, function (error, results) {
+//                    if (error) {
+//            alert('List file share error, please open browser console to view detailed error');
+//        console.log(error);
+//                    } else {
+//                        var output = [];
+//                        output.push('<tr>',
+//                                        '<th>ShareName</th>',
+//                                        '<th>ShareETag</th>',
+//                                        '<th>ShareQuota</th>',
+//                                        '<th>LastModified</th>',
+//                                        '<th>Operations</th>',
+//                                    '</tr>');
+//                        if (results.entries.length < 1) {
+//            output.push('<tr><td>Empty results...</td></tr>');
+//        }
+//                        for (var i = 0, share; share = results.entries[i]; i++) {
+//            output.push('<tr>',
+//                '<td>', share.name, '</td>',
+//                '<td>', share.etag, '</td>',
+//                '<td>', share.quota, '</td>',
+//                '<td>', share.lastModified, '</td>',
+//                '<td>', '<button class="btn btn-xs btn-danger" onclick="deleteFileShare(\'', share.name, '\')">Delete</button> ',
+//                '<button class="btn btn-xs btn-success" onclick="viewFileShare(\'', share.name, '\')">Select</button>', '</td>',
+//                '</tr>');
+//        }
+//                        document.getElementById('result').innerHTML = '<table class="table table-condensed table-bordered">' + output.join('') + '</table>';
+//    }
+//});
+//}
+
+//            function deleteFileShare(name) {
+//                var fileService = getFileService();
+//        if (!fileService)
+//            return;
+
+//                fileService.deleteShareIfExists(name, function(error, result){
+//                    if (error) {
+//            alert('Delete file share failed, open browser console for more detailed info.');
+//        console.log(error);
+//                    } else {
+//            alert('Delete ' + name + ' successfully!');
+//        refreshFileShareList();
+//    }
+//});
+//}
+
+//            function createFileShare() {
+//                var fileService = getFileService();
+//        if (!fileService)
+//            return;
+
+//        var share = document.getElementById('newfileshare').value;
+//                if (!AzureStorage.File.Validate.shareNameIsValid(share, function(err, res){})) {
+//            alert('Invalid share name!');
+//        return;
+//    }
+
+//                fileService.createShareIfNotExists(share, function(error, result){
+//                    if (error) {
+//            alert('Create file share failed, open browser console for more detailed info.');
+//        console.log(error);
+//                    } else {
+//            alert('Create ' + share + ' successfully!');
+//        refreshFileShareList();
+//    }
+//});
+//}
+
+//            function viewFileShare(selectedFileShare) {
+//            fileShare = selectedFileShare;
+//        alert('Selected ' + fileShare + ' !');
+//        currentPath = [];
+//        refreshDirectoryFileList();
+//    }
+
+//            function backDirectory() {
+//                var fileService = getFileService();
+//        if (!fileService)
+//            return;
+
+//                if (fileShare.length < 1) {
+//            alert('Please select one file share!');
+//        return;
+//    }
+
+//    if (currentPath.length > 0)
+//        currentPath.pop();
+
+//    refreshDirectoryFileList();
+//}
+
+//function refreshDirectoryFileList(directory)
+//            {
+//                var fileService = getFileService();
+//        if (!fileService)
+//            return;
+
+//                if (fileShare.length < 1) {
+//            alert('Please select one file share!');
+//        return;
+//    }
+
+//    if (typeof directory === 'undefined')
+//        var directory = '';
+//    if (directory.length > 0)
+//        currentPath.push(directory);
+//    directory = currentPath.join('\\\\');
+
+//    document.getElementById('directoryFiles').innerHTML = 'Loading...';
+//                fileService.listFilesAndDirectoriesSegmented(fileShare, directory, null, function (error, results) {
+//                    if (error) {
+//            alert('List directories and files error, please open browser console to view detailed error');
+//        console.log(error);
+//                    } else {
+//            document.getElementById('path').innerHTML = directory;
+
+//        var outputDirectory = [];
+//                        outputDirectory.push('<tr>',
+//                                        '<th>Type</th>',
+//                                        '<th>Name</th>',
+//                                        '<th>ContentLength</th>',
+//                                        '<th>Operations</th>',
+//                                    '</tr>');
+//                        if (results.entries.directories.length < 1 && results.entries.files.length < 1) {
+//            outputDirectory.push('<tr><td>Empty results...</td></tr>');
+//        }
+//                        for (var i = 0, dir; dir = results.entries.directories[i]; i++) {
+//            outputDirectory.push('<tr>',
+//                '<td>', 'DIR', '</td>',
+//                '<td>', dir.name, '</td>',
+//                '<td>', dir.contentLength, '</td>',
+//                '<td>', '<button class="btn btn-xs btn-danger" onclick="deleteDirectory(\'', dir.name, '\')">Delete</button> ',
+//                '<button class="btn btn-xs btn-success" onclick="refreshDirectoryFileList(\'', dir.name, '\')">View</button>', '</td>',
+//                '</tr>');
+//        }
+
+//        var outputFiles = [];
+//        var currentDir = currentPath.join('\\');
+//        if (currentPath.length > 0)
+//            currentDir += '/';
+
+//                        for (var i = 0, file; file = results.entries.files[i]; i++) {
+//            outputFiles.push('<tr>',
+//                '<td>', 'FILE', '</td>',
+//                '<td>', file.name, '</td>',
+//                '<td>', file.contentLength, '</td>',
+//                '<td>', '<button class="btn btn-xs btn-danger" onclick="deleteFile(\'', file.name, '\')">Delete</button> ',
+//                '<a class="btn btn-xs btn-success" href="', fileUri + '/' + fileShare + '/' + currentDir + file.name + sas, '" download>Download</a>', '</td>',
+//                '</tr>');
+//        }
+//                        document.getElementById('directoryFiles').innerHTML = '<table class="table table-condensed table-bordered">' + outputDirectory.join('') + outputFiles.join('') + '</table>';
+//    }
+//});
+//}
+
+//            function deleteDirectory(name) {
+//                var fileService = getFileService();
+//        if (!fileService)
+//            return;
+//                if (fileShare.length < 1) {
+//            alert('Please select a file share!');
+//        return;
+//    }
+
+//                fileService.deleteDirectoryIfExists(fileShare, currentPath.join('\\\\') + '\\' + name, function(error, results) {
+//                    if (error) {
+//            alert('Delete directory failed, open browser console for more detailed info.');
+//        console.log(error);
+//                    } else {
+//            alert('Delete ' + name + ' successfully!');
+//        refreshDirectoryFileList();
+//    }
+//});
+//}
+
+//            function deleteFile(file) {
+//                var fileService = getFileService();
+//        if (!fileService)
+//            return;
+
+//                fileService.deleteFileIfExists(fileShare, currentPath.join('\\\\'), file, function(error, results) {
+//                    if (error) {
+//            alert('Delete file failed, open browser console for more detailed info.');
+//        console.log(error);
+//                    } else {
+//            alert('Delete ' + file + ' successfully!');
+//        refreshDirectoryFileList();
+//    }
+//});
+//}
+
+//            function createDirectory() {
+//                var fileService = getFileService();
+//        if (!fileService)
+//            return;
+
+//        var directoryName = document.getElementById('newdirectory').value;
+//                fileService.createDirectoryIfNotExists(fileShare, currentPath.join('\\\\') + '\\' + directoryName, function(error, results) {
+//                    if (error) {
+//            alert('Create directory failed, open browser console for more detailed info.');
+//        console.log(error);
+//                    } else {
+//            alert('Create ' + directoryName + ' successfully!');
+//        refreshDirectoryFileList();
+//    }
+//});
+//}
+
+//            function displayProcess(process) {
+//            document.getElementById('progress').style.width = process + '%';
+//        document.getElementById('progress').innerHTML = process + '%';
+//    }
+
+//            function createFileFromStream(checkMD5) {
+//                var files = document.getElementById('files').files;
+//                if (!files.length) {
+//            alert('Please select a file!');
+//        return;
+//    }
+//    var file = files[0];
+
+//    var fileService = getFileService();
+//    if (!fileService)
+//        return;
+
+//    var btn = document.getElementById("upload-button");
+//    btn.disabled = true;
+//    btn.innerHTML = "Uploading";
+//    var finishedOrError = false;
+//                var options = {
+//            contentSettings: {
+//            contentType: file.type
+//    },
+//    storeFileContentMD5 : checkMD5
+//};
+
+//                var speedSummary = fileService.createFileFromBrowserFile(fileShare, currentPath.join('\\\\'), file.name, file, options, function(error, result, response) {
+//            finishedOrError = true;
+//        btn.disabled = false;
+//        btn.innerHTML = "Upload";
+//                    if (error) {
+//            alert("Upload failed, open browser console for more detailed info.");
+//        console.log(error);
+//        displayProcess(0);
+//                    } else {
+//            displayProcess(100);
+//        setTimeout(function() { // Prevent alert from stopping UI progress update
+//            alert('Upload successfully!');
+//        }, 1000);
+//        refreshDirectoryFileList();
+//    }
+//});
+
+//                speedSummary.on('progress', function () {
+//                    var process = speedSummary.getCompletePercent();
+//        displayProcess(process);
+//    });
+//}
+
+
+
+    </script>
+}
