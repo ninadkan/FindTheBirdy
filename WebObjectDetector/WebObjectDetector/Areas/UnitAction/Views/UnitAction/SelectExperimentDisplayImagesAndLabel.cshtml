@@ -22,7 +22,7 @@
         <label class="control-label vcenter">SAS Key :</label>
     </div>
     <div class="col-md-2">
-        <input class="form-control btn-block" id="txtSAS" value='' />
+        <input class="form-control btn-block" id="txtSAS" value='?sv=2018-03-28&ss=f&srt=sco&sp=rl&se=2019-01-31T01:37:17Z&st=2019-01-11T17:37:17Z&spr=https&sig=bAKDPGhCD573RUdkzyaspOVOu8I4ciEWV0xuMX3mnLY%3D' />
     </div>
 </div>
 
@@ -114,7 +114,7 @@
 </div>
 
 <div id="dynamicImages">
-    <div class="row">
+    @*<div class="row">
         <div class="col-md-2 nopad text-center">
             <label class="image-checkbox" id="1">
                 <img class="img-responsive img-thumbnail" src="https://dummyimage.com/600x400/000/fff">
@@ -150,7 +150,7 @@
                 <i class="fa fa-check hidden"></i>
             </label>
         </div>
-    </div>
+    </div>*@
 </div>
 
 
@@ -162,6 +162,7 @@
 
     var _lastButton = [];
     var _lastButtonClass = [];
+    var _dataDirty = false; 
 
     function pushElement(elementID) {
         var element = document.getElementById(elementID);
@@ -195,16 +196,18 @@
                 $(this).removeClass('image-checkbox-checked');
             }
         });
+        _dataDirty = false; 
     }
 
     // Amazing way to resolve dynamic event mapping. 
     // courtesy: https://jqueryhouse.com/jquery-on-method-the-issue-of-dynamically-added-elements/
     $('div#dynamicImages').on("click", "label", function (e) {
         $(this).toggleClass('image-checkbox-checked');
-        console.log($(this).attr('id'));
+        //console.log($(this).attr('id'));
 
         var $checkbox = $(this).find('input[type="checkbox"]');
-        $checkbox.prop("checked", !$checkbox.prop("checked"))
+        $checkbox.prop("checked", !$checkbox.prop("checked"));
+        _dataDirty = true; 
         e.preventDefault();
     }); 
 
@@ -234,14 +237,28 @@
     function btnLoadExperimentsHandler(obj) {
         getExperimentNames();
     }
-
+    var _bSaveInvokedBecauseDataDirty = false; 
     function onExperimentCollChanged() {
+
+        if (_dataDirty) {
+            // challenge is that the before save does first handshake, code carries on executing  and 
+            // Load of next item is called. 
+            _bSaveInvokedBecauseDataDirty = true; 
+            btnSaveTagHandler(document.getElementById('btnLoadTag'));
+        }
+        else {
+            loadNextComboBoxValue(); 
+        }
+    }
+
+    function loadNextComboBoxValue() {
         var comboBox = document.getElementById("ExperimentCollection");
         _currentExperimentName = comboBox.options[comboBox.selectedIndex].text.trim();
 
         if (_currentExperimentName != null || _currentExperimentName.length > 0) {
             btnLoadTagHandler(document.getElementById('btnLoadTag'));
         }
+
     }
 
     function btnLoadTagHandler(obj) {
@@ -249,8 +266,7 @@
     }
 
     function btnSaveTagHandler(obj) {
-        console.log("btnSaveTagHandler");
-        SaveTagHandler(obj);
+         SaveTagHandler(obj);
     }
 /* ====================== Ready and Click Handlers  ======================== */
 /* ====================== Loading Tag Values  ============================== */
@@ -264,7 +280,7 @@
             return false;
         }
 
-        _imageLabelTag = []; // TODO:: we might be losing some previous unsaved entries!!!
+        _imageLabelTag = []; 
         var dataVal = {
             ImageDetectionProvider: _ID_FOR_USER_DETECTION,
             ExperimentName: _currentExperimentName
@@ -277,7 +293,7 @@
 /* ====================== Loading Tag Values  ============================== */
 /* ====================== Saving  Tag Values  ============================== */
     function SaveTagHandler(obj) {
-        console.log('SaveTagHandler');
+        //console.log('SaveTagHandler');
 
         if (!checkExperimentNameParameters())
             return false;
@@ -289,7 +305,7 @@
             if ($(this).hasClass('image-checkbox-checked')) {
                 var $divElement = $(this).find('div');
                 if ($divElement) {
-                    console.log($divElement.html());
+                    //console.log($divElement.html());
                     var tempObj = { ImageName: $divElement.html(), ConfidenceScore: 1.0 };
                     objArray.push(tempObj)
                 }
@@ -327,13 +343,16 @@
                 $('#lblResult').html(AppendedText);
             }
             popElement();
+            if (_bSaveInvokedBecauseDataDirty == true) {
+                _bSaveInvokedBecauseDataDirty = false; 
+                loadNextComboBoxValue();
+            }
         }
     }
 
 /* ====================== Saving  Tag Values  ============================== */
 /* ====================== Web API functinality ============================= */
     var invocationCosmos = new XMLHttpRequest();
-
 
     function InvokeWebAPICosmosDb(urlAdd, dataval, handler) {
         var url = 'http://localhost:5001/comsosDB/v1.0/' + urlAdd;
@@ -429,8 +448,8 @@
                         _innerHtml.push('<label class="image-checkbox" id="');
                         _innerHtml.push('imgLabel_' + currentCount.toString());
                         _innerHtml.push('">');
+                        //_innerHtml.push('<img class="img-responsive" height="200" width="200" src="');
                         _innerHtml.push('<img class="img-responsive img-thumbnail" height="200" width="200" src="');
-                        
                         _innerHtml.push(imgSrc);
                         _innerHtml.push('">');
                         _innerHtml.push('<div class="bottomleft" id="');
