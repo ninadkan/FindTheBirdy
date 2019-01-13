@@ -49,7 +49,7 @@
         <label class="control-label vcenter">SAS Key :</label>
     </div>
     <div class="col-md-2">
-        <input class="form-control btn-block" id="txtSAS" value='?sv=2018-03-28&ss=f&srt=sco&sp=rl&se=2019-01-31T01:37:17Z&st=2019-01-11T17:37:17Z&spr=https&sig=bAKDPGhCD573RUdkzyaspOVOu8I4ciEWV0xuMX3mnLY%3D' />
+        <input class="form-control btn-block" id="txtSAS" type="password" value='?sv=2018-03-28&ss=f&srt=sco&sp=rl&se=2019-01-31T01:37:17Z&st=2019-01-11T17:37:17Z&spr=https&sig=bAKDPGhCD573RUdkzyaspOVOu8I4ciEWV0xuMX3mnLY%3D' />
     </div>
 </div>
 
@@ -69,6 +69,12 @@
     </div>
     <div class="col-md-2">
         <input class="form-control btn-block" id="txtDestinationDirectory" value="object-detection" />
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Use source directory:</label>
+    </div>
+    <div class="col-md-1 ">
+         <input class="form-control" type="checkbox" id="chkSourceDirectory" />
     </div>
 </div>
 
@@ -266,6 +272,16 @@
             initImages();
             $('#ExperimentCollection').on('change', onExperimentCollChanged);
 
+            $('#chkSourceDirectory').change(function () {
+                if ($(this).is(":checked")) {
+                    $("#txtOutputFolder").prop('disabled', true);
+                }
+                else {
+                    $("#txtOutputFolder").prop('disabled', false);
+                }
+            });
+
+
             /* Pagination stuff */
             _itemsPerPage = parseInt($('#cmbItemsPerPage option:selected').val(), 10);
             $('#cmbItemsPerPage').on('change', oncmbItemsPerPageChanged);
@@ -281,6 +297,9 @@
         });
 
         function btnLoadExperimentsHandler(obj) {
+            // disable the checkBox as otherwise it'll just complicate the issue
+            // one can load from output folder and can try and save the tag under main folder label. 
+            $("#chkSourceDirectory").prop('disabled', true);
             getExperimentNames();
         }
 
@@ -630,7 +649,9 @@
         /* ====================== Pagination handler  ============================== */
         /* ====================== Loading Tag Values  ============================== */
         var _ID_FOR_USER_DETECTION = 'userDetection';
+        var _ID_FOR_MAIN_IMAGE_TAGGING = 'userMainImageDetection'; 
         var _imageLabelTag = [];
+
 
         function loadTagValues(obj) {
             // lets first load all the images relavant to the current experiment + output folder.
@@ -640,11 +661,33 @@
             }
 
             _imageLabelTag = [];
+
+
+         
+            if (!document.getElementById('chkSourceDirectory').checked) {
+                _outputFolder = $('#txtOutputFolder').val();
+                if (_outputFolder == null || _outputFolder.trim().length < 1) {
+                    alert('Please enter a valid output folder name!');
+                    return false;
+                }
+            }
+
             var dataVal = {
                 ImageDetectionProvider: _ID_FOR_USER_DETECTION,
                 ExperimentName: _currentExperimentName
             };
+
+            //override if it is something else
+            if (document.getElementById('chkSourceDirectory').checked) {
+                dataVal = {
+                    ImageDetectionProvider: _ID_FOR_MAIN_IMAGE_TAGGING,
+                    ExperimentName: _currentExperimentName
+                };
+            }
+ 
+            
             var updatedTagJson = JSON.stringify(dataVal);
+            console.log(updatedTagJson);
             pushElement(obj.id);
             InvokeWebAPICosmosDb('returnLabelledImageList', updatedTagJson, handlerCosmosDBReturnImageList);
         }
@@ -680,8 +723,19 @@
                     DateTime: d.toUTCString(),
                     detectedItems: objArray
                 };
+
+                // override
+                if (document.getElementById('chkSourceDirectory').checked) {
+                    dataVal = {
+                        ImageDetectionProvider: _ID_FOR_MAIN_IMAGE_TAGGING,
+                        ExperimentName: _currentExperimentName,
+                        DateTime: d.toUTCString(),
+                        detectedItems: objArray
+                    };
+                }
+
                 var updatedTagJson = JSON.stringify(dataVal);
-                //console.log(updatedTagJson);
+                console.log(updatedTagJson);
                 pushElement(obj.id);
                 InvokeWebAPICosmosDb('saveLabelledImageList', updatedTagJson, handlerCosmosDBSaveImageList);
             }
@@ -808,8 +862,18 @@
                 var currentCount = 0;
                 var numberOfImagesPerRow = parseInt($('#cmbItemsPerPage option:selected').val(), 10); 
                 var totalNumberOfImagesToBeDisplayed = endIndex - startIndex; 
-                var numberOfRowsToBeDisplayed = Math.floor(totalNumberOfImagesToBeDisplayed / numberOfImagesPerRow) + (totalNumberOfImagesToBeDisplayed % numberOfImagesPerRow ? 1 : 0);;
-                var fileUri = 'https://' + _account + '.file.core.windows.net' + "/" + _destinationShare + "/" + _destinationFolder + "/" + _currentExperimentName + "/" + _outputFolder + "/";
+                var numberOfRowsToBeDisplayed = Math.floor(totalNumberOfImagesToBeDisplayed / numberOfImagesPerRow) + (totalNumberOfImagesToBeDisplayed % numberOfImagesPerRow ? 1 : 0);
+
+
+                var fileUri = '';
+
+                if (document.getElementById('chkSourceDirectory').checked) {
+                    fileUri = 'https://' + _account + '.file.core.windows.net' + "/" + _destinationShare + "/" + _destinationFolder + "/" + _currentExperimentName + "/";
+                } else {
+                    fileUri = 'https://' + _account + '.file.core.windows.net' + "/" + _destinationShare + "/" + _destinationFolder + "/" + _currentExperimentName + "/" + _outputFolder + "/";
+                }
+
+                 
 
                 for (var currentLine = 0; currentLine < numberOfRowsToBeDisplayed; currentLine++) {
                     _innerHtml.push('<div class="row">');
@@ -825,6 +889,7 @@
                             _innerHtml.push('<label class="image-checkbox" id="');
                             _innerHtml.push('imgLabel_' + currentCount.toString());
                             _innerHtml.push('">');
+                            //TODO:: height and width should be adjusted depending on the number of items per row. 
                             _innerHtml.push('<img class="img-responsive img-thumbnail" height="200" width="200" src="');
                             _innerHtml.push(imgSrc);
                             _innerHtml.push('">');
@@ -971,7 +1036,14 @@
 
 
             $("body").css("cursor", "progress");
-            var df = _destinationFolder + "/" + _currentExperimentName + "/" + _outputFolder;
+
+            var df = ''; 
+            if (document.getElementById('chkSourceDirectory').checked) {
+                df = _destinationFolder + "/" + _currentExperimentName ;
+            } else {
+                df =  _destinationFolder + "/" + _currentExperimentName + "/" + _outputFolder;
+            }
+            
             //console.log(df);
             fileService.listFilesAndDirectoriesSegmented(_destinationShare, df, null, function (error, results) {
                 //console.log('getImageFileNames');
@@ -997,12 +1069,14 @@
         }
 
         function checkImageFilesParameters() {
-            _outputFolder = $('#txtOutputFolder').val();
-
-            if (_outputFolder == null || _outputFolder.trim().length < 1) {
-                alert('Please enter a valid output folder name!');
-                return false;
+            if (!document.getElementById('chkSourceDirectory').checked) {
+                _outputFolder = $('#txtOutputFolder').val();
+                if (_outputFolder == null || _outputFolder.trim().length < 1) {
+                    alert('Please enter a valid output folder name!');
+                    return false;
+                }
             }
+
 
             var comboBox = document.getElementById("ExperimentCollection");
             _currentExperimentName = comboBox.options[comboBox.selectedIndex].text.trim();
