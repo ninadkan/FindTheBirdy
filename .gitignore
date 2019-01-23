@@ -18,7 +18,7 @@ python/mobileNet/MobileNetSSD_deploy.caffemodel
 python/googleImageDetector.pyc
 #Python/mobileNet/MobileNetSSD_deploy.caffemodel
 data/
-Docker/
+Docker/keys
 data/*.jpg
 /data/outputopencv/*.jpg
 Python/mobileNet/MobileNetSSD_deploy.caffemodel

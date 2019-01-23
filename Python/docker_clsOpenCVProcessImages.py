@@ -1,4 +1,4 @@
-#lets create the basic template
+code #lets create the basic template
 # sources
 # https://www.programcreek.com/python/example/89404/cv2.createBackgroundSubtractorMOG2
 # https://docs.opencv.org/3.3.0/db/d5c/tutorial_py_bg_subtraction.html
