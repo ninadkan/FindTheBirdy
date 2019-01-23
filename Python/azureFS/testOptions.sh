@@ -1,0 +1,1 @@
+curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: X-Requested-With" -X OPTIONS --verbose http://localhost:5000/azureStorage/v1.0/GetAllSourceUniqueExperimentNames
