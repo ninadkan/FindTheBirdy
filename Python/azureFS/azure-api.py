@@ -297,4 +297,5 @@ if __name__ == '__main__':
     # < Content-Length: 0
     # < Server: Werkzeug/0.14.1 Python/3.6.8
     # < Date: Sat, 19 Jan 2019 14:19:50 GMT
-    app.run(debug=True, host='0.0.0.0')
+    #app.run(debug=True, host='0.0.0.0:')
+    app.run(debug=True)

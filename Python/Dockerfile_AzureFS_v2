@@ -1,0 +1,37 @@
+FROM python:3.6
+LABEL maintainer="ninad_kanthi@hotmail.com"
+
+RUN mkdir /home/azurefs
+
+ENV PATH="/home/azurefs:${PATH}"
+
+# ssh
+ENV SSH_PASSWD "root:Docker!"
+RUN apt-get update \
+        && apt-get install -y --no-install-recommends dialog \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends openssh-server \
+        && echo "$SSH_PASSWD" | chpasswd \
+        && pip install opencv-contrib-python \
+        && pip install flask \
+        && pip install flask_cors \
+        && pip install azure-storage-file
+        && pip install gunicorn
+
+WORKDIR /home/azurefs
+
+COPY docker/sshd_config /etc/ssh/
+
+EXPOSE 5000 2222
+
+COPY azureFS/azure-api.py ./
+COPY azureFS/azureCommon.py ./
+COPY azureFS/azureFileShareTest.py ./
+COPY azureFS/mask_creation.py ./
+COPY azureFS/__init__.py ./
+
+COPY docker/init_azurefs.sh ./
+RUN chmod +x init_azurefs.sh
+
+# following command takes fairly long to execute, do I need this? docker im
+ENTRYPOINT ["./init_azurefs.sh"]
