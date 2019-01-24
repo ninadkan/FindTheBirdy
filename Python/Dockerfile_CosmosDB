@@ -1,0 +1,48 @@
+FROM python:3.6
+LABEL maintainer="ninad_kanthi@hotmail.com"
+
+RUN mkdir /home/cosmos
+
+ENV PATH="/home/cosmos:${PATH}"
+
+# ssh
+ENV SSH_PASSWD "root:Docker!"
+RUN apt-get update \
+        && apt-get install -y --no-install-recommends dialog \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends openssh-server \
+        && echo "$SSH_PASSWD" | chpasswd \
+        && pip install opencv-contrib-python \
+        && pip install flask \
+        && pip install flask_cors \
+        && pip install azure-cosmos \
+        && pip install gunicorn
+
+WORKDIR /home/cosmos
+
+COPY docker/sshd_config /etc/ssh/
+
+EXPOSE 443 5001 2222
+
+# copy python files
+COPY cosmosDB/cosmosDB-api.py ./
+COPY cosmosDB/cosmosDBWrapper.py ./
+COPY cosmosDB/savePhotoList.py ./
+COPY cosmosDB/__init__.py ./
+# DANGER CHANGING FILE STRUCTURE HERE, THINK ABOUT USING SYMBOLOC LINKS
+COPY common.py ./
+
+# copy start-up files
+COPY cosmosDB/install/init_cosmosDB.sh ./
+COPY cosmosDB/install/startUnicorn.sh ./
+#copy certificate file
+COPY cosmosDB/certs/xip.io.key ./
+COPY cosmosDB/certs/xip.io.crt ./
+COPY cosmosDB/certs/xip.io.csr ./
+COPY cosmosDB/certs/xip.io.crt ./
+
+
+RUN chmod +x init_cosmosDB.sh
+RUN chmod +x startUnicorn.sh
+
+ENTRYPOINT ["./init_cosmosDB.sh"]

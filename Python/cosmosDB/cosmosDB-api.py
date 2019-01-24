@@ -102,6 +102,8 @@ CORS(app)
 @app.route('/comsosDB/v1.0/collections', methods=['GET'])
 def get_collections():
     global clsObj
+    if (clsObj == None):
+        clsObj = clsCosmosWrapper()
    
     result, link = clsObj.returnAllCollection()
     return jsonify({'result': result})
@@ -113,6 +115,10 @@ def get_documents():
 
     collectionLink = request.json['collectionLink']
     global clsObj
+    if (clsObj == None):
+        clsObj = clsCosmosWrapper()
+   
+
     result = clsObj.returnAllDocuments(collectionLink)
     return jsonify({'result': result})
 
@@ -126,6 +132,9 @@ def get_document():
     docId = unquote(docId)
     
     global clsObj
+    if (clsObj == None):
+        clsObj = clsCosmosWrapper()
+   
    
     result = clsObj.returnDocument(docId)
     return jsonify(result)
@@ -169,6 +178,10 @@ def saveLabelledImageList():
         abort(400)
 
     global clsObj
+    if (clsObj == None):
+        clsObj = clsCosmosWrapper()
+   
+
     clsObj.saveLabelledImageListImpl(   request.json[common._IMAGE_DETECTION_PROVIDER_TAG],
                                         request.json[common._EXPERIMENTNAME_TAG],
                                         request.json)
@@ -181,10 +194,11 @@ def returnLabelledImageList():
         abort(400)
 
     global clsObj
+    if (clsObj == None):
+        clsObj = clsCosmosWrapper()
+
     rv = clsObj.returnLabelledImageListImpl(request.json[common._IMAGE_DETECTION_PROVIDER_TAG],
                                             request.json[common._EXPERIMENTNAME_TAG])
-
-
     
     if (rv == None):
         return make_response(jsonify({'error': 'OK'}), 500)
@@ -195,6 +209,9 @@ def returnLabelledImageList():
 @app.route('/comsosDB/v1.0/returnAllExperimentResult', methods=['GET'])
 def returnAllExperimentResult():
     global clsObj
+    if (clsObj == None):
+        clsObj = clsCosmosWrapper()
+   
     rv = clsObj.returnAllExperimentResultImpl()
     
     if (rv == None):
@@ -204,5 +221,11 @@ def returnAllExperimentResult():
 
 
 if __name__ == '__main__':
+    # print ("executing the main")
     clsObj = clsCosmosWrapper()
-    app.run(debug=True, host='127.0.0.1', port=5001)
+    # app.run(debug=True, host='0.0.0.0', port=5001)
+    # as we go under docker, gunicorn and nginx will forward any request and 
+    # will worry about port mappings , does mean that running this locally with 
+    # python cosmosDB-api.py command might fail with port conflict and not available. 
+    app.run(debug=True)
+    # NOT TRUE; THIS CODE OF MAIN IS NOT EXECUTED ME THINKS AS THE __name__ is ! 'main'

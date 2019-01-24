@@ -15,22 +15,33 @@ RUN apt-get update \
         && pip install opencv-contrib-python \
         && pip install flask \
         && pip install flask_cors \
-        && pip install azure-storage-file
+        && pip install azure-storage-file \
+        && pip install gunicorn
 
 WORKDIR /home/azurefs
 
 COPY docker/sshd_config /etc/ssh/
 
-EXPOSE 5000 2222
+EXPOSE 443 5000 2222
 
+# copy python files
 COPY azureFS/azure-api.py ./
 COPY azureFS/azureCommon.py ./
 COPY azureFS/azureFileShareTest.py ./
 COPY azureFS/mask_creation.py ./
 COPY azureFS/__init__.py ./
 
-COPY docker/init_azurefs.sh ./
-RUN chmod +x init_azurefs.sh
+# copy start-up files
+COPY azureFS/install/init_azurefs.sh ./
+COPY azureFS/install/startUnicorn.sh ./
+#copy certificate file
+COPY azureFS/certs/xip.io.key ./
+COPY azureFS/certs/xip.io.crt ./
+COPY azureFS/certs/xip.io.csr ./
+COPY azureFS/certs/xip.io.crt ./
 
-# following command takes fairly long to execute, do I need this? docker im
+
+RUN chmod +x init_azurefs.sh
+RUN chmod +x startUnicorn.sh
+
 ENTRYPOINT ["./init_azurefs.sh"]

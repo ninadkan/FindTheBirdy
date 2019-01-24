@@ -1,0 +1,1 @@
+sudo docker run -d -t -i -e AZURE_ACN_NAME=nkdsvm -e AZURE_ACN_STRG_KEY=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA== -p 443:443 azurefs:0.1
