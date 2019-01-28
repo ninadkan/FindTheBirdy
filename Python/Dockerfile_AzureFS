@@ -35,11 +35,8 @@ COPY azureFS/__init__.py ./
 COPY azureFS/install/init_azurefs.sh ./
 COPY azureFS/install/startUnicorn.sh ./
 #copy certificate file
-COPY azureFS/certs/xip.io.key ./
-COPY azureFS/certs/xip.io.crt ./
-COPY azureFS/certs/xip.io.csr ./
-COPY azureFS/certs/xip.io.crt ./
-
+COPY docker/keys/privkey.key ./
+COPY docker/keys/fullchain.pem ./
 
 RUN chmod +x init_azurefs.sh
 RUN chmod +x startUnicorn.sh
