@@ -5,5 +5,11 @@ set COSMOSDB_DATABASE=experiment-find-the-birdy
 set AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
 set AZURE_ACN_NAME=nkdsvm
 set AZURE_ACN_STRG_KEY=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==
+set EVENT_HUB_ADDRESS=sb://ninadkeventhub.servicebus.windows.net/objectdetectorevents
+set EVENT_HUB_SENDER_SAS_POLICY=sender
+set EVENT_HUB_SENDER_SAS_KEY=jgJtaN8LAugWNbFDQDLrDu+pRDZJTCiswDhT5NygCkE=
+set EVENT_HUB_RECEIVER_SAS_POLICY=receiver
+set EVENT_HUB_RECEIVER_SAS_KEY=Zu46pTgoN3j2DmEh6jxhN0B2Zetaad1NQ2gGMlllu4Q=
+set EVENT_HUB_RECEIVER_CONSUMER_GRP=opencv
 
 

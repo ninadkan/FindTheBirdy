@@ -74,8 +74,6 @@ if (ExperimentNames is not None and len(ExperimentNames) > 0):
             print(ExperimentName.name)
             BoundingRectList = [1000] #[2500, 2000, 1500, 1000]
 
-
-
             for item in BoundingRectList:
                     delete_existing_files(ExperimentName.name)
                     # premature end of JPEG was detected with 2018-04-22_0247. Remove that image 
