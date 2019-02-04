@@ -24,9 +24,9 @@ def processExperiment():
         abort(400)
 
     experimentNames = request.json['_destinationFileShareFolderName']
-    if (ctrlcheckExportKeysSetup() == True):
-        if (delete_existing_files(experimentNames) == True) :
-            runExperiments(experimentNames)
+    if (ctrl.checkExportKeysSetup() == True):
+        if (ctrl.delete_existing_files(experimentNames) == True) :
+            ctrl.runExperiments(experimentNames)
             return jsonify({'result': rlist, 'elapsedTime':description})
         else:
             return make_response(jsonify({'error': "Unable to delete folders"}), 500)
