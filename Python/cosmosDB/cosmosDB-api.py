@@ -5,13 +5,16 @@ from flask import make_response
 from flask import request
 from flask_cors import CORS
 from  cosmosDBWrapper import clsCosmosWrapper
+from cosmosImageOperations import clsCosmosImageProcessingOperations
 import json
 
 import sys
 sys.path.insert(0, '../')
 import common
 
-clsObj = None
+
+clsObj = None           # our global instance
+clsOperations = None    # our global instance
 
 app = Flask(__name__)
 CORS(app)
@@ -180,7 +183,6 @@ def saveLabelledImageList():
     global clsObj
     if (clsObj == None):
         clsObj = clsCosmosWrapper()
-   
 
     clsObj.saveLabelledImageListImpl(   request.json[common._IMAGE_DETECTION_PROVIDER_TAG],
                                         request.json[common._EXPERIMENTNAME_TAG],
@@ -220,6 +222,73 @@ def returnAllExperimentResult():
         return jsonify(rv)
 
 
+@app.route('/comsosDBOperations/v1.0/operationsInsertLastOffsetDocument', methods=['POST'])
+def operationsInsertLastOffsetDocument():
+
+    if not request.json or not common._OPERATIONS_EVENTLOG_TAG in request.json \
+        or not common._OPERATIONS_CONSUMER_GROUP_TAG in request.json \
+        or not common._OPERATIONS_PARTITION_ID in request.json \
+        or not common._OPERATIONS_LAST_OFFSET in request.json:
+        abort(400)
+
+    global clsOperations
+    if (clsOperations == None):
+        clsOperations = clsCosmosImageProcessingOperations()
+
+    rv = clsOperations.insert_document( request.json[common._OPERATIONS_EVENTLOG_TAG],
+                                        request.json[common._OPERATIONS_CONSUMER_GROUP_TAG],
+                                        request.json[common._OPERATIONS_PARTITION_ID],
+                                        request.json[common._OPERATIONS_LAST_OFFSET])
+    
+    if (rv == None):
+        return make_response(jsonify({'error': 'OK'}), 500)
+    else:
+        return make_response(json.dumps({'result': rv}), 200)
+
+
+@app.route('/comsosDBOperations/v1.0/operationsGetLastOffset', methods=['POST'])
+def operationsGetLastOffset():
+
+    if not request.json or not common._OPERATIONS_EVENTLOG_TAG in request.json \
+        or not common._OPERATIONS_CONSUMER_GROUP_TAG in request.json \
+        or not common._OPERATIONS_PARTITION_ID in request.json:
+        abort(400)
+
+    global clsOperations
+    if (clsOperations == None):
+        clsOperations = clsCosmosImageProcessingOperations()
+
+    rv = clsOperations.get_offsetValue( request.json[common._OPERATIONS_EVENTLOG_TAG],
+                                        request.json[common._OPERATIONS_CONSUMER_GROUP_TAG],
+                                        request.json[common._OPERATIONS_PARTITION_ID])
+    if (rv == None):
+        return make_response(jsonify({'error': 'OK'}), 500)
+    else:
+        return make_response(json.dumps({'result': rv}), 200)
+
+
+@app.route('/comsosDBOperations/v1.0/removeLastOffsetRecord', methods=['POST'])
+def removeLastOffsetRecord():
+
+    if not request.json or not common._OPERATIONS_EVENTLOG_TAG in request.json \
+        or not common._OPERATIONS_CONSUMER_GROUP_TAG in request.json \
+        or not common._OPERATIONS_PARTITION_ID in request.json:
+        abort(400)
+
+    global clsOperations
+    if (clsOperations == None):
+        clsOperations = clsCosmosImageProcessingOperations()
+
+    rv = clsOperations.removeExistingDocument(  request.json[common._OPERATIONS_EVENTLOG_TAG],
+                                                request.json[common._OPERATIONS_CONSUMER_GROUP_TAG],
+                                                request.json[common._OPERATIONS_PARTITION_ID])
+    # this method does not return value; the only way to check if this has worked is to check that 
+    # this method returned 200 and query for the same record and it should return -1
+    return make_response(json.dumps({'result': "OK"}), 200)
+
+
+
+
 if __name__ == '__main__':
     # print ("executing the main")
     clsObj = clsCosmosWrapper()
@@ -229,3 +298,17 @@ if __name__ == '__main__':
     # python cosmosDB-api.py command might fail with port conflict and not available. 
     app.run(debug=True)
     # NOT TRUE; THIS CODE OF MAIN IS NOT EXECUTED ME THINKS AS THE __name__ is ! 'main'
+    # Test suite 
+    # First Testing CORS
+    # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: GET" -H "Access-Control-Request-Headers: X-Requested-With" -X OPTIONS --verbose http://localhost:5000/comsosDB/v1.0/returnAllExperimentResult
+    # Testing actual execution
+    # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: GET" --verbose http://localhost:5000/comsosDB/v1.0/returnAllExperimentResult  
+    # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: GET" --verbose http://localhost:5000/comsosDB/v1.0/collections
+    # take the output from , extract "_self": "dbs/gsUdAA==/colls/gsUdAIR+xjM=/" from "id": "ResultsImageDetection" and use that to invoke the next test, which will return a lots of records. 
+    # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"collectionLink\":\"dbs/gsUdAA==/colls/gsUdAIR+xjM=/\"}" --verbose http://localhost:5000/comsosDB/v1.0/documents
+    # create a record
+    # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"EventLog\":\"evLog\",\"ConsumerGroup\":\"cgGrp\",\"PartitionId\":\"2\",\"LastOffset\":\"101\"}" --verbose http://localhost:5000/comsosDBOperations/v1.0/operationsInsertLastOffsetDocument
+    # retrieve previously created record
+    # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"EventLog\":\"evLog\",\"ConsumerGroup\":\"cgGrp\",\"PartitionId\":\"2\"}" --verbose http://localhost:5000/comsosDBOperations/v1.0/operationsGetLastOffset
+    # remove that previosly created record
+    # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"EventLog\":\"evLog\",\"ConsumerGroup\":\"cgGrp\",\"PartitionId\":\"2\"}" --verbose http://localhost:5000/comsosDBOperations/v1.0/removeLastOffsetRecord

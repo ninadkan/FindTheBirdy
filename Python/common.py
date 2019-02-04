@@ -24,10 +24,15 @@ _BATCH_SIZE =25
 
 
 _COLLECTIONAME = 'ResultsImageDetection'
+_OPERATIONSCOLLECTIONNAME = 'Operations'
 _DATETIME_TAG = "DateTime"
 _ELAPSED_TIME_TAG = "ElapsedTime"
 _IMAGE_TAG = "bird"
 
+_OPERATIONS_EVENTLOG_TAG = "EventLog"
+_OPERATIONS_CONSUMER_GROUP_TAG = "ConsumerGroup"
+_OPERATIONS_PARTITION_ID = "PartitionId"
+_OPERATIONS_LAST_OFFSET = "LastOffset"
 
 _DETECTED_IMAGES_TAG = 'detectedItems'
 _EXPERIMENTNAME_TAG = 'ExperimentName'

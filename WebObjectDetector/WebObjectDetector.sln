@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2050
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebObjectDetector", "WebObjectDetector\WebObjectDetector.csproj", "{1A208C56-B34E-4C9C-BA03-4367EDFF5941}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebObjectDetector", "WebObjectDetector\WebObjectDetector.csproj", "{1A208C56-B34E-4C9C-BA03-4367EDFF5941}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
