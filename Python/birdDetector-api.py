@@ -5,74 +5,85 @@ from flask import make_response
 from flask import request
 from flask_cors import CORS
 from flask import send_file
+from flask import g
+
 
 
 import io
 import json
-#import azureFileShareTest
-#import mask_creation
-import openCVPhotoExtractorTest as ctrl
+# import azureFileShareTest
+# import mask_creation
+# import openCVPhotoExtractorTest as ctrl
+import uuid
+import common
+import os
+import datetime
+import time
 
 app = Flask(__name__)
 CORS(app)
 
+from azure.eventhub import EventHubClient, Sender, EventData
+import json
+
+ADDRESS = os.environ.get('EVENT_HUB_ADDRESS')
+# SAS policy and key are not required if they are encoded in the URL
+USER = os.environ.get('EVENT_HUB_SENDER_SAS_POLICY')
+KEY = os.environ.get('EVENT_HUB_SENDER_SAS_KEY')
+
+def getStartExperimentMessagePayload(experimentName):
+    import uuid
+    messageId = uuid.uuid4()
+    currentDate = datetime.datetime.now()
+    r = json.dumps({ common._MESSAGE_TYPE_TAG: common._MESSAGE_TYPE_START_EXPERIMENT, 'MessageId': str(messageId), 'ExperimentName': experimentName, 'CreationDateTime' : currentDate.strftime("%c")} )
+    return r, str(messageId)
 
 
-@app.route('/birdDetector/v1.0/processExperiment', methods=['POST'])
-def processExperiment():
-    if not request.json or not 'experimentName' in request.json
+@app.route('/birdDetector/v1.0/processExperiments', methods=['POST'])
+def processExperiments():
+    if not request.json or not 'experimentNames' in request.json \
+        or not isinstance(request.json['experimentNames'], list):
         abort(400)
 
-    experimentNames = request.json['_destinationFileShareFolderName']
-    if (ctrl.checkExportKeysSetup() == True):
-        if (ctrl.delete_existing_files(experimentNames) == True) :
-            ctrl.runExperiments(experimentNames)
-            return jsonify({'result': rlist, 'elapsedTime':description})
-        else:
-            return make_response(jsonify({'error': "Unable to delete folders"}), 500)
-    else:
-        return make_response(jsonify({'error': "Environment not set-up correctly"}), 500)
+    global ADDRESS
+    global USER
+    global KEY
+    
+    if not ADDRESS:
+        raise ValueError("No EventHubs URL supplied.")
 
-        
+    start_time = datetime.datetime.now()
+    
+
+    lstGuids = []
+    experimentNames = request.json['experimentNames']
+    # get a guid for the experimentName, to uniquely identify this request
+    # and send it back to the client. 
+    try:
+        client = EventHubClient(ADDRESS, debug=True, username=USER, password=KEY)
+        sender = client.add_sender() # deliberately not specifying the partition keys
+        client.run()
+        for experimentName in experimentNames:
+            #logger.info("Sending message: {}".format(i))
+            r, guid = getStartExperimentMessagePayload(experimentName)
+            lstGuids.append(json.dumps({experimentName:guid}))
+            sender.send(EventData(r))
+            #logger.info("Runtime: {} seconds".format(run_time))
+    except Exception as e:
+        raise
+    finally:
+        client.stop()
+
+    time_elapsed = datetime.datetime.now() - start_time 
+    elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
 
 
-
-
+    return jsonify({'result': lstGuids, 'elapsedTime':elapsedTime})
 
 if __name__ == '__main__':
-    # curl --header "Content-Type:application/json" --request POST --data {'_sourceFileShareFolderName': 'linuxraspshare', '_sourceDirectoryName': 'backup', '_destinationFileShareFolderName': 'experiment-data', '_destinationDirectoryName': 'object-detection', '_ExperimentName': '2018-04-15', '_fileExtensionFilter': '.jpg'} http://localhost:5000/azureStorage/v1.0/CopySourceDestination
-    # Above line does not work eversince CORS has been added as you need a shakehand
-    # Below statement works with http (NOT TESTED WITH HTTPS) working with CORS 
-    # Pay special attention to space after ':' in the -H specification
-    # only works in Command line (DOS) and not under Windows PowerShell environment!!!
-    # only works if all the parameters are enclised with double quotes and not single quotes. Single quotes don't work
-    # Working statement
-    # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"_sourceFileShareFolderName\":\"experiment-data\",\"_sourceDirectoryName\":\"object-detection\"}" --verbose http://localhost:5000/azureStorage/v1.0/GetAllSourceUniqueExperimentNames
-    # if you want to just check that the CORS bit is working, you can send the pre-post message as below
-    # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: X-Requested-With" -X OPTIONS --verbose http://localhost:5000/azureStorage/v1.0/GetAllSourceUniqueExperimentNames
-    # example of request - response
-    # 
-    # *   Trying ::1...
-    # * TCP_NODELAY set
-    # * Connected to localhost (::1) port 5000 (#0)
-    # > OPTIONS /azureStorage/v1.0/GetAllSourceUniqueExperimentNames HTTP/1.1
-    # > Host: localhost:5000
-    # > User-Agent: curl/7.62.0
-    # > Accept: */*
-    # > Origin: http://localhost
-    # > Access-Control-Request-Method: POST
-    # > Access-Control-Request-Headers: X-Requested-With
-    # >
-    # * HTTP 1.0, assume close after body
-    # < HTTP/1.0 200 OK
-    # < Content-Type: text/html; charset=utf-8
-    # < Allow: OPTIONS, POST
-    # < Access-Control-Allow-Origin: http://localhost
-    # < Access-Control-Allow-Headers: X-Requested-With
-    # < Access-Control-Allow-Methods: DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT
-    # < Vary: Origin
-    # < Content-Length: 0
-    # < Server: Werkzeug/0.14.1 Python/3.6.8
-    # < Date: Sat, 19 Jan 2019 14:19:50 GMT
-    #app.run(debug=True, host='0.0.0.0:')
-    app.run(debug=True)
+    app.run(debug=True, host='127.0.0.1', port=5002)
+    # specifying host='127.0.0.1' is as good as not specifying. its default
+    # specifying host='127.0.0.1:5002' is error, specify port= separately. 
+    #app.run(debug=True)
+    # Test suite
+    # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"experimentNames\" : [\"2018-04-15\", \"2018-04-16\", \"2018-04-17\", \"2018-04-18\", \"2018-04-19\", \"2018-04-20\", \"2018-04-21\", \"2018-04-22\", \"2018-04-23\", \"2018-04-24\"]}" --verbose http://localhost:5002/birdDetector/v1.0/processExperiments

@@ -16,7 +16,8 @@ RUN apt-get update \
         && pip install flask \
         && pip install flask_cors \
         && pip install azure-cosmos \
-        && pip install gunicorn
+        && pip install gunicorn \
+        && pip install azure.eventhub
 
 WORKDIR /home/cosmos
 

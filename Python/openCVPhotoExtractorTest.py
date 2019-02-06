@@ -57,7 +57,7 @@ def checkExportKeysSetup():
             #sys.exit(0) # let someone else decide if they want to exit 
     return brv
 
-def runExperiments(ExperimentNames = None, startIndex = 27,NumberOfExperimentsToProcess = 25):
+def runExperiments(ExperimentNames = None, startIndex = 0,NumberOfExperimentsToProcess = -1):
 # ExperimentName contains the list of experiments that need to be started. 
 # what is our starting offset
 # startIndex = 27
@@ -65,10 +65,13 @@ def runExperiments(ExperimentNames = None, startIndex = 27,NumberOfExperimentsTo
 # NumberOfExperimentsToProcess = 25
 # Get all the names of the experiments. 
 # ExperimentNames = None
-    if (_FileShare == False):
-        ExperimentNames = os.listdir(_SRCIMAGEFOLDER)
-    else:
-        rv, elapsedTime, ExperimentNames = fs.TestGetAllExperimentNames(_FileShareName, _SRCIMAGEFOLDER)
+
+    if (ExperimentNames == None):   # if nothing is passed, then update accordingly
+        NumberOfExperimentsToProcess = 1 # we will not process everything if nothing is specified
+        if (_FileShare == False):
+            ExperimentNames = os.listdir(_SRCIMAGEFOLDER)
+        else:
+            rv, elapsedTime, ExperimentNames = fs.TestGetAllExperimentNames(_FileShareName, _SRCIMAGEFOLDER)
 
     # Lets start our test. 
     if (ExperimentNames is not None and len(ExperimentNames) > 0):
@@ -115,10 +118,12 @@ def runExperiments(ExperimentNames = None, startIndex = 27,NumberOfExperimentsTo
                 print(Detector)
                 googleTest(experimentName=ExperimentName.name)
 
+
+
 def runAll(experimentName = None):
     if (checkExportKeysSetup() == True):
         if (delete_existing_files(experimentName) == True) :
-            runExperiments()
+            runExperiments(ExperimentNames)
 
 if __name__ == "__main__":
     runAll()

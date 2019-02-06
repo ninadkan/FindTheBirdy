@@ -60,6 +60,10 @@ _ARGS_MASK_DIFF_THRESHOLD="--maskDiffThreshold"
 _ARGS_WRITE_OUTPUT="--writeOutput"
 _ARGS_LOG_RESULT="--logResult"
 
+# EventLog Common bits
+_MESSAGE_TYPE_TAG='MessageType'
+_MESSAGE_TYPE_START_EXPERIMENT= 'START_EXPERIMENT'
+
 
     
 
