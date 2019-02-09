@@ -17,6 +17,8 @@ import json
 import argparse
 import requests
 import common
+import openCVPhotoExtractorTest as test
+import openCVPhotoExtractorClsImpl as clsImpl
 
 
 # resp = requests.get('https://todolist.example.com/tasks/')
@@ -51,45 +53,6 @@ def is_json(myjson):
         return False, json_object
     return True, json_object
 
-url = 'http://localhost:5001/comsosDBOperations/v1.0/'
-
-def getLastOffset(partitionNumber):
-    global url
-    brv = False
-    OFFSET = None
-    #curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"EventLog\":\"evLog\",\"ConsumerGroup\":\"cgGrp\",\"PartitionId\":\"2\"}" --verbose http://localhost:5000/comsosDBOperations/v1.0/operationsGetLastOffset
-    payload = {"EventLog": USER, "ConsumerGroup": CONSUMER_GROUP, "PartitionId": partitionNumber, common._MESSAGE_TYPE_TAG:common._MESSAGE_TYPE_START_EXPERIMENT}
-    resp = requests.post(url + 'operationsGetLastOffset',
-                            data=json.dumps(payload),
-                            headers={'Content-Type':'application/json'})
-    if resp.status_code != 200:
-        # This means something went wrong.
-        print('Error : {0}'.format(resp.status_code))
-    else:
-        returnValue = resp.json()
-        if (returnValue is not None and returnValue['result'] is not None):
-            OFFSET = Offset(returnValue['result']) # returns -1 if no previous one are found. 
-            print(returnValue['result'])
-            brv = True
-        else:
-            print("json result does not contain result or offset")
-    return brv, OFFSET
-    
-def updateNewOffset(partitionNumber, newOffset):
-    global url
-    brv = False
-    #curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"EventLog\":\"evLog\",\"ConsumerGroup\":\"cgGrp\",\"PartitionId\":\"2\",\"LastOffset\":\"101\"}" --verbose http://localhost:5000/comsosDBOperations/v1.0/operationsInsertLastOffsetDocument
-    payload = {"EventLog": USER, "ConsumerGroup": CONSUMER_GROUP, "PartitionId": partitionNumber, "LastOffset": newOffset, common._MESSAGE_TYPE_TAG:common._MESSAGE_TYPE_START_EXPERIMENT }
-    resp = requests.post(url+'operationsInsertLastOffsetDocument',
-                            data=json.dumps(payload),
-                            headers={'Content-Type':'application/json'})
-    if resp.status_code != 200:
-        # This means something went wrong.
-        print('Error : {0}'.format(resp.status_code))
-    else:
-        returnValue = resp.json()
-        brv = True
-    return brv
 
 
 
@@ -117,7 +80,6 @@ client = EventHubClient(ADDRESS, debug=True, username=USER, password=KEY)
 
 
 try:
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--partition", help="partition", type=int, default=0)
     args = parser.parse_args()
@@ -139,16 +101,18 @@ try:
 
                 brv, loaded_r = is_json(event_data.body_as_str())
                 if (brv == True):
-                    if ('ExperimentName' in loaded_r):
-                        print(loaded_r['ExperimentName'])
+                    if (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_START_EXPERIMENT):
+                        processStartExperimentMessage(loaded_r, args.partition, last_offset.value)
+                        brv = updateNewOffset(args.partition, last_offset.value)
+                    elif (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_EXPERIMENT_ATTRIBUTES):
+                        processExperimentImages(loaded_r, args.partition, last_offset.value)
+                        brv = updateNewOffset(args.partition, last_offset.value)
                     else:
-                        print("Experiment Name missing in json format")
+                        print(event_data.body_as_str())
                 else:
                     print(event_data.body_as_str())
-                
                 total += 1
                 # save the last offset. 
-                brv = updateNewOffset(args.partition, last_offset.value)
                 assert(brv == True), "Error saving the new offset"
             batch = receiver.receive(timeout=5000)
         end_time = time.time()

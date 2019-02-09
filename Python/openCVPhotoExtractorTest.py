@@ -86,8 +86,8 @@ def runExperiments(ExperimentNames = None, startIndex = 0,NumberOfExperimentsToP
                         delete_existing_files(ExperimentName.name)
                         # premature end of JPEG was detected with 2018-04-22_0247. Remove that image 
                         procObject = openCVPhotoExtractorClsImpl.clsOpenCVObjectDetector(experimentName=ExperimentName.name)
-                        #l, tt,  t = procObject.processImages(imageBatchSize=25, partOfFileName='2018-12-14_04')
-                        l, tt,  t = procObject.processImages(imageBatchSize=25)
+                        #l, tt,  t = procObject.processImages(partOfFileName='2018-12-14_04')
+                        l, tt,  t = procObject.processImages()
                         print ("")
                         print("Bounding Rectangle value = {0}".format(item))                
                         print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))

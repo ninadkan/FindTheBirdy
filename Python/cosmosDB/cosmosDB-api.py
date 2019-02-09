@@ -245,7 +245,7 @@ def operationsInsertLastOffsetDocument():
     #                                     request.json[common._OPERATIONS_LAST_OFFSET],
     #                                     request.json[common._MESSAGE_TYPE_TAG])
 
-    rv = clsOperations.insert_document_from_dict(request.json)
+    rv = clsOperations.insert_offset_document_from_dict(request.json)
     
     if (rv == None):
         return make_response(jsonify({'error': 'OK'}), 500)
@@ -289,7 +289,7 @@ def removeLastOffsetRecord():
     if (clsOperations == None):
         clsOperations = clsCosmosImageProcessingOperations()
 
-    clsOperations.removeExistingDocument(  request.json[common._OPERATIONS_EVENTLOG_TAG],
+    clsOperations.removeOffsetExistingDocument(  request.json[common._OPERATIONS_EVENTLOG_TAG],
                                                 request.json[common._OPERATIONS_CONSUMER_GROUP_TAG],
                                                 request.json[common._OPERATIONS_PARTITION_ID],
                                                 request.json[common._MESSAGE_TYPE_TAG])

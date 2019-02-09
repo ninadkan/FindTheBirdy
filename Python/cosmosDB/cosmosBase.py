@@ -17,15 +17,11 @@
 #    https://pypi.python.org/pypi/pydocumentdb/
 
 
-# ensure that you've installed PyPI
-# challenge: documentation says that the python version supported is 3.5
-# we are playing with version 3.6!!!
-# let's see what happens
 # pip install azure-cosmos, sort of works!!! 
 
 
 
-#import pydocumentdb.document_client as document_client
+
 import azure.cosmos.cosmos_client as document_client
 import azure.cosmos.errors as errors
 import argparse
@@ -33,13 +29,7 @@ import argparse
 import sys
 sys.path.insert(0, '../') # needed as common is in the parent folder
 import common
-#from pydocumentdb import document_client
-# import cosmosDatabaseManagement as dbMgmt 
-# import cosmosCollectionManagement as collMgmt 
-# import cosmosDocumentManagement as docMgmt 
 
-# from cosmosDocumentManagement import DocumentManagement as docMgmt 
-# document_client.CosmosClient.
 
 
 def ifNullReadAndAssignFromEnviron(variableName, KEY):
@@ -172,3 +162,118 @@ class cosmosBase:
         finally:
             print()
         return results
+
+###############################################################################
+
+class clsCosmosOperationsBase(cosmosBase):
+    def __init__(self, mandatoryColumns, collectionName, host='', key='', databaseId=''):
+        super().__init__(host, key, databaseId, collectionName) # common._OPERATIONSCOLLECTIONNAME)
+        self.mandatoryColumnList = mandatoryColumns
+        return
+    # -------------------------------------------------------------------------
+
+    def insert_document_from_dict(self, dictObject, removeExisting=True):
+        assert(dictObject is not None), "dictObject parameter is mandatory!"
+        assert(self.mandatoryColumnList is not None and len(self.mandatoryColumnList) > 0), "MandatoryColumnList error"
+        # check that each mandatiry parameter has been specified
+        for item in self.mandatoryColumnList:
+            assert(dictObject[item] is not None), "Passed dictionary object does not contain item =" + item
+        return self._insert_document_in_collection(dictObject, removeExisting)
+    # -------------------------------------------------------------------------
+
+    def insert_document_in_collection(self, dictObject, removeExisting=True):
+        '''
+        checks for existence of a document, If it exists, deletes it and inserts
+        a new record. checks for id as well as experiment name in the document. 
+        providerId : Application compatible document Id, providerName
+        '''
+        if removeExisting == True:
+            self.removeExistingDocumentDict(dictObject)
+        return super().createItem(dictObject)
+    # -------------------------------------------------------------------------
+
+    def removeExistingDocumentDict(self, dictObject, bNocheck = False):
+        #'if bNoCheck is set to True, it bypasses all checks and deletes all the records 
+        #which matched the dictionary object'
+        if (bNocheck == True):
+            lst = self._queryDocsForExistence(dictObject)
+        else:
+            lst = self.queryDocsForExistenceWithCheck(dictObject) 
+        if (lst is not None):
+            super().removeExistingDocuments(lst)
+        return
+    # -------------------------------------------------------------------------
+
+    def getValue(self, dictObject, key):
+        value = None
+        doc = getDocument(dictObject)
+        if (doc is not None):
+            value = doc[key]
+        return value
+
+    # -------------------------------------------------------------------------      
+
+    def getDocuments(self, dictObject, bNoCheck = False):
+        if (bNoCheck == True):
+            return( self._queryDocsForExistence(dictObject))
+        else:
+            return (self.queryDocsForExistenceWithCheck(dictObject))
+    # ------------------------------------------------------------------------- 
+
+    def getDocument(self, dictObject):
+        firstItem = None
+        docs = self.queryDocsForExistenceWithCheck(dictObject)
+        if (docs is not None and len(docs) > 0):
+            firstItem = docs[0]
+        return firstItem        
+
+    # -------------------------------------------------------------------------
+    
+    def queryDocsForExistenceWithCheck(self, dictObject):
+        assert(self.mandatoryColumnList is not None and len(self.mandatoryColumnList) > 0), "No mandatoryColumnList specified"
+        numberOfParameters = len(self.mandatoryColumnList)
+        paramName = "@param"
+        selectQuery = 'SELECT * FROM r WHERE r.'
+        count = 0
+        parameters = []
+
+        for item in self.mandatoryColumnList:
+            parameterName = paramName + str(count)
+            selectQuery += item + '=' + parameterName
+            
+            count += 1
+            if (count < (numberOfParameters)):
+                selectQuery += ' and r.'
+            assert(dictObject[item] is not None), "Error, mandatory item not specified" + item
+            parameters.append({"name":parameterName, "value": dictObject[item]})
+
+        #print(selectQuery)
+        #print(parameters)
+
+        documentquery = { "query": selectQuery , "parameters": parameters }
+        return super().getDocumentFromQuery(documentquery)
+    # -------------------------------------------------------------------------
+
+    def _queryDocsForExistence(self, kwargs):
+        if kwargs is not None:
+            numberOfParameters = len(kwargs)
+            paramName = "@param"
+            selectQuery = 'SELECT * FROM r WHERE r.'
+            count = 0
+            parameters = []
+
+            for key in kwargs:
+                parameterName = paramName + str(count)
+                selectQuery += key + '=' + parameterName
+                
+                count += 1
+                if (count < (numberOfParameters)):
+                    selectQuery += ' and r.'
+                parameters.append({"name":parameterName, "value": kwargs[key]})
+
+            print(selectQuery)
+            print(parameters)
+            documentquery = { "query": selectQuery , "parameters": parameters }
+            return super().getDocumentFromQuery(documentquery)
+        else:
+            return None

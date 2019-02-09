@@ -1,4 +1,4 @@
-code #lets create the basic template
+#lets create the basic template
 # sources
 # https://www.programcreek.com/python/example/89404/cv2.createBackgroundSubtractorMOG2
 # https://docs.opencv.org/3.3.0/db/d5c/tutorial_py_bg_subtraction.html
@@ -15,6 +15,8 @@ import common
 import azureFS.azureFileShareTest as fs
 import azureFS.mask_creation as mask
 import azureFS.azureCommon as azcommon
+import cosmosDB.cosmosStatusUpdate as sudate
+import uuid
 
 
 _NUMIMAGESTOCREATEMEANBACKGROUND = 10
@@ -49,6 +51,11 @@ class clsOpenCVProcessImages:
         # Logging Paramters
         self.writeOutput=_WRITEOUTPUT
         self.verbosity = _VERBOSE
+        self.writeBuffer = 15 # after every 15 items, we'll write the status to database
+
+        #tracking progress Ids
+        self.messageID = ''
+        
 
         return
 
@@ -62,11 +69,13 @@ class clsOpenCVProcessImages:
         return self.contourCountThreshold
     def get_maskDiffThreshold(self):
         return self.maskDiffThreshold
-
     def get_writeOutput(self):
         return self.writeOutput
     def get_verbosity(self):
-        return self.verbosity    
+        return self.verbosity 
+    def getMessageID(self):
+        return self.messageID
+
 
     def set_numImagesToCreateMeanBackground(self, value):
         self.numImagesToCreateMeanBackground = value
@@ -89,7 +98,10 @@ class clsOpenCVProcessImages:
     def set_verbosity(self, value):
         self.verbosity = value
         return
-    
+    def set_MessageId(self, value):
+        self.messageID = value
+        return
+
 
     def processImages(  self, 
                         offset, 
@@ -120,7 +132,6 @@ class clsOpenCVProcessImages:
 
         # First add all the images that are in the source folder
         completefileList = []
-        
 
         if (common._FileShare == False):
             lst = []
@@ -148,9 +159,6 @@ class clsOpenCVProcessImages:
                     print("Directory is either None or zero order")
             else:
                 print("fs.getListOfAllFiles returned False")
-    
-
-    
 
         # figure out the images that we need to process
         self.listOfImagesToBeProcessed = []
@@ -188,6 +196,11 @@ class clsOpenCVProcessImages:
         for i, imageFileName in enumerate(self.listOfImagesToBeProcessed):
             if ((numberOfImagesToProcess > 0) and (i > numberOfImagesToProcess)):
                 break; # come of of the loop
+
+            if (i % self.writeBuffer ==0 ):
+                self.writeProgressLogToDatabase(experimentName,offset, i , len(self.listOfImagesToBeProcessed), '',  "OK")
+
+
             print('.', end='', flush=True)
 
             imgColour = None
@@ -231,11 +244,12 @@ class clsOpenCVProcessImages:
                 boundingRectArea = 0
                         
                 if (diff > self.maskDiffThreshold): # passes the first test of difference
+                        print('Passed first threshold')
                         ret, thresh = cv2.threshold(currentmask, self.grayImageThreshold, 255, 0)
-                        im2, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                        contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
                         contour_length = len(contours)
-                        if (not (contour_length == 0 or contour_length > self.contourCountThreshold)): 
-                            # passes second test of contour length 
+                        if (not (contour_length == 0 or contour_length > self.contourCountThreshold)):
+                            print('passes second test of contour length')
                             cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)
                             for j, cnt in enumerate(cntsSorted):
                                 if ((j > self.contourCountThreshold) or (bOpenCVBirdDetected == True)): 
@@ -244,7 +258,7 @@ class clsOpenCVProcessImages:
                                 (x,y,w,h) = cv2.boundingRect(cnt)
                                 boundingRectArea = w*h 
                                 if (boundingRectArea > self.boundingRectAreaThreshold):
-                                    # passed the test of minimum bounding area 
+                                    print(' passed the test of minimum bounding area ')
                                     bOpenCVBirdDetected = True
                                     TotalNumberOfImagesDetected = TotalNumberOfImagesDetected +1
                                     
@@ -259,7 +273,13 @@ class clsOpenCVProcessImages:
                     print(">>> Debugging image = {0}, Contour Length = {1:0.4f}, last boundingRectArea = {2:0.4f}, OpenCVDetected = {3}, diff = {4:0.4f}".format(imageFileName, contour_length, boundingRectArea, bOpenCVBirdDetected, diff))
 
         elapsed_time = time.time() - start_time
+        self.writeProgressLogToDatabase(experimentName,offset, len(self.listOfImagesToBeProcessed) , len(self.listOfImagesToBeProcessed), elapsed_time,  "OK")
         return len(self.listOfImagesToBeProcessed), TotalNumberOfImagesDetected,  elapsed_time  #, true_true, false_positive, false_negative
+
+    def writeProgressLogToDatabase(self, experimentName, offset, currentCount=-1, maxItems=-1, elapsed_time='',  statusMessage=''):
+        objRun = sudate.clsStatusUpdate() 
+        objRun.insert_document(self.messageID, experimentName, offset, currentCount, maxItems, elapsed_time, statusMessage )        
+        return
 
     def createMask(self):
         self.g_colourMask = None 
@@ -310,8 +330,6 @@ class clsOpenCVProcessImages:
 
         return
 
- 
-
     def WriteOutputFile(self,imgColour, imageFileName, x, y, w, h, detectedImages, Padding=15):
         '''
         imgColour --> The bitwise representation of the coloured image
@@ -321,7 +339,7 @@ class clsOpenCVProcessImages:
         Padding: Required because the contour bounding rectangle is not big 
         enough for the images to be recognised
         '''
-        
+        print('WriteOutputFile...')
         assert(imgColour is not None), "Invalid parameter imgColour"
         assert(self.g_colourMask is not None), "Invalid parameter self.g_colourMask"
         
@@ -354,6 +372,7 @@ class clsOpenCVProcessImages:
                 print("Saving data, filename = {0}".format(imageFileName))
                 brv, desc, myROI = fs.saveFileImage(common._FileShareName, self.imageDestinationFolder, imageFileName, data )
                 assert(brv == True), "Unable to save image file " + imageFileName
+        print('...WriteOutputFile')
         return frame
 
 
@@ -454,7 +473,8 @@ if __name__ == "__main__":
             brv, desc, myROI  = fs.createDirectory(common._FileShareName, destinationFolder)
             assert(brv == True), "Unable to create/locate output directory " + destinationFolder
 
-
+        messageId = str(uuid.uuid4())
+        objProc.set_MessageId(messageId)
 
         l, tt, t = objProc.processImages(   offset = int(args.offset), 
                                             imageSrcFolder = str(srcImageFolder),  

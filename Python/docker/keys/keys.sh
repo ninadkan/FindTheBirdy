@@ -5,6 +5,10 @@ export COSMOSDB_DATABASE=experiment-find-the-birdy
 export AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
 export AZURE_ACN_NAME=nkdsvm
 export AZURE_ACN_STRG_KEY=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==
+export AZURE_EVENT_HUB_CONTAINER_NAME=eventlogcontainer
+
+export EVENT_HUB_NAMESPACE=ninadkeventhub
+export EVENT_HUB_NAME=objectdetectorevents
 export EVENT_HUB_ADDRESS=sb://ninadkeventhub.servicebus.windows.net/objectdetectorevents
 export EVENT_HUB_SENDER_SAS_POLICY=sender
 export EVENT_HUB_SENDER_SAS_KEY=jgJtaN8LAugWNbFDQDLrDu+pRDZJTCiswDhT5NygCkE=

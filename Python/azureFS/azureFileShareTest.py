@@ -156,8 +156,6 @@ def TestGetAllExperimentNames(_destinationFileShareFolderName, _destinationDirec
         time_elapsed = datetime.datetime.now() - start_time 
         elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)
         return True, elapsedTime, experimentList
-        
-
 
 def GetAllSourceUniqueExperimentNamesImpl(_sourceFileShareFolderName, _sourceDirectoryName, _fileExtensionFilter='.jpg'):
     '''

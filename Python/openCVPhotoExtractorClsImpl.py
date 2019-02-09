@@ -17,6 +17,10 @@ import common
 import docker_clsOpenCVProcessImages as ds
 import azureFS.azureFileShareTest as fs
 
+import eventMessageSender as msgSender
+import asyncio
+import cosmosDB.cosmosStatusUpdate as staUpdate
+
 
 _LOGRESULT = True   # Should we write the results to CosmosDB or not. This is dependent on _WRITEOUTPUT values.
                     # as it looks at the files copied into destination folder
@@ -38,6 +42,7 @@ class clsOpenCVObjectDetector:
         self.destinationFolder = common._DESTINATIONFOLDER
         # To log result or not
         self.logResult = _LOGRESULT
+        self.MessageId = None
         return
 
     def get_logResult(self):
@@ -45,65 +50,82 @@ class clsOpenCVObjectDetector:
     
     def set_logResult(self, value):
         self.logResult = value
-        return     
+        return
 
+    def get_MessageId(self):
+        return self.MessageId
 
-    def processImages(self,imageBatchSize, partOfFileName=''):
+    def set_MessageId(self, value):
+        self.MessageId = value
+        return
+
+    def getOnPremFileListAndCount(self, partOfFileName=''):
+        fileListLocal = []
+        TotalImageCountLocal = 0
+
+        # Important, that the structure of images to be loaded is pre-defined. 
+        # Now the srcImageFolder contains the final directory name. 
+        self.srcImageFolder = os.path.join(self.srcImageFolder,self.experimentName)
+        # update the location where our output is to be written back
+        self.destinationFolder = os.path.join(self.srcImageFolder,self.destinationFolder)
+
+        if not os.path.exists(self.destinationFolder):
+            print("creating folder {0}".format(self.destinationFolder))
+            os.makedirs(self.destinationFolder)
+
+        # populate the file_list for this class
+        
+        for file in os.listdir(self.srcImageFolder):
+            if os.path.isfile(os.path.join(self.srcImageFolder,file)) and file.endswith(common._FILENAMEEXTENSION):
+                if (len(partOfFileName) >0):
+                    if (partOfFileName in file):
+                        fileListLocal.append(file)
+                        TotalImageCountLocal +=1
+                else:
+                    fileListLocal.append(file)
+                    TotalImageCountLocal +=1
+        return fileListLocal, TotalImageCountLocal
+
+    def getCloudFileListAndCount(self, partOfFileName=''): 
+        fileListLocal = []
+        TotalImageCountLocal = 0
+        self.srcImageFolder = self.srcImageFolder + "/" + self.experimentName
+        self.destinationFolder = self.srcImageFolder + "/" + self.destinationFolder
+        brv, desc, myROI  = fs.createDirectory(common._FileShareName, self.destinationFolder)
+        assert(brv == True), "Unable to create/locate output directory " + destinationFolder
+
+        brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, self.srcImageFolder)
+        if (brv == True):
+            if (not(lst is None or len(lst)<1)):
+                for i, imageFileName in enumerate(lst):
+                    if (imageFileName.name.endswith(common._FILENAMEEXTENSION)):
+                        if (len(partOfFileName) >0):
+                            if (partOfFileName in imageFileName.name):
+                                fileListLocal.append(imageFileName.name)
+                                TotalImageCountLocal +=1
+                        else:
+                            fileListLocal.append(imageFileName.name)
+                            TotalImageCountLocal +=1
+            else:
+                print("Directory is either None or zero order")
+        else:
+            print("fs.getListOfAllFiles returned False")
+        return fileListLocal, TotalImageCountLocal
+
+    def processImages(self,partOfFileName=''):
         start_time = time.time()
         fileList = []
         TotalImageCount = 0
         if (common._FileShare == False):
-            # Important, that the structure of images to be loaded is pre-defined. 
-            # Now the srcImageFolder contains the final directory name. 
-            self.srcImageFolder = os.path.join(self.srcImageFolder,self.experimentName)
-            # update the location where our output is to be written back
-            self.destinationFolder = os.path.join(self.srcImageFolder,self.destinationFolder)
-
-            if not os.path.exists(self.destinationFolder):
-                print("creating folder {0}".format(self.destinationFolder))
-                os.makedirs(self.destinationFolder)
-
-            # populate the file_list for this class
-            
-            for file in os.listdir(self.srcImageFolder):
-                if os.path.isfile(os.path.join(self.srcImageFolder,file)) and file.endswith(common._FILENAMEEXTENSION):
-                    if (len(partOfFileName) >0):
-                        if (partOfFileName in file):
-                            fileList.append(file)
-                            TotalImageCount +=1
-                    else:
-                        fileList.append(file)
-                        TotalImageCount +=1       
+            fileList, TotalImageCount = self.getOnPremFileListAndCount(partOfFileName)
         else:
-            self.srcImageFolder = self.srcImageFolder + "/" + self.experimentName
-            self.destinationFolder = self.srcImageFolder + "/" + self.destinationFolder
-            brv, desc, myROI  = fs.createDirectory(common._FileShareName, self.destinationFolder)
-            assert(brv == True), "Unable to create/locate output directory " + destinationFolder
-
-            brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, self.srcImageFolder)
-            if (brv == True):
-                if (not(lst is None or len(lst)<1)):
-                    for i, imageFileName in enumerate(lst):
-                        if (imageFileName.name.endswith(common._FILENAMEEXTENSION)):
-                            if (len(partOfFileName) >0):
-                                if (partOfFileName in imageFileName.name):
-                                    fileList.append(imageFileName.name)
-                                    TotalImageCount +=1
-                            else:
-                                fileList.append(imageFileName.name)
-                                TotalImageCount +=1
-                else:
-                    print("Directory is either None or zero order")
-            else:
-                print("fs.getListOfAllFiles returned False")
-
+            fileList, TotalImageCount = self.getCloudFileListAndCount(partOfFileName)
         
         if (len(fileList) > 0):
             # create chunks for the filelist That is created
             l = len(fileList)
-            # Batch size of one would be used here
             if (common._UseDocker == False):
-                for pos in range(0, l , l):
+                for pos in range(0, l , l): # Batch size of one would be used here
                     objProc = ds.clsOpenCVProcessImages()
                     objProc.set_verbosity(False)
                     objProc.processImages(  offset = pos, 
@@ -112,6 +134,31 @@ class clsOpenCVObjectDetector:
                                             experimentName = self.experimentName, 
                                             imageBatchSize = l, 
                                             partOfFileName=  partOfFileName)
+            elif (common._UseEventHub == True):
+                # ideally store the message that you've got here and that you've started processing.
+                # send the eventmessages to 
+                # The number of Docker containers should be equal to number of EventHub Partitions
+                imageBatchSize = int(l/common._NUMBER_OF_EVENT_HUB_PARTITIONS) 
+
+                envString=dict()
+                envString['EXPERIMENT_NAME']= str(self.experimentName)
+                envString['BATCH_SIZE'] = int(imageBatchSize)
+                for pos in range(0, l , imageBatchSize):
+                    msgSender.sendProcessExperimentMessage( self.get_MessageId(), 
+                                                            self.experimentName, 
+                                                            self.srcImageFolder,
+                                                            self.destinationFolder,
+                                                            imageBatchSize, 
+                                                            pos,
+                                                            partOfFileName)
+
+                print("All messages have now been send; and hopefully will be processed...")
+                allMessagesProcessed = False
+                while (allMessagesProcessed == False):
+                    # print('Sleeping...')
+                    asyncio.sleep(_SLEEP_TIME_BEFFORE_CHECK) 
+                    allMessagesProcessed = staUpdate.is_operationCompleted(self.get_MessageId(), self.experimentName, common._NUMBER_OF_EVENT_HUB_PARTITIONS)
+
             else:
                 # use docker to manage the image processing, should I not be doing separate threading? 
                 import docker
@@ -168,7 +215,6 @@ class clsOpenCVObjectDetector:
         self.WriteLogsToDatabase(self.experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount)
 
         return len(fileList), TotalNumberOfImagesDetected,  elapsed_time
-
     
     def totalNumberOfImagesDetected(self):
         internalTotalNumberOfImagesDetected = 0
