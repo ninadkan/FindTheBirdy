@@ -1,9 +1,11 @@
-from cosmosBase import clsCosmosOperationsBase
+
 import argparse
 
 import sys
 sys.path.insert(0, '../') # needed as common is in the parent folder
 import common
+
+from cosmosDB.cosmosBase import clsCosmosOperationsBase
 
 ###############################################################################
 class clsCosmosImageProcessingOperations(clsCosmosOperationsBase):   
@@ -70,6 +72,7 @@ class clsCosmosImageProcessingOperations(clsCosmosOperationsBase):
     # -------------------------------------------------------------------------
 
     def get_offsetValue(self, eventHub, consumerGroup, partition_id, messageType):
+        
         offset = "-1"
         dictObject =  self._getDictionaryObjectMin(eventHub, consumerGroup, partition_id, messageType) 
         rv = super().getValue(dictObject, common._OPERATIONS_LAST_OFFSET) 

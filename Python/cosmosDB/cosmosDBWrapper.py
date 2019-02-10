@@ -1,10 +1,11 @@
 
-from cosmosBase import cosmosBase
+
 import argparse
 
 import sys
 sys.path.insert(0, '../') # needed as common is in the parent folder
 import common
+from cosmosDB.cosmosBase import cosmosBase
 
 ###############################################################################        
 

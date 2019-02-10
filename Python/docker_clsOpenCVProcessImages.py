@@ -73,7 +73,7 @@ class clsOpenCVProcessImages:
         return self.writeOutput
     def get_verbosity(self):
         return self.verbosity 
-    def getMessageID(self):
+    def get_MessageId(self):
         return self.messageID
 
 
@@ -168,9 +168,9 @@ class clsOpenCVProcessImages:
             # this is usually for the first time execution when offset = 0
             self.listOfImagesToBeProcessed = completefileList[offset:offset + imageBatchSize]
     
-        print(offset)
-        print(imageBatchSize)
-        print(len(self.listOfImagesToBeProcessed))
+        #print(offset)
+        #print(imageBatchSize)
+        #print(len(self.listOfImagesToBeProcessed))
         # check ok
         assert(len(self.listOfImagesToBeProcessed)> self.numImagesToCreateMeanBackground), "Number of Images passed are less than required to create background"
 
@@ -244,12 +244,12 @@ class clsOpenCVProcessImages:
                 boundingRectArea = 0
                         
                 if (diff > self.maskDiffThreshold): # passes the first test of difference
-                        print('Passed first threshold')
+                        #print('Passed first threshold')
                         ret, thresh = cv2.threshold(currentmask, self.grayImageThreshold, 255, 0)
                         contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
                         contour_length = len(contours)
                         if (not (contour_length == 0 or contour_length > self.contourCountThreshold)):
-                            print('passes second test of contour length')
+                            #print('passes second test of contour length')
                             cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)
                             for j, cnt in enumerate(cntsSorted):
                                 if ((j > self.contourCountThreshold) or (bOpenCVBirdDetected == True)): 
@@ -258,7 +258,7 @@ class clsOpenCVProcessImages:
                                 (x,y,w,h) = cv2.boundingRect(cnt)
                                 boundingRectArea = w*h 
                                 if (boundingRectArea > self.boundingRectAreaThreshold):
-                                    print(' passed the test of minimum bounding area ')
+                                    #print(' passed the test of minimum bounding area ')
                                     bOpenCVBirdDetected = True
                                     TotalNumberOfImagesDetected = TotalNumberOfImagesDetected +1
                                     
@@ -339,7 +339,7 @@ class clsOpenCVProcessImages:
         Padding: Required because the contour bounding rectangle is not big 
         enough for the images to be recognised
         '''
-        print('WriteOutputFile...')
+        #print('WriteOutputFile...')
         assert(imgColour is not None), "Invalid parameter imgColour"
         assert(self.g_colourMask is not None), "Invalid parameter self.g_colourMask"
         
@@ -369,10 +369,10 @@ class clsOpenCVProcessImages:
                 cv2.imwrite(outputFile,frame)           
             else:
                 data = cv2.imencode(common._FILENAMEEXTENSION, frame)[1].tostring()
-                print("Saving data, filename = {0}".format(imageFileName))
+                #print("Saving data, filename = {0}".format(imageFileName))
                 brv, desc, myROI = fs.saveFileImage(common._FileShareName, self.imageDestinationFolder, imageFileName, data )
                 assert(brv == True), "Unable to save image file " + imageFileName
-        print('...WriteOutputFile')
+        #print('...WriteOutputFile')
         return frame
 
 
@@ -465,7 +465,7 @@ if __name__ == "__main__":
             srcImageFolder = os.path.join(str(args.srcImageFolder),str(args.experimentName))
             destinationFolder = os.path.join(srcImageFolder,args.destinationFolder)
             if not os.path.exists(destinationFolder):
-                print("creating folder {0}".format(destinationFolder))
+                #print("creating folder {0}".format(destinationFolder))
                 os.makedirs(destinationFolder)    
         else:
             srcImageFolder = str(args.srcImageFolder) + "/" + str(args.experimentName)
@@ -484,8 +484,8 @@ if __name__ == "__main__":
                                             partOfFileName=  str(args.partOfFileName),
                                             numberOfImagesToProcess = int(args.numberOfImagesToProcess) )
 
-        print ("")
-        print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "; Total images processed = {0}, detected = {1}".format(l, tt))                            
+        #print ("")
+        #print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "; Total images processed = {0}, detected = {1}".format(l, tt))                            
 
 
 

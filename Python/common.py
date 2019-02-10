@@ -21,7 +21,7 @@ else:
 _DESTINATIONFOLDER = str(Path('output/'))
 _FILENAMEEXTENSION = '.jpg'
 _PARTOFFILENAME = ''
-_BATCH_SIZE =350
+_BATCH_SIZE =25
 
 
 _COLLECTIONAME = 'ResultsImageDetection'
@@ -59,6 +59,8 @@ _ARGS_LOG_RESULT="--logResult"
 # EventLog Common bits
 
 _NUMBER_OF_EVENT_HUB_PARTITIONS = int(4) 
+_MESSAGE_CONSUMER_GRP_OPENCV='opencv'
+_MESSAGE_CONSUMER_GRP_STARTEXPERIMENT='startexperiment'
 
 _MESSAGE_TYPE_TAG='MessageType'
 

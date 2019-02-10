@@ -11,7 +11,7 @@ import os
 import signal
 import functools
 
-import eventMessageProcessor as msgProc
+import eventMessageProcessor
 
 
 from azure.eventprocessorhost import (
@@ -24,22 +24,7 @@ from azure.eventprocessorhost import (
 import sys
 
 
-def get_logger(level):
-    azure_logger = logging.getLogger("azure.processorhost")
-    azure_logger.setLevel(level)
-    handler = logging.StreamHandler(stream=sys.stdout)
-    handler.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s'))
-    if not azure_logger.handlers:
-        azure_logger.addHandler(handler)
-
-    uamqp_logger = logging.getLogger("uamqp")
-    uamqp_logger.setLevel(level)
-    if not uamqp_logger.handlers:
-        uamqp_logger.addHandler(handler)
-    return azure_logger
-
-
-#logger = get_logger(logging.WARNING)
+logger = loggingBase.get_logger(logging.WARNING)
 
 
 class EventProcessor(AbstractEventProcessor):
@@ -52,13 +37,17 @@ class EventProcessor(AbstractEventProcessor):
         """
         super().__init__(params)
         self._msg_counter = 0
+        self.consumerGrp= None 
+        if (params is not None and len(params)> 0):
+            self.consumerGrp = params[0]
+            logger.warning('starting and saving the consumer grp internally {}'.format(self.consumerGrp))
 
 
     async def open_async(self, context):
         """
         Called by processor host to initialize the event processor.
         """
-        #logger.info("Connection established {}".format(context.partition_id))
+        logger.info("Connection established {}".format(context.partition_id))
 
     async def close_async(self, context, reason):
         """
@@ -66,11 +55,11 @@ class EventProcessor(AbstractEventProcessor):
         :param context: Information about the partition
         :type context: ~azure.eventprocessorhost.PartitionContext
         """
-        # logger.info("Connection closed (reason {}, id {}, offset {}, sq_number {})".format(
-        #     reason,
-        #     context.partition_id,
-        #     context.offset,
-        #     context.sequence_number))
+        logger.info("Connection closed (reason {}, id {}, offset {}, sq_number {})".format(
+            reason,
+            context.partition_id,
+            context.offset,
+            context.sequence_number))
 
 
     async def process_events_async(self, context, messages):
@@ -82,8 +71,14 @@ class EventProcessor(AbstractEventProcessor):
         :param messages: The events to be processed.
         :type messages: list[~azure.eventhub.common.EventData]
         """
-        #await msgProc.processMessageBody(context, messages, logger)
-        await msgProc.processMessageBody(context, messages)
+        logger.warning("Processing message on (id {}, offset {}, sq_number {})".format(
+            context.partition_id,
+            context.offset,
+            context.sequence_number)) 
+                  
+        await eventMessageProcessor.processMessageBody(context, messages, self.consumerGrp, logger)
+        #logger.error("Checkpoinint all messages to move forward")
+        #await context.checkpoint_async()
  
     async def process_error_async(self, context, error):
         """
@@ -94,13 +89,17 @@ class EventProcessor(AbstractEventProcessor):
         :type context: ~azure.eventprocessorhost.PartitionContext
         :param error: The error that occured.
         """
-        # logger.error("Event Processor Error {!r}".format(error))
+        logger.error("Event Processor Error {!r} id {}, offset {}, sq_number {}".format(
+            error, 
+            context.partition_id,
+            context.offset,
+            context.sequence_number))
 
 async def wait_and_close(host):
     """
-    Run EventProcessorHost for 1 minutes then shutdown.
+    Run EventProcessorHost for 5 minutes then shutdown.
     """
-    await asyncio.sleep(60)
+    await asyncio.sleep(60*5)
     await host.close_async()
 
 
@@ -131,7 +130,7 @@ try:
         EventProcessor,
         eh_config,
         storage_manager,
-        ep_params=["param1","param2"],
+        ep_params=[CONSUMER_GROUP],
         eph_options=eh_options,
         loop=loop)
 

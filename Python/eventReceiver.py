@@ -17,9 +17,16 @@ import json
 import argparse
 import requests
 import common
-import openCVPhotoExtractorTest as test
-import openCVPhotoExtractorClsImpl as clsImpl
+# import openCVPhotoExtractorTest as test
+# import openCVPhotoExtractorClsImpl as clsImpl
 
+import signal
+import functools
+
+import eventMessageProcessor
+import cosmosDB.cosmosImageOperations
+import loggingBase 
+import asyncio
 
 # resp = requests.get('https://todolist.example.com/tasks/')
 # if resp.status_code != 200:
@@ -44,14 +51,14 @@ import openCVPhotoExtractorClsImpl as clsImpl
 #                      headers={'Content-Type':'application/json'},
 
 
-def is_json(myjson):
-    json_object = None
-    try:
-        json_object = json.loads(myjson)
-    except Exception as e:
-        #print("Not json")
-        return False, json_object
-    return True, json_object
+# def is_json(myjson):
+#     json_object = None
+#     try:
+#         json_object = json.loads(myjson)
+#     except Exception as e:
+#         #print("Not json")
+#         return False, json_object
+#     return True, json_object
 
 
 
@@ -68,59 +75,89 @@ ADDRESS = os.environ.get('EVENT_HUB_ADDRESS')
 USER = os.environ.get('EVENT_HUB_RECEIVER_SAS_POLICY')
 KEY = os.environ.get('EVENT_HUB_RECEIVER_SAS_KEY')
 CONSUMER_GROUP = os.environ.get('EVENT_HUB_RECEIVER_CONSUMER_GRP') #"opencv" #$default"
+EVENTHUB = os.environ.get('EVENT_HUB_NAME')
 
 #OFFSET = Offset("8000")
 #PARTITION = 3
-total = 0
+
 last_sn = -1
 last_offset = "-1"
 
-print("creating event hub class")
-client = EventHubClient(ADDRESS, debug=True, username=USER, password=KEY)
+logger = loggingBase.get_logger(logging.WARNING)
+logger.warning("creating event hub class")
+cleanUp = False
+def processMessages():
+    try:
+        total = 0
+        client = EventHubClient(ADDRESS, debug=True, username=USER, password=KEY)
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--partition", help="partition", type=int, default=0)
+        args = parser.parse_args()
+        logger.warning(args.partition)
+
+        logger.warning(CONSUMER_GROUP)
 
 
-try:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--partition", help="partition", type=int, default=0)
-    args = parser.parse_args()
-    print(args.partition)
+        if(CONSUMER_GROUP == common._MESSAGE_CONSUMER_GRP_OPENCV):
+            msgType = common._MESSAGE_TYPE_PROCESS_EXPERIMENT
+        elif (CONSUMER_GROUP == common._MESSAGE_CONSUMER_GRP_STARTEXPERIMENT):
+            msgType = common._MESSAGE_TYPE_START_EXPERIMENT
+        else:
+            logger.error('unknown message type specified {}'.format(CONSUMER_GROUP))
 
-    brv, last_offset_value = getLastOffset(args.partition)
-    if (brv == True):
+        msgOperations = cosmosDB.cosmosImageOperations.clsCosmosImageProcessingOperations()
+        last_offset_value = msgOperations.get_offsetValue(EVENTHUB, args.partition, CONSUMER_GROUP, msgType)
+        
         # OFFSET = Offset(returnValue['result']) # returns -1 if no previous one are found. 
-        receiver = client.add_receiver(CONSUMER_GROUP, args.partition, prefetch=5000, offset=last_offset_value)
+        receiver = client.add_receiver(CONSUMER_GROUP, args.partition, prefetch=5000, offset=Offset(last_offset_value))
         client.run()
         start_time = time.time()
-        batch = receiver.receive(timeout=5000)
+        logger.warning('Before the starting batch ...{}'.format(time.strftime("%H:%M:%S", time.localtime())))
+        batch = receiver.receive(timeout=60*5)
         while batch:
+            logger.warning('starting batch time ...{}'.format(time.strftime("%H:%M:%S", time.localtime())))
             for event_data in batch:
                 last_offset = event_data.offset
                 last_sn = event_data.sequence_number
-                
-                print("Received: {}, {}".format(last_offset.value, last_sn))
 
-                brv, loaded_r = is_json(event_data.body_as_str())
+                logger.warning('Number of messages in the batch {}'.format(len(batch)))
+                
+                #logger.error("Received: {}, {}".format(last_offset.value, last_sn))
+                brv, loaded_r = eventMessageProcessor.is_json(event_data.body_as_str())
                 if (brv == True):
-                    if (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_START_EXPERIMENT):
-                        processStartExperimentMessage(loaded_r, args.partition, last_offset.value)
-                        brv = updateNewOffset(args.partition, last_offset.value)
-                    elif (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_EXPERIMENT_ATTRIBUTES):
-                        processExperimentImages(loaded_r, args.partition, last_offset.value)
-                        brv = updateNewOffset(args.partition, last_offset.value)
+                    if (loaded_r[common._MESSAGE_TYPE_TAG]== msgType):
+                        total =+1
+                        if (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_START_EXPERIMENT):
+                            #logger.warning(loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID])
+                            brv = True if cleanUp else eventMessageProcessor.processStartExperimentMessage(loaded_r, logger)
+                            if (brv == True):
+                                brv = msgOperations.insert_offset_document(EVENTHUB, args.partition, CONSUMER_GROUP,last_offset.value, common._MESSAGE_TYPE_START_EXPERIMENT)
+                        elif (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_PROCESS_EXPERIMENT):
+                            #logger.warning(loaded_r[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
+                            brv = True if cleanUp else eventMessageProcessor.processExperimentImages(loaded_r, logger)
+                            if (brv == True):
+                                brv = msgOperations.insert_offset_document(EVENTHUB, args.partition, CONSUMER_GROUP,last_offset.value, common._MESSAGE_TYPE_PROCESS_EXPERIMENT)
+                        else:
+                            logger.error("Unknown Message!!!  {}".format(msgBody))
+                            
                     else:
-                        print(event_data.body_as_str())
+                        # nothing to do with us, ignore and continue
+                        logger.warning('Incompatible message type received, ignoring'.format(loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID]))
+                        if (cleanUp== True):
+                            msgOperations.insert_offset_document(EVENTHUB, args.partition, CONSUMER_GROUP,last_offset.value, msgType)
                 else:
-                    print(event_data.body_as_str())
-                total += 1
-                # save the last offset. 
-                assert(brv == True), "Error saving the new offset"
-            batch = receiver.receive(timeout=5000)
+                    logger.error('Message body is not json! {}'.format(event_data.body_as_str()))
+            logger.warning('checking another receive....{}'.format(time.strftime("%H:%M:%S", time.localtime())))
+            batch = receiver.receive(timeout=5)
         end_time = time.time()
         client.stop()
         run_time = end_time - start_time
         print("Received {} messages in {} seconds".format(total, run_time))
 
-except KeyboardInterrupt:
-    pass
-finally:
-    client.stop()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        client.stop()
+
+if __name__ == "__main__":
+    processMessages()

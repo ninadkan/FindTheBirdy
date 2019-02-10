@@ -84,14 +84,16 @@ class clsStatusUpdate(clsCosmosOperationsBase):
         return super().getDocuments(dictObject, True) 
 
     # -------------------------------------------------------------------------   
-    def is_operationCompleted(self, messageId, experimentName, numberOfRecordsExpected=4 ):
-        brv = True
-        lst = self.getDocuments(messageId, experimentName)
-        if (len(lst == numberOfRecordsExpected)):
-            for item in lst:
-                if (int(item[common._OPERATIONS_STATUS_CURRENT_COUNT]) +1 != int(item[common._OPERATIONS_STATUS_MAX_ITEMS])):
-                    brv = False # we found one where its not correct. 
-                    break
+    def is_operationCompleted(self, messageId, experimentName, numberOfRecordsExpected):
+        brv = False
+        lst = self.get_documents(messageId, experimentName)
+        if (lst is not None):
+            if (len(lst) == numberOfRecordsExpected):
+                brv = True
+                for item in lst:
+                    if (int(item[common._OPERATIONS_STATUS_CURRENT_COUNT]) != int(item[common._OPERATIONS_STATUS_MAX_ITEMS])):
+                        brv = False # we found one where the match is not correct. 
+                        break
         else:
             brv = False
         return brv

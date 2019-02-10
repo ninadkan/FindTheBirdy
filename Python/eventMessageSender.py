@@ -3,6 +3,7 @@ import json
 import os
 import datetime
 import common
+from itertools import cycle
 
 ADDRESS = os.environ.get('EVENT_HUB_ADDRESS')
 USER = os.environ.get('EVENT_HUB_SENDER_SAS_POLICY')
@@ -34,7 +35,7 @@ def _getProcessExperimentPayload(   MessageId,
                     common._MESSAGE_TYPE_PROCESS_EXPERIMENT_BATCH_SIZE :imageBatchSize,
                     common._MESSAGE_TYPE_PROCESS_EXPERIMENT_OFFSET_POSITION :offsetPosition,
                     common._MESSAGE_TYPE_PROCESS_EXPERIMENT_PART_OF_FILE_NAME:partOfFileName} )
-    return r, str(messageId)
+    return r, str(MessageId)
                                
 
 def sendStartExperimentMessage(experimentNames):
@@ -48,7 +49,7 @@ def sendStartExperimentMessage(experimentNames):
     lstGuids = []
     try:
         client = EventHubClient(ADDRESS, debug=True, username=USER, password=KEY)
-        sender = client.add_sender() # deliberately not specifying the partition keys
+        sender = client.add_sender(partition="0") 
         client.run()
         for experimentName in experimentNames:
             #logger.info("Sending message: {}".format(i))
@@ -62,6 +63,9 @@ def sendStartExperimentMessage(experimentNames):
         client.stop()
     return   lstGuids
 
+
+pool = cycle(['1','2','3']) #picking the partition where the messages will be processed 
+
 def sendProcessExperimentMessage(   MessageId,
                                     experimentName, 
                                     srcImageFolder,
@@ -72,13 +76,15 @@ def sendProcessExperimentMessage(   MessageId,
     global ADDRESS
     global USER
     global KEY
-    
+    global pool
+    print('sendProcessExperimentMessage')
+
     if not ADDRESS:
         raise ValueError("No EventHubs URL supplied.")                                    
 
     try:
         client = EventHubClient(ADDRESS, debug=True, username=USER, password=KEY)
-        sender = client.add_sender() # deliberately not specifying the partition keys
+        sender = client.add_sender(partition=next(pool)) # deliberately not specifying the partition keys
         client.run()
         r, guid = _getProcessExperimentPayload( MessageId,
                                                 experimentName, 

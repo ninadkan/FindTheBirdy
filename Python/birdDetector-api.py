@@ -47,5 +47,5 @@ if __name__ == '__main__':
     # specifying host='127.0.0.1:5002' is error, specify port= separately. 
     #app.run(debug=True)
     # Test suite
-    # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"experimentNames\" : [\"2018-04-15\"}" --verbose http://localhost:5002/birdDetector/v1.0/processExperiments
+    # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"experimentNames\" : [\"2018-04-15\"]}" --verbose http://localhost:5002/birdDetector/v1.0/processExperiments
     # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"experimentNames\" : [\"2018-04-15\", \"2018-04-16\", \"2018-04-17\", \"2018-04-18\", \"2018-04-19\", \"2018-04-20\", \"2018-04-21\", \"2018-04-22\", \"2018-04-23\", \"2018-04-24\"]}" --verbose http://localhost:5002/birdDetector/v1.0/processExperiments

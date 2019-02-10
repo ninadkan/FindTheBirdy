@@ -35,6 +35,7 @@ def updateMessageProcessingStatus(messageID, experimentName,offset, currentCount
     return baseRequest(payload, 'operationsInsertLastOffsetDocument')
 
 def getMessageProcseeingStatus(messageID, experimentName):
+    return 
     
 
 def baseRequest(payload, urlfunctionName):

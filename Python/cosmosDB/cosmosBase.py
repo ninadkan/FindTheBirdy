@@ -206,7 +206,7 @@ class clsCosmosOperationsBase(cosmosBase):
 
     def getValue(self, dictObject, key):
         value = None
-        doc = getDocument(dictObject)
+        doc = self.getDocument(dictObject)
         if (doc is not None):
             value = doc[key]
         return value
@@ -271,8 +271,8 @@ class clsCosmosOperationsBase(cosmosBase):
                     selectQuery += ' and r.'
                 parameters.append({"name":parameterName, "value": kwargs[key]})
 
-            print(selectQuery)
-            print(parameters)
+            #print(selectQuery)
+            #print(parameters)
             documentquery = { "query": selectQuery , "parameters": parameters }
             return super().getDocumentFromQuery(documentquery)
         else:

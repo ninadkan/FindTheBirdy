@@ -17,15 +17,15 @@ import common
 import docker_clsOpenCVProcessImages as ds
 import azureFS.azureFileShareTest as fs
 
-import eventMessageSender as msgSender
+import eventMessageSender
 import asyncio
-import cosmosDB.cosmosStatusUpdate as staUpdate
+import cosmosDB.cosmosStatusUpdate
 
 
 _LOGRESULT = True   # Should we write the results to CosmosDB or not. This is dependent on _WRITEOUTPUT values.
                     # as it looks at the files copied into destination folder
 _MAX_NUM_OF_DOCKER_CONTAINERS = int(3)
-_SLEEP_TIME_BEFFORE_CHECK = int(10) # # seems like a good value, remember its in seconds; me thinks 
+_SLEEP_TIME_BEFFORE_CHECK = int(5) # # seems like a good value, remember its in seconds; me thinks 
 
 
 
@@ -124,7 +124,7 @@ class clsOpenCVObjectDetector:
         if (len(fileList) > 0):
             # create chunks for the filelist That is created
             l = len(fileList)
-            if (common._UseDocker == False):
+            if (common._UseDocker == False and common._UseEventHub == False): # fallback to traditional mechanism
                 for pos in range(0, l , l): # Batch size of one would be used here
                     objProc = ds.clsOpenCVProcessImages()
                     objProc.set_verbosity(False)
@@ -139,25 +139,31 @@ class clsOpenCVObjectDetector:
                 # send the eventmessages to 
                 # The number of Docker containers should be equal to number of EventHub Partitions
                 imageBatchSize = int(l/common._NUMBER_OF_EVENT_HUB_PARTITIONS) 
-
-                envString=dict()
-                envString['EXPERIMENT_NAME']= str(self.experimentName)
-                envString['BATCH_SIZE'] = int(imageBatchSize)
+                numberOfMessagesSent = 0
                 for pos in range(0, l , imageBatchSize):
-                    msgSender.sendProcessExperimentMessage( self.get_MessageId(), 
-                                                            self.experimentName, 
-                                                            self.srcImageFolder,
-                                                            self.destinationFolder,
-                                                            imageBatchSize, 
-                                                            pos,
-                                                            partOfFileName)
+                    
+                    eventMessageSender.sendProcessExperimentMessage(    self.get_MessageId(), 
+                                                                        self.experimentName, 
+                                                                        self.srcImageFolder,
+                                                                        self.destinationFolder,
+                                                                        imageBatchSize, 
+                                                                        pos,
+                                                                        partOfFileName)
+                    numberOfMessagesSent += 1
 
-                print("All messages have now been send; and hopefully will be processed...")
+                print("All messages ={} have now been send; and hopefully will be processed...".format(numberOfMessagesSent))
                 allMessagesProcessed = False
-                while (allMessagesProcessed == False):
+                timeout = time.time() + 60* 6 # six minutes from now
+                statusUpdate = cosmosDB.cosmosStatusUpdate.clsStatusUpdate() 
+                while (allMessagesProcessed == False and time.time() < timeout):
                     # print('Sleeping...')
-                    asyncio.sleep(_SLEEP_TIME_BEFFORE_CHECK) 
-                    allMessagesProcessed = staUpdate.is_operationCompleted(self.get_MessageId(), self.experimentName, common._NUMBER_OF_EVENT_HUB_PARTITIONS)
+                    #await asyncio.sleep(_SLEEP_TIME_BEFFORE_CHECK) 
+                    time.sleep(_SLEEP_TIME_BEFFORE_CHECK)
+                    print("Checking the status of all completion")
+                    
+                    allMessagesProcessed = statusUpdate.is_operationCompleted(self.get_MessageId(), self.experimentName, numberOfMessagesSent)
+
+                print("Coming out of the message wait loop, status = {}".format(allMessagesProcessed))
 
             else:
                 # use docker to manage the image processing, should I not be doing separate threading? 
