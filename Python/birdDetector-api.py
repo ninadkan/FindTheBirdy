@@ -19,11 +19,14 @@ import common
 import os
 import datetime
 import time
+import asyncio
+import eventMessageSender as msgSender
+import loggingBase
+import asyncioBase
+
 
 app = Flask(__name__)
 CORS(app)
-
-import eventMessageSender as msgSender
 
 
 @app.route('/birdDetector/v1.0/processExperiments', methods=['POST'])
@@ -35,7 +38,8 @@ def processExperiments():
     experimentNames = request.json['experimentNames']
     # get a guid for the experimentName, to uniquely identify this request
     # and send it back to the client.
-    lstGuids = msgSender.sendStartExperimentMessage(experimentNames)
+    
+    lstGuids = asyncioBase.get_set_event_loop().run_until_complete(msgSender.sendStartExperimentMessage(experimentNames))
 
     time_elapsed = datetime.datetime.now() - start_time 
     elapsedTime = "{}:{}".format(time_elapsed.seconds, time_elapsed.microseconds)

@@ -112,7 +112,7 @@ class clsOpenCVObjectDetector:
             print("fs.getListOfAllFiles returned False")
         return fileListLocal, TotalImageCountLocal
 
-    def processImages(self,partOfFileName=''):
+    async def processImages(self,partOfFileName=''):
         start_time = time.time()
         fileList = []
         TotalImageCount = 0
@@ -142,13 +142,13 @@ class clsOpenCVObjectDetector:
                 numberOfMessagesSent = 0
                 for pos in range(0, l , imageBatchSize):
                     
-                    eventMessageSender.sendProcessExperimentMessage(    self.get_MessageId(), 
-                                                                        self.experimentName, 
-                                                                        self.srcImageFolder,
-                                                                        self.destinationFolder,
-                                                                        imageBatchSize, 
-                                                                        pos,
-                                                                        partOfFileName)
+                    await eventMessageSender.sendProcessExperimentMessage(  self.get_MessageId(), 
+                                                                            self.experimentName, 
+                                                                            self.srcImageFolder,
+                                                                            self.destinationFolder,
+                                                                            imageBatchSize, 
+                                                                            pos,
+                                                                            partOfFileName)
                     numberOfMessagesSent += 1
 
                 print("All messages ={} have now been send; and hopefully will be processed...".format(numberOfMessagesSent))

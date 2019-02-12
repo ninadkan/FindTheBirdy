@@ -25,7 +25,7 @@ async def processMessageBody(context, messages, consumerGrp, logger=None):
                 if (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_START_EXPERIMENT):
                     if(consumerGrp == common._MESSAGE_CONSUMER_GRP_STARTEXPERIMENT):
                         logger.warning(loaded_r)
-                        brv = processStartExperimentMessage(loaded_r, logger)
+                        brv = await processStartExperimentMessage(loaded_r, logger)
                         if (brv == True):
                             await context.checkpoint_async()
                 elif (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_PROCESS_EXPERIMENT):
@@ -63,7 +63,7 @@ def is_json(msgBody):
     return True, json_object
 
 
-def processStartExperimentMessage(msgBody, logger):
+async def processStartExperimentMessage(msgBody, logger):
     brv = False
     experimentName = msgBody[common._MESSAGE_TYPE_START_EXPERIMENT_EXPERIMENT_NAME]
     assert(experimentName is not None), "No experiment name passed!"
@@ -74,7 +74,7 @@ def processStartExperimentMessage(msgBody, logger):
         procObject.set_MessageId(msgBody[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID])
         #l, tt,  t = procObject.processImages(partOfFileName='2018-12-14_04')
         
-        l, tt,  t = procObject.processImages()
+        l, tt,  t = await procObject.processImages()
         logger.warn ("Return from processStartExperimentMessage!!!")
         logger.warn("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))
     else:

@@ -14,8 +14,11 @@ def delete_existing_files(experimentName):
         files = os.path.join(files, _DESTINATIONFOLDER)
 
         osString = platform.platform()
+
+        
         UNIX_DEFINED = True
-        if ('Windows' in osString):
+        if sys.platform == 'win32':  # pragma: no cover
+        #if ('Windows' in osString):
             UNIX_DEFINED = False
 
         if UNIX_DEFINED:
@@ -35,6 +38,7 @@ def delete_existing_files(experimentName):
             print(e)
         return
     else:
+        # cloudy environment
         srcImageFolder = _SRCIMAGEFOLDER + "/" + experimentName
         destinationFolder = srcImageFolder + "/" + _DESTINATIONFOLDER
         print(destinationFolder)
