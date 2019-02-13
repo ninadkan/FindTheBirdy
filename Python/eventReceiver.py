@@ -28,6 +28,16 @@ import cosmosDB.cosmosImageOperations
 import loggingBase 
 import asyncio
 
+# mapper of eventMessage Type and function which processes it
+dispatch={
+    common._MESSAGE_TYPE_PROCESS_EXPERIMENT:eventMessageProcessor.processExperimentImages,
+    common._MESSAGE_TYPE_START_EXPERIMENT:eventMessageProcessor.processStartExperimentMessage,
+    common._MESSAGE_TYPE_DETECTOR_GOOGLE:eventMessageProcessor.processImagesUsingGoogleDetector,
+    common._MESSAGE_TYPE_DETECTOR_AZURE:eventMessageProcessor.processImagesUsingAzureDetector,
+    common._MESSAGE_TYPE_DETECTOR_YOLO:eventMessageProcessor.processImagesUsingYoloDetector,
+    common._MESSAGE_TYPE_DETECTOR_MOBILE_NET:eventMessageProcessor.processImagesUsingMobileNetDetector,
+    common._MESSAGE_TYPE_DETECTOR_TENSORFLOW:eventMessageProcessor.processImagesUsingTenslorFlowDetector
+}
 
 async def processMessages(client, partition, consumerGrp, logger):
     start_time = time.time()
@@ -46,56 +56,61 @@ async def processMessages(client, partition, consumerGrp, logger):
     await client.run_async()
     
     #batch = receiver.receive(timeout=60*5)
-    batch = await receiver.receive(timeout=60*5)
-    while batch:
-        logger.warning('starting batch time ...{}'.format(time.strftime("%H:%M:%S", time.localtime())))
-        for event_data in batch:
-            last_offset = event_data.offset
-            last_sn = event_data.sequence_number
+    receiver_timeOut = 5
 
-            logger.warning('Number of messages in the batch {}'.format(len(batch)))
-            
-            #logger.error("Received: {}, {}".format(last_offset.value, last_sn))
-            brv, loaded_r = eventMessageProcessor.is_json(event_data.body_as_str())
-            if (brv == True):
-                if (loaded_r[common._MESSAGE_TYPE_TAG]== msgType):
-                    total =+1
-                    if (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_START_EXPERIMENT):
-                        logger.warning(loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID])
-                        brv = True if cleanUp else await eventMessageProcessor.processStartExperimentMessage(loaded_r, logger)
-                        if (brv == True):
-                            brv = msgOperations.insert_offset_document(EVENTHUB, partition, consumerGrp,last_offset.value, common._MESSAGE_TYPE_START_EXPERIMENT)
-                    elif (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_PROCESS_EXPERIMENT):
-                        logger.warning(loaded_r[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
-                        brv = True if cleanUp else eventMessageProcessor.processExperimentImages(loaded_r, logger)
-                        if (brv == True):
-                            brv = msgOperations.insert_offset_document(EVENTHUB, partition, consumerGrp,last_offset.value, common._MESSAGE_TYPE_PROCESS_EXPERIMENT)
+    timeout = time.time() + 60*6 # six minutes from now
+    statusUpdate = cosmosDB.cosmosStatusUpdate.clsStatusUpdate() 
+    while (time.time() < timeout):
+        
+        batch = await receiver.receive(timeout=receiver_timeOut)
+        if (batch):
+            logger.warning('{} : starting batch time ...{}'.format(consumerGrp, time.strftime("%H:%M:%S", time.localtime())))
+            for event_data in batch:
+                last_offset = event_data.offset
+                last_sn = event_data.sequence_number
+
+                logger.warning('{} :Number of messages in the batch {}'.format(consumerGrp, len(batch)))
+                #logger.error("Received: {}, {}".format(last_offset.value, last_sn))
+                brv, loaded_r = eventMessageProcessor.is_json(event_data.body_as_str())
+                if (brv == True):
+
+                    # each message has an indicator of what type it is; That defines our eventReceiver Type
+                    if (loaded_r[common._MESSAGE_TYPE_TAG]== msgType):
+                        total =+1
+                        if (dispatch[loaded_r[common._MESSAGE_TYPE_TAG]]):
+                            logger.warning(loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID])
+                            brv = True if cleanUp else await dispatch[loaded_r[common._MESSAGE_TYPE_TAG]](loaded_r, logger)
+                            if (brv == True):
+                                brv = msgOperations.insert_offset_document( EVENTHUB, 
+                                                                            partition, 
+                                                                            consumerGrp,
+                                                                            last_offset.value, 
+                                                                            loaded_r[common._MESSAGE_TYPE_TAG])
+                        else:
+                            logger.error("Unknown Message!!!  {}".format(msgBody))
+                            continue
                     else:
-                        logger.error("Unknown Message!!!  {}".format(msgBody))
+                        # nothing to do with us, ignore and continue
+                        logger.warning('{} :Incompatible message type received, ignoring'.format(consumerGrp,loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID]))
+                        if (cleanUp== True):
+                            msgOperations.insert_offset_document(EVENTHUB, partition, consumerGrp,last_offset.value, msgType)
                         continue
                 else:
-                    # nothing to do with us, ignore and continue
-                    logger.warning('Incompatible message type received, ignoring'.format(loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID]))
-                    if (cleanUp== True):
-                        msgOperations.insert_offset_document(EVENTHUB, partition, consumerGrp,last_offset.value, msgType)
+                    logger.error('Message body is not json! {}'.format(event_data.body_as_str()))
                     continue
-            else:
-                logger.error('Message body is not json! {}'.format(event_data.body_as_str()))
-                continue
-        logger.warning('checking another receive....{}'.format(time.strftime("%H:%M:%S", time.localtime())))
-        #batch = receiver.receive(timeout=5)
-        batch = await receiver.receive(timeout=60)
+                
+                timeout = time.time() + 60*5 # reset our timer
+                logger.warning('{} : checkout time increased ...{}'.format(consumerGrp, time.strftime("%H:%M:%S", time.localtime())))
     end_time = time.time()
     await client.stop_async()
     run_time = end_time - start_time
-    print("Received {} messages in {} seconds".format(total, run_time))
+    print("{} : Received {} messages in {} seconds".format(consumerGrp, total, run_time))
 
 try:
 
     ADDRESS = os.environ.get('EVENT_HUB_ADDRESS')
     USER = os.environ.get('EVENT_HUB_RECEIVER_SAS_POLICY')
     KEY = os.environ.get('EVENT_HUB_RECEIVER_SAS_KEY')
-    CONSUMER_GROUP = os.environ.get('EVENT_HUB_RECEIVER_CONSUMER_GRP') #"opencv" #$default"
     EVENTHUB = os.environ.get('EVENT_HUB_NAME')
 
     logger = loggingBase.get_logger(logging.WARNING)
@@ -103,23 +118,22 @@ try:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--partition", help="partition", type=int, default=0)
+    parser.add_argument("-c", "--consumergrp", help="Consumer Group", type=str, default='opencv')
     args = parser.parse_args()
     logger.warning(args.partition)
-    logger.warning(CONSUMER_GROUP)
+    consumerGroup = args.consumergrp
+    logger.warning(consumerGroup)
 
-    if(CONSUMER_GROUP == common._MESSAGE_CONSUMER_GRP_OPENCV):
-        msgType = common._MESSAGE_TYPE_PROCESS_EXPERIMENT
-    elif (CONSUMER_GROUP == common._MESSAGE_CONSUMER_GRP_STARTEXPERIMENT):
-        msgType = common._MESSAGE_TYPE_START_EXPERIMENT
-    else:
-        raise ValueError('unknown message type specified {}'.format(CONSUMER_GROUP))
+    msgType = None
+    msgType = common._ConsumerGrp_MessageType_Mapping[consumerGroup]
+
+    if (msgType is None): 
+       raise ValueError('unknown message type specified {}'.format(consumerGroup))
 
     loop = asyncio.get_event_loop()
-    #client = EventHubClient(ADDRESS, debug=True, username=USER, password=KEY)
     client = EventHubClientAsync(ADDRESS, debug=True, username=USER, password=KEY)
-    tasks = [asyncio.ensure_future(processMessages(client, args.partition, CONSUMER_GROUP, logger ))]
+    tasks = [asyncio.ensure_future(processMessages(client, args.partition, consumerGroup, logger ))]
     loop.run_until_complete(asyncio.wait(tasks))
-    #loop.run_until_complete(client.stop_async())
     loop.close()
 except KeyboardInterrupt:
     pass

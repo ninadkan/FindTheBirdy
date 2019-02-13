@@ -72,7 +72,8 @@ def DetectBirdInImage( outputFolder,imageName,confThreshold, imageTag):
     labels = response.label_annotations
 
     for label in labels:
-        if ((label.description == imageTag) and (label.score > confThreshold)):
+        #print(label)
+        if ((imageTag.lower() in label.description.lower()) and (label.score > confThreshold)):
             return True, label.description, label.score
 
     return bRV, "", ""
@@ -84,7 +85,8 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = common._IMAGE_TAG,
                     logResult = _LOG_RESULT,
-                    experimentName = _EXPERIMENTNAME):
+                    experimentName = _EXPERIMENTNAME,
+                    messageId = None):
     '''
     Process the image and output if it has detected any birds in the images
     outputFolder IMAGE_SRC_FOLDER = Location of image files
@@ -118,7 +120,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
         # Not allowed in python 2.7
-        # print('.', end='', flush=True)
+        print('.', end='', flush=True)
    
         bBirdFound, description, confidenceScore = DetectBirdInImage(outputFolder,imageName,confThreshold, imageTag )
         if (bBirdFound == True):
@@ -143,14 +145,15 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
                         'result - birdFound' : TotalBirdsFound,
                         'param - confThreshold' : confThreshold, 
                         'param - numberOfIterations' : numberOfIterations,
-                        'param - imageTag' : imageTag
+                        'param - imageTag' : imageTag,
+                        common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID:messageId
                     }
         obj.logExperimentResult(documentDict= dictObject)
 
     return TotalBirdsFound 
 
 if __name__ == "__main__":
-    processImages()
+    processImages(experimentName='2018-04-15')
 
 
 

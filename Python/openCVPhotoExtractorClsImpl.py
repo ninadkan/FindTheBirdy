@@ -151,19 +151,34 @@ class clsOpenCVObjectDetector:
                                                                             partOfFileName)
                     numberOfMessagesSent += 1
 
-                print("All messages ={} have now been send; and hopefully will be processed...".format(numberOfMessagesSent))
+                print("All messages ={} have now been send; waiting ..".format(numberOfMessagesSent))
                 allMessagesProcessed = False
-                timeout = time.time() + 60* 6 # six minutes from now
+                wait_time = 60* 6 # six minutes from now
+                timeout = time.time() + wait_time
                 statusUpdate = cosmosDB.cosmosStatusUpdate.clsStatusUpdate() 
                 while (allMessagesProcessed == False and time.time() < timeout):
                     # print('Sleeping...')
-                    #await asyncio.sleep(_SLEEP_TIME_BEFFORE_CHECK) 
-                    time.sleep(_SLEEP_TIME_BEFFORE_CHECK)
-                    print("Checking the status of all completion")
+                    await asyncio.sleep(_SLEEP_TIME_BEFFORE_CHECK) 
+                    #time.sleep(_SLEEP_TIME_BEFFORE_CHECK)
+                    print("status check ...")
                     
                     allMessagesProcessed = statusUpdate.is_operationCompleted(self.get_MessageId(), self.experimentName, numberOfMessagesSent)
 
-                print("Coming out of the message wait loop, status = {}".format(allMessagesProcessed))
+                print("... wait loop over status = {}".format(allMessagesProcessed))
+                if (allMessagesProcessed):
+                    await eventMessageSender.sendDetectorMessages(self.get_MessageId(), 
+                                                                  self.experimentName, 
+                                                                  self.destinationFolder)
+                else:
+                    # log timeout error! 
+                    dictObject =    {  
+                                        common._OPERATIONS_STATUS_MESSAGE_ID : self.get_MessageId(),
+                                        common._OPERATIONS_STATUS_EXPERIMENT_NAME :self.experimentName,
+                                        common._OPERATIONS_STATUS_OFFSET :0,
+                                        common._OPERATIONS_STATUS_ELAPSED_TIME : 'Greater than {} seconds'.format(str(wait_time)),
+                                        common._OPERATIONS_STATUS_STATUS_MESSAGE :"ERROR"
+                                    }                    
+                    statusUpdate.insert_document_from_dict(dict, removeExisting=False)
 
             else:
                 # use docker to manage the image processing, should I not be doing separate threading? 
@@ -218,8 +233,7 @@ class clsOpenCVObjectDetector:
         # Write the log thingy now
         TotalNumberOfImagesDetected, detectedImages = self.totalNumberOfImagesDetected()
         elapsed_time = time.time() - start_time
-        self.WriteLogsToDatabase(self.experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount)
-
+        self.WriteLogsToDatabase(self.experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount, self.get_MessageId())
         return len(fileList), TotalNumberOfImagesDetected,  elapsed_time
     
     def totalNumberOfImagesDetected(self):
@@ -241,7 +255,7 @@ class clsOpenCVObjectDetector:
         return internalTotalNumberOfImagesDetected, internaldetectedImages
 
 
-    def WriteLogsToDatabase(self, experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount):
+    def WriteLogsToDatabase(self, experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount, messageId = None):
         if (self.logResult == True):
             import datetime
             from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
@@ -261,8 +275,9 @@ class clsOpenCVObjectDetector:
                             'param-boundingRectAreaThreshold' : objProc.get_boundingRectAreaThreshold(), 
                             'param-contourCountThreshold' : objProc.get_contourCountThreshold(),
                             'param-maskDiffThreshold' : objProc.get_maskDiffThreshold(),
-                            'param-partOfFileName' : partOfFileName
-                            }
+                            'param-partOfFileName' : partOfFileName,
+                            common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID:messageId
+                          }
             obj.logExperimentResult(documentDict= dictObject)
 
 

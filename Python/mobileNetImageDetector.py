@@ -89,7 +89,8 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
                     numberOfIterations = _NO_OF_ITERATIONS,
                     imageTag = common._IMAGE_TAG,
                     logResult = _LOG_RESULT,
-                    experimentName = _EXPERIMENTNAME):
+                    experimentName = _EXPERIMENTNAME,
+                    messageId = None):
     
     '''
     Process the image and output if it has detected any birds in the images
@@ -160,7 +161,8 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
                         'param - shapeWeight' : shapeWeight,
                         'param - scaleFactor' : scaleFactor , 
                         'param - numberOfIterations' : numberOfIterations,
-                        'param - imageTag' : imageTag
+                        'param - imageTag' : imageTag,
+                        common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID:messageId
                     }
         obj.logExperimentResult(documentDict= dictObject)
     return TotalBirdsFound                    

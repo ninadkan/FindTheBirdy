@@ -132,7 +132,8 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
                     imageTag = common._IMAGE_TAG,
                     nmsThreshold = _NMS_THRESHOLD, 
                     logResult = _LOG_RESULT,
-                    experimentName = _EXPERIMENTNAME):
+                    experimentName = _EXPERIMENTNAME,
+                    messageId=None):
     '''
     Process the image and output if it has detected any birds in the images
     outputFolder IMAGE_SRC_FOLDER = Location of image files
@@ -210,7 +211,8 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
                         'param - scaleFactor' : scaleFactor , 
                         'param - numberOfIterations' : numberOfIterations,
                         'param - imageTag' : imageTag,
-                        'param - nmsThreshold' : nmsThreshold
+                        'param - nmsThreshold' : nmsThreshold,
+                        common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID:messageId
                     }
         obj.logExperimentResult(documentDict= dictObject)
     return TotalBirdsFound
