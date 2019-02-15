@@ -1,0 +1,78 @@
+﻿@model IEnumerable<WebObjectDetector.Areas.Dashboard.Models.OpencvOperations>
+
+@{
+    ViewData["Title"] = "IndexAsync";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>IndexAsync</h2>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MessageId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ExperimentName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Offset_Value)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CurrentCount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaxItems)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Time)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MessageId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExperimentName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Offset_Value)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CurrentCount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MaxItems)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Time)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

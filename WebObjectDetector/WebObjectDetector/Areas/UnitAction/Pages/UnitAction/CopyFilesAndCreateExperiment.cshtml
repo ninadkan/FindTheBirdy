@@ -3,7 +3,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Copy Files and Create Experiments</h2>
+<h2>Copy Files and Create Experiments  Pages</h2>
 <hr />
 
 @*https://getbootstrap.com/docs/3.3/css/*@
@@ -273,7 +273,7 @@
 
         function InvokeWebAPIGeneric(urlAdd, dataval, handler) {
             $("body").css("cursor", "progress");
-
+            gi
             var body = dataval;
 
             var url = 'https://localhost:5000/azureStorage/v1.0/' + urlAdd;

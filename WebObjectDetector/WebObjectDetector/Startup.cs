@@ -13,6 +13,7 @@ using WebObjectDetector.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+
 namespace WebObjectDetector
 {
     public class Startup
@@ -34,6 +35,7 @@ namespace WebObjectDetector
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
@@ -41,6 +43,13 @@ namespace WebObjectDetector
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddScoped((s) =>
+            {
+                return new CosmosDBWrapper(
+                    new Uri(Configuration["CosmosDB:URL"]),
+                            Configuration["CosmosDB:PrimaryKey"]);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

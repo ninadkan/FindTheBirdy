@@ -67,11 +67,5 @@ namespace WebObjectDetector.Areas.UnitAction.Controllers
         {
             return View();
         }
-
-
-
-
-
-
     }
 }

@@ -8,12 +8,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.2.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.5" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Areas\Dashboard\Data\" />
-    <Folder Include="Areas\Dashboard\Models\" />
     <Folder Include="Areas\Identity\Services\" />
     <Folder Include="Areas\UnitAction\Data\" />
     <Folder Include="Areas\UnitAction\Models\" />
