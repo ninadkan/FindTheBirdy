@@ -12,16 +12,7 @@ from cosmosDB.cosmosBase import cosmosBase
 class clsCosmosWrapper(cosmosBase):
     def __init__(self, host='', key='', databaseId=''):
         super().__init__(host=host, key=key, databaseId=databaseId, collectionName=common._COLLECTIONAME )
-        self.sprocReadAllExperimentLink = None
-        sprocs = list(super().getClient().QueryStoredProcedures(super().getCollectionSelfLink(),
-            {
-                'query': 'SELECT * FROM root r WHERE r.id=@id',
-                'parameters':[
-                    { 'name':'@id', 'value':'returnAllExperimentList' }
-                ]
-            }))
-        assert(sprocs), "Unable to get returnAllExperimentList sproc"
-        self.sprocReadAllExperimentLink = sprocs[0]['_self']
+        self.sprocReadAllExperimentLink = super().getStoredProcLink('returnAllExperimentList')
         assert (self.sprocReadAllExperimentLink is not None)
         return
                

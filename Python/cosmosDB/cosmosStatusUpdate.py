@@ -15,7 +15,16 @@ class clsStatusUpdate(clsCosmosOperationsBase):
                             common._OPERATIONS_STATUS_EXPERIMENT_NAME,
                             common._OPERATIONS_STATUS_OFFSET]
         super().__init__(mandatoryList, common._OPERATIONSCOLLECTIONNAME, host, key, databaseId)
+        self.sprocReadAllMessageIdGroupedLink = super().getStoredProcLink('returnAllMessageIdGroupedList')
+        assert (self.sprocReadAllMessageIdGroupedLink is not None)        
         return
+
+    # -------------------------------------------------------------------------
+    def returnAllMessageIdGroupedListImpl(self):
+        # need to get the sproc_link 
+        assert (self.sprocReadAllMessageIdGroupedLink is not None)      
+        return super().getClient().ExecuteStoredProcedure(self.sprocReadAllMessageIdGroupedLink, None)
+
     # -------------------------------------------------------------------------
     def _getDictionaryObject(self, messageId, experimentName,offset=-1, currentCount=0, maxItems=-1, elapsedTime='', status=''):
         dictObject =    {  

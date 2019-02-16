@@ -6,6 +6,7 @@ from flask import request
 from flask_cors import CORS
 from  cosmosDBWrapper import clsCosmosWrapper
 from cosmosImageOperations import clsCosmosImageProcessingOperations
+from cosmosStatusUpdate import clsStatusUpdate
 import json
 
 import sys
@@ -14,7 +15,8 @@ import common
 
 
 clsObj = None           # our global instance
-clsOperations = None    # our global instance
+clsImageOperations = None    # our global instance
+clsStatusOperations = None
 
 app = Flask(__name__)
 CORS(app)
@@ -222,7 +224,7 @@ def returnAllExperimentResult():
         return jsonify(rv)
 
 ###############################################################################
-# Operations 
+# Image Processsing Operations 
 ###############################################################################
 
 @app.route('/comsosDBOperations/v1.0/operationsInsertLastOffsetDocument', methods=['POST'])
@@ -235,17 +237,17 @@ def operationsInsertLastOffsetDocument():
         or not common._MESSAGE_TYPE_TAG in request.json: 
         abort(400)
 
-    global clsOperations
-    if (clsOperations == None):
-        clsOperations = clsCosmosImageProcessingOperations()
+    global clsImageOperations
+    if (clsImageOperations == None):
+        clsImageOperations = clsCosmosImageProcessingOperations()
 
-    # rv = clsOperations.insert_document( request.json[common._OPERATIONS_EVENTLOG_TAG],
+    # rv = clsImageOperations.insert_document( request.json[common._OPERATIONS_EVENTLOG_TAG],
     #                                     request.json[common._OPERATIONS_CONSUMER_GROUP_TAG],
     #                                     request.json[common._OPERATIONS_PARTITION_ID],
     #                                     request.json[common._OPERATIONS_LAST_OFFSET],
     #                                     request.json[common._MESSAGE_TYPE_TAG])
 
-    rv = clsOperations.insert_offset_document_from_dict(request.json)
+    rv = clsImageOperations.insert_offset_document_from_dict(request.json)
     
     if (rv == None):
         return make_response(jsonify({'error': 'OK'}), 500)
@@ -262,11 +264,11 @@ def operationsGetLastOffset():
         or not common._MESSAGE_TYPE_TAG in request.json: 
         abort(400)
 
-    global clsOperations
-    if (clsOperations == None):
-        clsOperations = clsCosmosImageProcessingOperations()
+    global clsImageOperations
+    if (clsImageOperations == None):
+        clsImageOperations = clsCosmosImageProcessingOperations()
 
-    rv = clsOperations.get_offsetValue( request.json[common._OPERATIONS_EVENTLOG_TAG],
+    rv = clsImageOperations.get_offsetValue( request.json[common._OPERATIONS_EVENTLOG_TAG],
                                         request.json[common._OPERATIONS_CONSUMER_GROUP_TAG],
                                         request.json[common._OPERATIONS_PARTITION_ID],
                                         request.json[common._MESSAGE_TYPE_TAG])
@@ -285,17 +287,34 @@ def removeLastOffsetRecord():
         or not common._MESSAGE_TYPE_TAG in request.json: 
         abort(400)
 
-    global clsOperations
-    if (clsOperations == None):
-        clsOperations = clsCosmosImageProcessingOperations()
+    global clsImageOperations
+    if (clsImageOperations == None):
+        clsImageOperations = clsCosmosImageProcessingOperations()
 
-    clsOperations.removeOffsetExistingDocument(  request.json[common._OPERATIONS_EVENTLOG_TAG],
+    clsImageOperations.removeOffsetExistingDocument(  request.json[common._OPERATIONS_EVENTLOG_TAG],
                                                 request.json[common._OPERATIONS_CONSUMER_GROUP_TAG],
                                                 request.json[common._OPERATIONS_PARTITION_ID],
                                                 request.json[common._MESSAGE_TYPE_TAG])
     # this method does not return value; the only way to check if this has worked is to check that 
     # this method returned 200 and query for the same record and it should return -1
     return make_response(json.dumps({'result': "OK"}), 200)
+
+###############################################################################
+# Operations Status 
+###############################################################################
+
+@app.route('/comsosDB/v1.0/returnAllMessageIdGroupedList', methods=['GET'])
+def returnAllMessageIdGroupedList():
+    global clsStatusOperations
+    if (clsStatusOperations == None):
+        clsStatusOperations = clsStatusUpdate()
+   
+    rv = clsStatusOperations.returnAllMessageIdGroupedListImpl()
+    
+    if (rv == None):
+        return make_response(jsonify({'error': 'OK'}), 500)
+    else:
+        return jsonify(rv)
 
 
 
@@ -313,8 +332,9 @@ if __name__ == '__main__':
     # First Testing CORS
     # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: GET" -H "Access-Control-Request-Headers: X-Requested-With" -X OPTIONS --verbose http://localhost:5000/comsosDB/v1.0/returnAllExperimentResult
     # Testing actual execution
-    # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: GET" --verbose http://localhost:5002/comsosDB/v1.0/returnAllExperimentResult  
-    # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: GET" --verbose http://localhost:5002/comsosDB/v1.0/collections
+    # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: GET" --verbose http://localhost:5001/comsosDB/v1.0/returnAllExperimentResult  
+    # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: GET" --verbose http://localhost:5001/comsosDB/v1.0/returnAllMessageIdGroupedList
+    # curl -H "Origin: http://localhost" -H "Access-Control-Request-Method: GET" --verbose http://localhost:5001/comsosDB/v1.0/collections
     # take the output from , extract "_self": "dbs/gsUdAA==/colls/gsUdAIR+xjM=/" from "id": "ResultsImageDetection" and use that to invoke the next test, which will return a lots of records. 
     # curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"collectionLink\":\"dbs/gsUdAA==/colls/gsUdAIR+xjM=/\"}" --verbose http://localhost:5001/comsosDB/v1.0/documents
     # create a record

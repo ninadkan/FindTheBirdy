@@ -163,6 +163,20 @@ class cosmosBase:
             print()
         return results
 
+    def getStoredProcLink(self, storedProcName):
+        sprocLink = None
+        sprocs = list(self.client.QueryStoredProcedures(self.collectionLink,
+            {
+                'query': 'SELECT * FROM root r WHERE r.id=@id',
+                'parameters':[
+                    { 'name':'@id', 'value':storedProcName }
+                ]
+            }))
+        assert(sprocs), "Unable to get sproc {}".format(storedProcName)
+        if (sprocs is not None and len(sprocs)> 0):
+            sprocLink = sprocs[0]['_self']
+        return sprocLink
+
 ###############################################################################
 
 class clsCosmosOperationsBase(cosmosBase):
