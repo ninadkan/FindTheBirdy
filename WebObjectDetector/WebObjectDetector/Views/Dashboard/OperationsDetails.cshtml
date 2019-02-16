@@ -1,11 +1,11 @@
-﻿@model WebObjectDetector.Areas.Dashboard.Models.OpencvOperations
+﻿@model WebObjectDetector.Dashboard.Models.OpencvOperations
 
 @{
-    ViewData["Title"] = "GetAsync";
+    ViewData["Title"] = "OperationsDetails";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>GetAsync</h2>
+<h2>OperationsDetails</h2>
 
 <div>
     <h4>OpencvOperations</h4>
@@ -62,6 +62,10 @@
     </dl>
 </div>
 <div>
-    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
-    <a asp-action="Index">Back to List</a>
+
+    @Html.ActionLink("Edit", "OperationsEdit", new { Model.Id/* id = Model.PrimaryKey */ }) |
+    @Html.ActionLink("Back to list", "OperationsList")
+
+    @*@Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    <a href="@Url.Action("OperationsList", "Dashboard", new { Area = "Dashboard" })">Back to List</a>*@
 </div>

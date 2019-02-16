@@ -1,17 +1,17 @@
-﻿@model WebObjectDetector.Areas.Dashboard.Models.OpencvOperations
+﻿@model WebObjectDetector.Dashboard.Models.OpencvOperations
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "OperationsCreate";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Create</h2>
+<h2>OperationsCreate</h2>
 
 <h4>OpencvOperations</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="OperationsCreate">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Id" class="control-label"></label>
@@ -34,18 +34,14 @@
                 <span asp-validation-for="Offset_Value" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <div class="checkbox">
-                    <label>
-                        <input asp-for="CurrentCount" /> @Html.DisplayNameFor(model => model.CurrentCount)
-                    </label>
-                </div>
+                <label asp-for="CurrentCount" class="control-label"></label>
+                <input asp-for="CurrentCount" class="form-control" />
+                <span asp-validation-for="CurrentCount" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <div class="checkbox">
-                    <label>
-                        <input asp-for="MaxItems" /> @Html.DisplayNameFor(model => model.MaxItems)
-                    </label>
-                </div>
+                <label asp-for="MaxItems" class="control-label"></label>
+                <input asp-for="MaxItems" class="form-control" />
+                <span asp-validation-for="MaxItems" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Time" class="control-label"></label>
@@ -65,7 +61,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    @Html.ActionLink("Back to list", "Operationslist")
 </div>
 
 @section Scripts {

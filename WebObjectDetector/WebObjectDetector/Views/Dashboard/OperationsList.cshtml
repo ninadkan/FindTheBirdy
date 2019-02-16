@@ -1,14 +1,14 @@
-﻿@model IEnumerable<WebObjectDetector.Areas.Dashboard.Models.OpencvOperations>
+﻿@model IEnumerable<WebObjectDetector.Dashboard.Models.OpencvOperations>
 
 @{
-    ViewData["Title"] = "IndexAsync";
+    ViewData["Title"] = "OperationsList";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>IndexAsync</h2>
+<h2>OperationsList</h2>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    @Html.ActionLink("Create", "OperationsCreate", new { /* id=item.PrimaryKey */ })
 </p>
 <table class="table">
     <thead>
@@ -68,9 +68,9 @@
                 @Html.DisplayFor(modelItem => item.Status)
             </td>
             <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                @Html.ActionLink("Edit", "OperationsEdit", "Dashboard", new { item.Id /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "OperationsDetails", "Dashboard", new { item.Id/* id=item.PrimaryKey */ }, new { Area = "Dashboard" }) |
+                @Html.ActionLink("Delete", "OperationsDelete", "Dashboard", new { item.Id /* id=item.PrimaryKey */ }, new { Area = "Dashboard" })
             </td>
         </tr>
 }

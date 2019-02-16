@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json; 
 
-namespace WebObjectDetector.Areas.Dashboard.Models
+namespace WebObjectDetector.Dashboard.Models
 {
     public class OpencvOperations
     {

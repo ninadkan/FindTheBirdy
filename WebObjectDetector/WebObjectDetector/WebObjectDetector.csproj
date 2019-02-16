@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Dashboard\Data\" />
     <Folder Include="Areas\Identity\Services\" />
     <Folder Include="Areas\UnitAction\Data\" />
     <Folder Include="Areas\UnitAction\Models\" />
