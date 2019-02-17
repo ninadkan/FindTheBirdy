@@ -61,12 +61,12 @@
         <table class="table" align="center" style="width:100%">
             <thead>
                 <tr valign="middle">
-                    <th align="center" width="33.34%">   Message Id</th>
-                    <th align="center" width="16.67%"> Experiment Name</th>
-                    <th align="center" width="8.34%"> Offset</th>
-                    <th align="center" width="8.34%"> Current Max</th>
-                    <th align="center" width="8.34%"> Status</th>
-                    <th align="center" width="25%">   id</th>
+                    <th align="center" width="33.34%">Message Id</th>
+                    <th align="center" width="16.67%">Experiment Name</th>
+                    <th align="center" width="25%">Date Time</th>
+                    <th align="center" width="8.34%">Offset</th>
+                    <th align="center" width="8.34%">Current Max</th>
+                    <th align="center" width="8.34%">Status</th>
                 </tr>
             </thead>
             <tbody id="dynamicTable">
@@ -120,6 +120,8 @@
             /* Pagination stuff */
             _itemsPerPage = parseInt($('#cmbItemsPerPage option:selected').val(), 10);
             $('#cmbItemsPerPage').on('change', oncmbItemsPerPageChanged);
+            //TODO:: Remove changing bits Bug
+            $("#cmbItemsPerPage").prop("disabled", true);
 
             $(document).keyup(function (e) {
                 if ($('#idPaginationMiddle')) {
@@ -278,8 +280,9 @@
                         var offset_Value = innerRecord["Offset_Value"];
                         var status = innerRecord["Status"];
                         var time = innerRecord["Time"];
-                        var id = innerRecord["id"]
-                        populateOtherRows(output, currentCount, maxItems, offset_Value, status, time, id  )
+                        var id = innerRecord["id"];
+                        var createDateTime = innerRecord["DateTime"]
+                        populateOtherRows(output, currentCount, maxItems, offset_Value, status, time, id, createDateTime  )
                         }
                 }
             }
@@ -318,7 +321,7 @@
             output.push('</tr>');
         }
 
-        function populateOtherRows(output, currentCount, maxItems, offset_Value, status, time, id) {
+        function populateOtherRows(output, currentCount, maxItems, offset_Value, status, time, id, createDateTime) {
             /*
             <tr>
                 <td></td>
@@ -330,7 +333,11 @@
             </tr>
             */
             output.push('<tr>');
-            output.push('<td></td><td></td><td>');
+            output.push('<td></td><td></td>');
+            output.push('<td>');
+            output.push(createDateTime);
+            output.push('</td>');
+            output.push('<td>');
             output.push(offset_Value);
             output.push('</td>');
             output.push('<td>');
@@ -338,9 +345,6 @@
             output.push('</td>');
             output.push('<td>');
             output.push(status);
-            output.push('</td>');
-            output.push('<td>');
-            output.push(id);
             output.push('</td>');
             output.push('</tr>');
         }
