@@ -6,6 +6,7 @@ sys.path.insert(0, '../') # needed as common is in the parent folder
 import common
 from cosmosDB.cosmosBase import clsCosmosOperationsBase
 import json
+import datetime
 
 #import cosmosBase
 
@@ -57,7 +58,8 @@ class clsStatusUpdate(clsCosmosOperationsBase):
                         common._OPERATIONS_STATUS_CURRENT_COUNT :currentCount,
                         common._OPERATIONS_STATUS_MAX_ITEMS :maxItems,
                         common._OPERATIONS_STATUS_ELAPSED_TIME :elapsedTime,
-                        common._OPERATIONS_STATUS_STATUS_MESSAGE :status
+                        common._OPERATIONS_STATUS_STATUS_MESSAGE :status,
+                        common._DATETIME_TAG : str(datetime.datetime.now()),
                         }
         return dictObject   
     # -------------------------------------------------------------------------  
@@ -83,6 +85,8 @@ class clsStatusUpdate(clsCosmosOperationsBase):
     # -------------------------------------------------------------------------
     def insert_document_from_dict(self, dictObject, removeExisting=True):
         assert(dictObject is not None), "dictObject parameter is mandatory!"
+        # Adding updating the Datetime tag into the record. 
+        dictObject[common._DATETIME_TAG] = str(datetime.datetime.now())
         return super().insert_document_in_collection(dictObject, removeExisting)
 
     # -------------------------------------------------------------------------
@@ -129,10 +133,6 @@ class clsStatusUpdate(clsCosmosOperationsBase):
         else:
             brv = False
         return brv
-    
- 
-
-
 
     # # -------------------------------------------------------------------------
     # def _queryOffsetDocsForExistence(self, eventHub, consumerGroup, partition_id, messageType):
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     #parameterObj = {'value': 'd57f71e4-1163-4bfc-b3c4-842ce6d6a7eb'}
     #parameterObj = 'd57f71e4-1163-4bfc-b3c4-842ce6d6a7eb'
     #objRun.returnAllMessageIdGroupedListImpl()
-    objRun.removeAllDocumentsForSpecificMessageIdImpl("d57f71e4-1163-4bfc-b3c4-842ce6d6a7eb")
+    #objRun.removeAllDocumentsForSpecificMessageIdImpl("d57f71e4-1163-4bfc-b3c4-842ce6d6a7eb")
     #objRun.removeAllDocumentsForSpecificMessageId('2d57f71e411634bfcb3c4842ce6d6a7eb')
     #objRun.removeAllDocumentsForSpecificMessageId('2018-04-15')
     #objRun.removeAllDocumentsForSpecificMessageId("22345612344")
@@ -197,5 +197,15 @@ if __name__ == "__main__":
     # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_EXPERIMENT_NAME, experimentName )
     # objRun.oneTimeRemoveAll(common._OPERATIONS_CONSUMER_GROUP_TAG, 'opencv')
     # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_MESSAGE_ID, '400b668e-2cd2-4324-8eef-74c161ee9586' )
+    
+    # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_DETECTOR_GOOGLE )
+    # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_DETECTOR_AZURE )
+    # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_DETECTOR_YOLO )
+    # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_DETECTOR_MOBILE_NET )
+    # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_DETECTOR_TENSORFLOW )
+    # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_PROCESS_EXPERIMENT )
+    # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_START_EXPERIMENT )
+    # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_DETECTOR_GOOGLE )
+
 
 
