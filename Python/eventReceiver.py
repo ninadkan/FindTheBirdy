@@ -39,10 +39,9 @@ dispatch={
     common._MESSAGE_TYPE_DETECTOR_TENSORFLOW:eventMessageProcessor.processImagesUsingTenslorFlowDetector
 }
 
-async def processMessages(client, partition, consumerGrp, logger):
+async def processMessages(client, partition, consumerGrp, logger, cleanUp = False):
     start_time = time.time()
     total = 0
-    cleanUp = False
     last_sn = -1
     last_offset = "-1"
 
@@ -61,7 +60,6 @@ async def processMessages(client, partition, consumerGrp, logger):
     timeout = time.time() + 60*6 # six minutes from now
     statusUpdate = cosmosDB.cosmosStatusUpdate.clsStatusUpdate() 
     while (time.time() < timeout):
-        
         batch = await receiver.receive(timeout=receiver_timeOut)
         if (batch):
             logger.warning('{} : starting batch time ...{}'.format(consumerGrp, time.strftime("%H:%M:%S", time.localtime())))
@@ -82,8 +80,8 @@ async def processMessages(client, partition, consumerGrp, logger):
                             brv = True if cleanUp else await dispatch[loaded_r[common._MESSAGE_TYPE_TAG]](loaded_r, logger)
                             if (brv == True):
                                 brv = msgOperations.insert_offset_document( EVENTHUB, 
-                                                                            partition, 
                                                                             consumerGrp,
+                                                                            partition, 
                                                                             last_offset.value, 
                                                                             loaded_r[common._MESSAGE_TYPE_TAG])
                         else:
@@ -93,7 +91,7 @@ async def processMessages(client, partition, consumerGrp, logger):
                         # nothing to do with us, ignore and continue
                         logger.warning('{} :Incompatible message type received, ignoring'.format(consumerGrp,loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID]))
                         if (cleanUp== True):
-                            msgOperations.insert_offset_document(EVENTHUB, partition, consumerGrp,last_offset.value, msgType)
+                            msgOperations.insert_offset_document(EVENTHUB, consumerGrp,partition, last_offset.value, msgType)
                         continue
                 else:
                     logger.error('Message body is not json! {}'.format(event_data.body_as_str()))
@@ -119,10 +117,13 @@ try:
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--partition", help="partition", type=int, default=0)
     parser.add_argument("-c", "--consumergrp", help="Consumer Group", type=str, default='opencv')
+    parser.add_argument("-d", "--drain", help="drain all messages", type=bool, default=False)
+
     args = parser.parse_args()
     logger.warning(args.partition)
     consumerGroup = args.consumergrp
     logger.warning(consumerGroup)
+    logger.warning(args.drain)
 
     msgType = None
     msgType = common._ConsumerGrp_MessageType_Mapping[consumerGroup]
@@ -132,7 +133,7 @@ try:
 
     loop = asyncio.get_event_loop()
     client = EventHubClientAsync(ADDRESS, debug=True, username=USER, password=KEY)
-    tasks = [asyncio.ensure_future(processMessages(client, args.partition, consumerGroup, logger ))]
+    tasks = [asyncio.ensure_future(processMessages(client, args.partition, consumerGroup, logger, args.drain ))]
     loop.run_until_complete(asyncio.wait(tasks))
     loop.close()
 except KeyboardInterrupt:
