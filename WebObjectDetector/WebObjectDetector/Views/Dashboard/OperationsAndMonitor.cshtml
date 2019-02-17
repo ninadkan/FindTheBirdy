@@ -1,8 +1,670 @@
 ﻿
 @{
-    //ViewData["Title"] = "Performance";
+    ViewData["Title"] = "Operations and Monitoring";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Performance</h2>
+<div class="row">
+    <div class="col-md-6">
+        <h4>Object Detection: Operations and Monitoring</h4>
+    </div>
+    <div class="col-md-3">
+        <label id="lblRowText"></label>
+    </div>
+    <div class="col-md-3">
+        <label class="control-label vcenter">Show: </label>
+        <select class="control-label vcenter" name="cmbItemsPerPage" id="cmbItemsPerPage">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="2">4</option>
+            <option value="3">9</option>
+            <option value="4" selected="selected">16</option>
+            <option value="5">25</option>
+            <option value="6">36</option>
+            <option value="7">49</option>
+            <option value="8">64</option>
+            <option value="9">81</option>
+            <option value="10">100</option>
+        </select>
+        <label class="control-label vcenter">items per page</label>
+    </div>
+</div>
 
+<hr />
+
+
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-1 text-right ">
+        <label class="control-label vcenter">Operations:</label>
+    </div>
+    <div class="col-md-1">
+        <button id="btnLoadStatus" class="btn btn-primary" onclick="btnLoadStatusHandler(this)">Load Status</button>
+    </div>
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-1 text-right ">
+        <label class="control-label vcenter">Result  :</label>
+    </div>
+    <div class="col-md-6">
+        <label class="form-control btn-block" id="lblResult"></label>
+    </div>
+</div>
+
+<hr />
+
+<div class="row" id="devOperations">
+    <div class="col-md-12">
+        <table class="table" align="center" style="width:100%">
+            <thead>
+                <tr valign="middle">
+                    <th align="center" width="33.34%">   Message Id</th>
+                    <th align="center" width="16.67%"> Experiment Name</th>
+                    <th align="center" width="8.34%"> Offset</th>
+                    <th align="center" width="8.34%"> Current Max</th>
+                    <th align="center" width="8.34%"> Status</th>
+                    <th align="center" width="25%">   id</th>
+                </tr>
+            </thead>
+            <tbody id="dynamicTable">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<hr />
+
+<div class="center">
+    <div id="divPagination">
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+
+        /* ================== Push - Pull Functionality ================== */
+
+        var _lastButton = [];
+        var _lastButtonClass = [];
+        var _dataDirty = false;
+
+        function pushElement(elementID) {
+            var element = document.getElementById(elementID);
+            if (element) {
+                _lastButton.push(element);
+                _lastButtonClass.push(element.getAttribute("class"));
+                element.setAttribute("class", "btn btn-default");
+                $("body").css("cursor", "progress");
+            }
+        }
+
+        function popElement() {
+            var element = _lastButton.pop();
+            var elementClass = _lastButtonClass.pop();
+            if (element) {
+                element.setAttribute("class", elementClass);
+            }
+            $("body").css("cursor", "default");
+        }
+
+        /* ================== Push - Pull Functionality ================== */
+        /* ================== Ready and Click Handlers  ================== */
+        $(function () // called when the body is ready
+        {
+            console.log("Ready");
+
+            /* Pagination stuff */
+            _itemsPerPage = parseInt($('#cmbItemsPerPage option:selected').val(), 10);
+            $('#cmbItemsPerPage').on('change', oncmbItemsPerPageChanged);
+
+            $(document).keyup(function (e) {
+                if ($('#idPaginationMiddle')) {
+                    if ($('#idPaginationMiddle').is(":focus") && e.key == "Enter") {
+                        gotoParticularPageIndex(document.getElementById('idPaginationMiddle').value);
+                    }
+                }
+            });
+            /* Pagination stuff */
+        });
+
+
+        //$('tbody#dynamicTable').on("click", function (e) {
+        //    console.log($(this).attr('id'));
+        //    e.preventDefault();
+        //});
+
+
+        function btnLoadStatusHandler(obj) {
+            pushElement(obj.id);
+            InvokeWebAPIGenericCosmocGet(_invocationObject, 'returnAllMessageIdGroupedList', '', handlerGetAllOperationStatus);
+        }
+
+        var _idPrefix = "btn-";
+       
+        function btnDeleteMessageHandler(obj) {
+            var id = obj.id;
+            var res_id = id.substring(_idPrefix.length);
+            console.log(res_id);
+
+
+            var dataVal = {
+                'MessageId': res_id
+            };
+
+            var updatedTagJson = JSON.stringify(dataVal);
+            console.log(updatedTagJson);
+            pushElement(obj.id);
+            InvokeWebAPICosmosDb('removeAllDocumentsForSpecificMessageId', updatedTagJson, handlerCosmosDBRemoveMessageIdList);
+        }
+
+
+        /* ====================== Ready and Click Handlers  ======================== */
+        /* ====================== Web API Call Handlers  =========================== */
+
+        var _invocationObject = new XMLHttpRequest();
+
+        function InvokeWebAPIGenericCosmocGet(invocationObj, urlAdd, dataval, handler) {
+            var url = 'http://localhost:5001/comsosDB/v1.0/' + urlAdd;
+
+            if (invocationObj) {
+                invocationObj.open('GET', url, true);
+                invocationObj.onreadystatechange = handler;
+                invocationObj.send();
+            }
+            else {
+                $('#lblResult').html("No Invocation TookPlace At All");
+            }
+        }
+
+        function handlerGetAllOperationStatus(ev) {
+            if (_invocationObject.readyState == 4) {
+                if (_invocationObject.status == 200) {
+                    if (_invocationObject.response) {
+                        processOperationsStatusData(_invocationObject.response);
+                    }
+                }
+                else {
+                    var AppendedText = " Invocation Errors Occured " + _invocationObject.readyState + " and the status is " + _invocationObject.status;
+                    $('#lblResult').html(AppendedText);
+                }
+                popElement();
+            }
+        }
+
+        var _invocationCosmos = new XMLHttpRequest();
+
+        function InvokeWebAPICosmosDb(urlAdd, dataval, handler) {
+            var url = 'http://localhost:5001/comsosDB/v1.0/' + urlAdd;
+
+            if (_invocationCosmos) {
+                _invocationCosmos.open('POST', url, true);
+                _invocationCosmos.setRequestHeader('Content-Type', 'application/json');
+                _invocationCosmos.onreadystatechange = handler;
+                _invocationCosmos.send(dataval);
+            }
+            else {
+                var errorMsg = "No Invocation TookPlace At All";
+                $('#lblResult').html(errorMsg);
+            }
+        }
+
+        function handlerCosmosDBRemoveMessageIdList(evtXHR) {
+            if (_invocationCosmos.readyState == 4) {
+                if (_invocationCosmos.status == 200) {
+                    if (_invocationCosmos.response) {
+                        $('#lblResult').html(_invocationCosmos.response);
+                        // reload 
+                        btnLoadStatusHandler(document.getElementById('btnLoadStatus'));
+                    }
+                }
+                else {
+                    var AppendedText = "Invocation Errors Occured " + _invocationCosmos.readyState + " and the status is " + _invocationCosmos.status;
+                    $('#lblResult').html(AppendedText);
+                }
+                popElement();
+            }
+        }
+
+        function processOperationsStatusData(data) {
+            $('#divPagination').empty();
+            if (data) {
+                var tp = $.parseJSON(data);
+                if (tp) {
+                    var result = tp["result"];
+                    if (result && result.length > 0) {
+                        resetPaginationData();
+                        _totalSize = result.length; // this reflects the record that we need to scan
+                        _previousResultData = result; // cache the result
+                        displayFromStart();
+                    }
+                }
+            }
+        }
+
+        function displayFromStart() {
+            _currentSelectedPage = _basePageIndex = 1;
+            generatePaginationDisplay();
+            refreshMainPage();
+        }
+
+        /* ====================== Web API Call Handlers  =========================== */
+        /* ====================== Refresh Display ================================== */
+
+        function refreshMainPage() {
+            // pass the current paging offset and indexes.
+            var startIndex = (_currentSelectedPage - 1) * _itemsPerPage;
+            var endIndex = startIndex + _itemsPerPage * 1;
+            if (endIndex > _totalSize) endIndex = _totalSize;
+
+            // Remove everything
+            $('#dynamicTable').empty();
+            output = [];
+
+            for (var i = startIndex; i < endIndex; i++) {
+                resultElement = _previousResultData[i];
+                var messageId = resultElement["MessageId"];
+                var experimentName = resultElement["ExperimentName"];
+                populateFirstRowOutput(output, messageId, experimentName);
+                var innerResults = resultElement["DetectionResult"];
+                if (innerResults != null && innerResults.length > 0) {
+                    for (var k = 0; k < innerResults.length; k++ ) {
+                        innerRecord = innerResults[k];
+                        var currentCount = innerRecord["CurrentCount"];
+                        var maxItems = innerRecord["MaxItems"];
+                        var offset_Value = innerRecord["Offset_Value"];
+                        var status = innerRecord["Status"];
+                        var time = innerRecord["Time"];
+                        var id = innerRecord["id"]
+                        populateOtherRows(output, currentCount, maxItems, offset_Value, status, time, id  )
+                        }
+                }
+            }
+            $('#dynamicTable').append(output.join(''));
+        }
+
+        function populateFirstRowOutput(output, messageId, experimentName) {
+            /*
+            <tr>
+                <td>878ed0da-4f9a-44ea-97be-d95020d268a9</td>
+                <td>2018-04-15</td>
+                <td colspan="6"><button id="btnLoadExperiments" class="btn btn-danger btn-block" onclick="btnLoadStatusHandler(this)">Delete !</button></td>
+            </tr>
+            */
+
+            if (messageId != null) {
+                messageId = messageId.trim();
+            }
+
+            if (experimentName != null) {
+                experimentName = experimentName.trim();
+            } 
+            output.push('<tr>');
+            output.push('<td>');
+            output.push(messageId);
+            output.push('</td>');
+            output.push('<td>');
+            output.push(experimentName);
+            output.push('</td>');
+            output.push('<td colspan="6"><button id="');
+            output.push(_idPrefix);
+            output.push(messageId);
+            output.push('" class="btn btn-danger btn-block"');
+            output.push('onclick = "btnDeleteMessageHandler(this)"')
+            output.push('>Delete!</button ></td >');
+            output.push('</tr>');
+        }
+
+        function populateOtherRows(output, currentCount, maxItems, offset_Value, status, time, id) {
+            /*
+            <tr>
+                <td></td>
+                <td></td>
+                <td>0</td>
+                <td>102 , 102</td>
+                <td>Error</td>
+                <td>f4256f37-2023-4827-a063-390375a8230b</td>
+            </tr>
+            */
+            output.push('<tr>');
+            output.push('<td></td><td></td><td>');
+            output.push(offset_Value);
+            output.push('</td>');
+            output.push('<td>');
+            output.push(currentCount + " , " + maxItems );
+            output.push('</td>');
+            output.push('<td>');
+            output.push(status);
+            output.push('</td>');
+            output.push('<td>');
+            output.push(id);
+            output.push('</td>');
+            output.push('</tr>');
+        }
+
+        /* ====================== Refresh Display ================================== */
+        /* ====================== Pagination handler  ============================== */
+        var _itemsPerPage = 16;
+        var _totalSize = 0;
+        var _currentSelectedPage = 1;
+        var _totalNumberOfPages = 0;
+        var _idOfCurrentActivePaginationElement = 'idPaginationOne'; //starting bit
+        var _basePageIndex = 1; // Page being displayed by the button at position 1
+        var _CutOfForNavigationItems = 6;
+
+        function oncmbItemsPerPageChanged() {
+            //TODO:: Buggy, needs investigation. 
+            //_itemsPerPage = parseInt($('#cmbItemsPerPage option:selected').val(), 10);
+
+            //$('#divPagination').empty();
+            //_currentSelectedPage = -1;
+            //_idOfCurrentActivePaginationElement = 'idPaginationOne';
+            //$('#lblRowText').html("");
+
+            //displayFromStart();
+        }
+
+        var _paginationConstants = [
+            { id: "idPaginationStart", value: -2, displayString: "|<<", CurrentPageNumber: 1 },
+            { id: "idPaginationPrev", value: -1, displayString: "<<", CurrentPageNumber: 1 },
+            { id: "idPaginationOne", value: 1, displayString: "1", CurrentPageNumber: 1 },
+            { id: "idPaginationTwo", value: 2, displayString: "2", CurrentPageNumber: 1 },
+            { id: "idPaginationThree", value: 3, displayString: "3", CurrentPageNumber: 1 },
+            { id: "idPaginationMiddle", value: -3, displayString: "...", CurrentPageNumber: -1 },
+            { id: "idPaginationFour", value: 4, displayString: "4", CurrentPageNumber: 1 },
+            { id: "idPaginationFive", value: 5, displayString: "5", CurrentPageNumber: 1 },
+            { id: "idPaginationSix", value: 6, displayString: "6", CurrentPageNumber: 1 },
+            { id: "idPaginationNext", value: -4, displayString: ">>", CurrentPageNumber: 1 },
+            { id: "idPaginationEnd", value: -5, displayString: ">>|", CurrentPageNumber: 1 }
+        ];
+
+        function resetPaginationData() {
+            $('#divPagination').empty();
+            _totalSize = 0;
+            _currentSelectedPage = -1;
+            _itemsPerPage = parseInt($('#cmbItemsPerPage option:selected').text(), 10);
+            _idOfCurrentActivePaginationElement = 'idPaginationOne';
+            $('#lblRowText').html("");
+        }
+
+        function getTotalNumberOfPages() {
+            return Math.floor(_totalSize / _itemsPerPage) + (_totalSize % _itemsPerPage ? 1 : 0);
+        }
+
+        function generatePaginationDisplay() {
+            _totalNumberOfPages = getTotalNumberOfPages();
+            // initially everything is switched off
+            // following array acts as flag to indicate which buttons to display and whcih not to
+            // if set to 1, that control is displayed, otherwise no
+            var displayControllerArray = [];
+            for (var i = 0; i < _paginationConstants.length; i++) {
+                displayControllerArray.push(0);
+            }
+
+            // pagination construct is needed only for certain cases when number of pages > 5
+            boolInvokeDraw = true;
+
+            document.getElementById("divPagination").setAttribute("class", "pagination");
+            switch (_totalNumberOfPages) {
+                case 0:
+                    document.getElementById("divPagination").setAttribute("class", "");
+                    boolInvokeDraw = false; // pagination is not displayd in this case, this is done by resetting class info
+                    break;
+                case 1:
+                    displayControllerArray[2] = 1; // 1
+                    break;
+                case 2:
+                    displayControllerArray[2] = displayControllerArray[3] = 1; // 1,2
+                    break;
+                case 3:
+                    displayControllerArray[2] = displayControllerArray[3] = displayControllerArray[4] = 1; // 1,2,3
+                    break;
+                case 4:
+                    displayControllerArray[2] = displayControllerArray[3] = 1; // 1,2,3,4
+                    displayControllerArray[4] = displayControllerArray[6] = 1;
+                    break;
+                case 5:
+                    displayControllerArray[2] = displayControllerArray[3] = 1; // 1,2,3,4,5
+                    displayControllerArray[4] = displayControllerArray[6] = 1;
+                    displayControllerArray[7] = 1;
+                    break;
+                case 6:
+                    displayControllerArray[2] = displayControllerArray[3] = 1; // 1,2,3,4,5,6
+                    displayControllerArray[4] = displayControllerArray[6] = 1;
+                    displayControllerArray[7] = displayControllerArray[8] = 1;
+                    break;
+                default:
+                    // assuming > 6
+                    for (var i = 0; i < _paginationConstants.length; i++) {
+                        displayControllerArray[i] = 1; // |<, <<, 1,2,3,__, 4,5,6 >, >>!
+                    }
+                    break;
+            }
+
+            if (boolInvokeDraw) {
+                // we are showing some part of pagination.
+                drawPaginationLayout(displayControllerArray);
+            }
+        }
+
+        // dynamically construct the pagination buttons.
+        function drawPaginationLayout(displayControllerArray) {
+            $('#divPagination').empty();
+
+            paginationTags = [];
+            var i = 0;
+
+            _paginationConstants.forEach(function (element) {
+                if (displayControllerArray[i]) {
+                    if (element.CurrentPageNumber != 1) {
+                        var aTag = '<input size="1" id="';
+                        aTag += element.id;
+                        aTag += '"/>'
+
+                        paginationTags.push(aTag);
+                    }
+                    else {
+                        var aTag = '<a href="#" onclick="handlerPaginationClick(';
+                        aTag += element.value;
+                        aTag += ')"';
+                        aTag += ' CurrentPageNumber=';
+                        aTag += getCurrentElementNumber(element.id);
+                        aTag += '';
+                        aTag += ' id="'
+                        aTag += element.id;
+                        aTag += '">'
+                        aTag += element.displayString;
+                        aTag += '</a>';
+
+                        paginationTags.push(aTag);
+                    }
+                }
+                i++;
+            });
+            $('#divPagination').append(paginationTags.join(''));
+
+            // resize the input element.
+
+
+            //if (_totalNumberOfPages > _CutOfForNavigationItems) {
+            //    var idOfElement = getIdOfClickedNavigationButton(_currentSelectedPage);
+            //    if (idOfElement) {
+            //        document.getElementById(idOfElement).setAttribute("class", "active");
+            //    }
+            //    //document.getElementById('idPaginationMiddle').setAttribute("onclick", "return false");
+            //}
+
+            if (_idOfCurrentActivePaginationElement) {
+                var element = document.getElementById(_idOfCurrentActivePaginationElement);
+                if (element) {
+                    element.setAttribute("class", "active");
+                }
+            }
+            // update the CurrentPageNumber of all the pagination items
+        }
+
+        function getCurrentElementNumber(elementId) {
+            var rv = _basePageIndex;
+            switch (elementId) {
+                case "idPaginationOne":
+                    rv = _basePageIndex;
+                    break;
+                case "idPaginationTwo":
+                    rv = _basePageIndex + 1;
+                    break;
+                case "idPaginationThree":
+                    rv = _basePageIndex + 2;
+                    break;
+                case "idPaginationFour":
+                    rv = _basePageIndex + 3;
+                    break;
+                case "idPaginationFive":
+                    rv = _basePageIndex + 4;
+                    break;
+                case "idPaginationSix":
+                    rv = _basePageIndex + 5;
+                    break;
+                default:
+                    rv = -1;
+            }
+            return rv;
+        }
+
+        function gotoParticularPageIndex(pageIndex) {
+            var valuePassed = parseInt(pageIndex);
+            if (Number.isInteger(valuePassed)) {
+                if (valuePassed <= _totalNumberOfPages && valuePassed >= 1) {
+
+                    _currentSelectedPage = valuePassed;
+                    if (_currentSelectedPage + _CutOfForNavigationItems - 1 <= _totalNumberOfPages) {
+                        _basePageIndex = _currentSelectedPage;
+
+                    }
+                    else {
+                        _basePageIndex = _totalNumberOfPages - _CutOfForNavigationItems + 1;
+                    }
+
+                    $('#lblRowText').html("");
+                    refreshMainPage();
+                    updatePaginationDisplayAndInternalAttribute();
+                }
+            }
+        }
+
+        function handlerPaginationClick(valuePassed) {
+            $('#lblRowText').html("");
+            moveCurrentSelectedPage(valuePassed);
+            refreshMainPage();
+            updatePaginationDisplayAndInternalAttribute();
+        }
+
+        function moveCurrentSelectedPage(valuePassed) {
+            // valuePassed is the _paginationConstants value
+
+            switch (valuePassed) {
+                case -1: //prev
+                    // need to shift everything by one.
+                    moveRight(1);
+                    break;
+                case -2: // start
+                    _basePageIndex = _currentSelectedPage = 1;
+                    break;
+                case -3: // ...
+                    break;
+                case -4: // next
+                    moveLeft(1);
+                    break;
+                case -5: // End
+                    _currentSelectedPage = _totalNumberOfPages;
+                    _basePageIndex = _currentSelectedPage - _CutOfForNavigationItems + 1;
+                    break;
+                default:
+                    var idOfElement = getIdOfClickedNavigationButton(valuePassed);
+                    if (idOfElement) {
+                        var vpElement = document.getElementById(idOfElement).getAttribute("CurrentPageNumber");
+                        if (vpElement > 0) {
+                            _currentSelectedPage = parseInt(vpElement, 10);
+                        }
+                    }
+                    break;
+            }
+            // update the display numbers of all pagination items
+        }
+
+        function moveLeft(noOfSteps) {
+            // as if >> button is pressed
+            var brv = false;
+            if (_basePageIndex + _CutOfForNavigationItems - 1 + noOfSteps <= _totalNumberOfPages) {
+                _basePageIndex += noOfSteps;
+            }
+            if (_currentSelectedPage + noOfSteps <= _totalNumberOfPages) { _currentSelectedPage += noOfSteps; brv = true; }
+            return brv;
+        }
+
+        function moveRight(noOfSteps) {
+            var rv = false;
+            if (_basePageIndex >= 1 + noOfSteps) _basePageIndex -= noOfSteps;
+            if (_currentSelectedPage >= 1 + noOfSteps) {
+                _currentSelectedPage -= noOfSteps; rv = true;
+            }
+            return rv
+        }
+
+        var listofPaginationButtons = [{ id: 'idPaginationOne' }, { id: 'idPaginationTwo' }, { id: 'idPaginationThree' },
+        { id: 'idPaginationFour' }, { id: 'idPaginationFive' }, { id: 'idPaginationSix' }];
+
+        function updatePaginationDisplayAndInternalAttribute() {
+            if (_totalNumberOfPages > _CutOfForNavigationItems) {
+                var index = 0;
+                listofPaginationButtons.forEach(function (element) {
+                    document.getElementById(element.id).innerHTML = _basePageIndex + index;
+                    document.getElementById(element.id).setAttribute("CurrentPageNumber", _basePageIndex + index);
+                    if (_basePageIndex + index == _currentSelectedPage) {
+                        document.getElementById(_idOfCurrentActivePaginationElement).setAttribute("class", "");
+                        document.getElementById(element.id).setAttribute("class", "active");
+                        _idOfCurrentActivePaginationElement = element.id;
+                        $('#lblRowText').html("Row " + _currentSelectedPage + " of " + _totalNumberOfPages);
+                    }
+                    index++;
+                });
+            }
+            else {
+                listofPaginationButtons.forEach(function (element) {
+                    var element = document.getElementById(element.id);
+                    if (element) {
+                        var vpElement = element.getAttribute("CurrentPageNumber");
+
+                        if (vpElement) {
+                            vpElement = parseInt(vpElement, 10);
+                            if (vpElement > 0) {
+                                if (parseInt(vpElement) == _currentSelectedPage) {
+                                    document.getElementById(_idOfCurrentActivePaginationElement).setAttribute("class", "");
+                                    document.getElementById(element.id).setAttribute("class", "active");
+                                    _idOfCurrentActivePaginationElement = element.id;
+                                    $('#lblRowText').html("Row " + _currentSelectedPage + " of " + _totalNumberOfPages);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function getIdOfClickedNavigationButton(valuePassed) {
+            var idPassed = ''
+            for (var i = 0, l = _paginationConstants.length; i < l;) {
+                if (_paginationConstants[i].value == valuePassed) {
+                    idPassed = _paginationConstants[i].id;
+                    break;
+                }
+                else i++;
+            }
+            return idPassed;
+        }
+                                            /* ====================== Pagination handler  ============================== */
+
+    </script>
+}

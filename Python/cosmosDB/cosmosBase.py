@@ -176,6 +176,23 @@ class cosmosBase:
         if (sprocs is not None and len(sprocs)> 0):
             sprocLink = sprocs[0]['_self']
         return sprocLink
+    
+    # def test(self):
+    #     sproc3 = {
+    #         'id': 'storedProcedure3',
+    #         'body': (
+    #             'function (input) {' +
+    #                 '  getContext().getResponse().setBody(' +
+    #                 '      \'a\' + input.temp);' +
+    #             '}')
+    #     }
+        
+    #     #retrieved_sproc3 = self.client.CreateStoredProcedure(self.collectionLink,sproc3)
+    #     spLink = self.getStoredProcLink('storedProcedure3')
+    #     result = self.client.ExecuteStoredProcedure(spLink,
+    #                                             {'temp': 'so'})
+    #     print(result)
+        
 
 ###############################################################################
 

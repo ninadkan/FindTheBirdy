@@ -317,6 +317,24 @@ def returnAllMessageIdGroupedList():
         return jsonify(rv)
 
 
+@app.route('/comsosDB/v1.0/removeAllDocumentsForSpecificMessageId', methods=['POST'])
+def removeAllDocumentsForSpecificMessageId():
+
+    if not request.json or not common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID in request.json: 
+        abort(400)
+
+    global clsStatusOperations
+    if (clsStatusOperations == None):
+        clsStatusOperations = clsStatusUpdate()
+   
+    rv = clsStatusOperations.removeAllDocumentsForSpecificMessageIdImpl(request.json[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID])
+    
+    if (rv == None):
+        return make_response(jsonify({'error': 'OK'}), 500)
+    else:
+        return jsonify(rv)
+
+
 
 
 if __name__ == '__main__':

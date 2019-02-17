@@ -379,7 +379,7 @@
         function generatePaginationDisplay() {
             _totalNumberOfPages = getTotalNumberOfPages();
             // initially everything is switched off
-            // Dollowing array acts as flag to indicate which buttons to display and whcih not to 
+            // following array acts as flag to indicate which buttons to display and whcih not to 
             // if set to 1, that control is displayed, otherwise no
             var displayControllerArray = [];
             for (var i = 0; i < _paginationConstants.length; i++) {
@@ -661,8 +661,6 @@
             }
 
             _imageLabelTag = [];
-
-
          
             if (!document.getElementById('chkSourceDirectory').checked) {
                 _outputFolder = $('#txtOutputFolder').val();

@@ -21,7 +21,7 @@ import asyncio
 #     try:
 #         for message in messages:
 #             msgBody =  message.body_as_str()
-#             brv, loaded_r = is_json(message.body_as_str())
+#             brv, loaded_r = common.is_json(message.body_as_str())
 #             if (brv == True):
 #                 if (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_START_EXPERIMENT):
 #                     if(consumerGrp == common._MESSAGE_CONSUMER_GRP_STARTEXPERIMENT):
@@ -54,15 +54,6 @@ import asyncio
 #         logger.error("Error Processing Messages in !!!" + message.body_as_str())
 #         logger.error("Internal error {} {}".format(e.message, e.args))
 #     return brv
-
-def is_json(msgBody):
-    json_object = None
-    try:
-        json_object = json.loads(msgBody)
-    except Exception as e:
-        return False, json_object
-    return True, json_object
-
 
 async def processStartExperimentMessage(msgBody, logger):
     brv = False

@@ -103,11 +103,11 @@
                 btnRefreshHandler(document.getElementById('btnRefresh'));
             }
 
-            var invocationSourceFile = new XMLHttpRequest();
+            var _invocationSourceFile = new XMLHttpRequest();
 
             function btnRefreshHandler(obj) {
                 pushElement(obj.id);
-                InvokeWebAPIGenericCosmocGet(invocationSourceFile, 'returnAllExperimentResult', '', handlerGetAllExperiments);
+                InvokeWebAPIGenericCosmocGet(_invocationSourceFile, 'returnAllExperimentResult', '', handlerGetAllExperiments);
             }
 
             function InvokeWebAPIGenericCosmocGet(invocationObj, urlAdd, dataval, handler) {
@@ -124,14 +124,14 @@
             }
 
             function handlerGetAllExperiments(ev) {
-                if (invocationSourceFile.readyState == 4) {
-                    if (invocationSourceFile.status == 200) {
-                        if (invocationSourceFile.response) {
-                            processSourceFileData(invocationSourceFile.response);
+                if (_invocationSourceFile.readyState == 4) {
+                    if (_invocationSourceFile.status == 200) {
+                        if (_invocationSourceFile.response) {
+                            processSourceFileData(_invocationSourceFile.response);
                         }
                     }
                     else {
-                        var AppendedText = " Invocation Errors Occured " + invocationSourceFile.readyState + " and the status is " + invocationSourceFile.status;
+                        var AppendedText = " Invocation Errors Occured " + _invocationSourceFile.readyState + " and the status is " + _invocationSourceFile.status;
                         $('#lblResult').html(AppendedText);
                     }
                     popElement();

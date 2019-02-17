@@ -71,7 +71,7 @@ async def processMessages(client, partition, consumerGrp, logger):
 
                 logger.warning('{} :Number of messages in the batch {}'.format(consumerGrp, len(batch)))
                 #logger.error("Received: {}, {}".format(last_offset.value, last_sn))
-                brv, loaded_r = eventMessageProcessor.is_json(event_data.body_as_str())
+                brv, loaded_r = common.is_json(event_data.body_as_str())
                 if (brv == True):
 
                     # each message has an indicator of what type it is; That defines our eventReceiver Type
