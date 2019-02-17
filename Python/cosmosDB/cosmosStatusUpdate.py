@@ -194,9 +194,13 @@ if __name__ == "__main__":
     # docs = objRun.get_document(messageId, experimentName, offset)
     # assert(docs==None)
 
-    # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_EXPERIMENT_NAME, experimentName )
-    # objRun.oneTimeRemoveAll(common._OPERATIONS_CONSUMER_GROUP_TAG, 'opencv')
-    # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_MESSAGE_ID, '400b668e-2cd2-4324-8eef-74c161ee9586' )
+    # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_EXPERIMENT_NAME, '2018-04-15' )
+    # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_EXPERIMENT_NAME, '2018-04-16' )
+    # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_EXPERIMENT_NAME, '2018-04-18' )
+    # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_EXPERIMENT_NAME, '2018-04-21' )
+    # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_EXPERIMENT_NAME, '2018-04-22' )
+    # # objRun.oneTimeRemoveAll(common._OPERATIONS_CONSUMER_GROUP_TAG, 'opencv')
+    # # objRun.oneTimeRemoveAll(common._OPERATIONS_STATUS_MESSAGE_ID, '400b668e-2cd2-4324-8eef-74c161ee9586' )
     
     # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_DETECTOR_GOOGLE )
     # objRun.oneTimeRemoveAll(common._MESSAGE_TYPE_TAG, common._MESSAGE_TYPE_DETECTOR_AZURE )

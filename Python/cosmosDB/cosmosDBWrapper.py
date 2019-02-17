@@ -97,71 +97,79 @@ class clsCosmosWrapper(cosmosBase):
         # need to get the sproc_link 
         return super().getClient().ExecuteStoredProcedure(self.sprocReadAllExperimentLink, None)
 
+    # -------------------------------------------------------------------------
+    def removeAll(self):
+        # lst = list(super().getClient().ReadItems(super().getCollectionSelfLink(), {'maxItemCount':300}))
+        # super().removeExistingDocuments(lst)
+    
 ###############################################################################        
     
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
+    # parser = argparse.ArgumentParser(
+    #     description=__doc__,
+    #     formatter_class=argparse.RawDescriptionHelpFormatter,
+    # )
 
-    parser = argparse.ArgumentParser(description=__doc__,
-                    formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-v", "--verbose", help="increase output verbosity",action="store_true")
-    subparsers = parser.add_subparsers(dest="command")
-    process_parser = subparsers.add_parser("logExperimentResult", help=clsCosmosWrapper.logExperimentResult.__doc__)
-    process_parser.add_argument("host", nargs='?', default='')
-    process_parser.add_argument("key", nargs='?',default='')
-    process_parser.add_argument("databaseId", nargs='?', default='')
+    # parser = argparse.ArgumentParser(description=__doc__,
+    #                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    # parser.add_argument("-v", "--verbose", help="increase output verbosity",action="store_true")
+    # subparsers = parser.add_subparsers(dest="command")
+    # process_parser = subparsers.add_parser("logExperimentResult", help=clsCosmosWrapper.logExperimentResult.__doc__)
+    # process_parser.add_argument("host", nargs='?', default='')
+    # process_parser.add_argument("key", nargs='?',default='')
+    # process_parser.add_argument("databaseId", nargs='?', default='')
    
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
-    if (args.verbose):
-        TRACE_PRINT = True
+    # if (args.verbose):
+    #     TRACE_PRINT = True
 
-    if args.command == "logExperimentResult":    
-        print("Running experiment")
-        objRun = clsCosmosWrapper() #(args.host, args.key. args.databaseId)
-        import datetime
-        experimentTag = "02/02/2019 12:06"
-        dictObject = {  
-                        common._IMAGE_DETECTION_PROVIDER_TAG : common._ID_FOR_USER_DETECTION,
-                        common._EXPERIMENTNAME_TAG : experimentTag , 
-                        'id': 'SomeFileName' + "_" + str(datetime.datetime.now()),  # this cannot be a numeric number!!!
-                        'elapsedTime': "12:10:10",
-                        'result-totalNumberOfRecords': 1234,
-                        'result-true_true': 15,
-                        'result-false_positive': 23,
-                        'result-false_negative': 2,
-                        'param-historyImage' : 10, 
-                        'param-varThreshold' : 25, 
-                        'param-numberOfIterations' : -1, 
-                        'param-boundingRectAreaThreshold' : 1000, 
-                        'param-contourCountThreshold' : 15,
-                        'param-maskDiffThreshold' : 2,
-                        'param-partOfFileName' : ''
-                        }
+    # if args.command == "logExperimentResult":    
+    #     print("Running experiment")
+    #     objRun = clsCosmosWrapper() #(args.host, args.key. args.databaseId)
+    #     import datetime
+    #     experimentTag = "02/02/2019 12:06"
+    #     dictObject = {  
+    #                     common._IMAGE_DETECTION_PROVIDER_TAG : common._ID_FOR_USER_DETECTION,
+    #                     common._EXPERIMENTNAME_TAG : experimentTag , 
+    #                     'id': 'SomeFileName' + "_" + str(datetime.datetime.now()),  # this cannot be a numeric number!!!
+    #                     'elapsedTime': "12:10:10",
+    #                     'result-totalNumberOfRecords': 1234,
+    #                     'result-true_true': 15,
+    #                     'result-false_positive': 23,
+    #                     'result-false_negative': 2,
+    #                     'param-historyImage' : 10, 
+    #                     'param-varThreshold' : 25, 
+    #                     'param-numberOfIterations' : -1, 
+    #                     'param-boundingRectAreaThreshold' : 1000, 
+    #                     'param-contourCountThreshold' : 15,
+    #                     'param-maskDiffThreshold' : 2,
+    #                     'param-partOfFileName' : ''
+    #                     }
 
-        # test everything is running ok
-        objRun.returnAllCollection()
+    #     # test everything is running ok
+    #     objRun.returnAllCollection()
 
-        # now test the log insertion of the document
-        objRun.logExperimentResult(dictObject)
+    #     # now test the log insertion of the document
+    #     objRun.logExperimentResult(dictObject)
 
-        # test existence
-        docs = objRun._queryDocsForExistence(common._ID_FOR_USER_DETECTION, experimentTag)
-        if (docs is not None):
-            # found the document, lets remove it
-            objRun._removeExistingDocuments(common._ID_FOR_USER_DETECTION, experimentTag)
-            # does it still exist?
-            docs = objRun._queryDocsForExistence(common._ID_FOR_USER_DETECTION, experimentTag)
-            if (docs is not None and (len(docs)> 0)):
-                print("Error, unable to delete the existing row")
-            else:
-                print ("OK")
-        else:
-            print("Error as the created object was not found")
+    #     # test existence
+    #     docs = objRun._queryDocsForExistence(common._ID_FOR_USER_DETECTION, experimentTag)
+    #     if (docs is not None):
+    #         # found the document, lets remove it
+    #         objRun._removeExistingDocuments(common._ID_FOR_USER_DETECTION, experimentTag)
+    #         # does it still exist?
+    #         docs = objRun._queryDocsForExistence(common._ID_FOR_USER_DETECTION, experimentTag)
+    #         if (docs is not None and (len(docs)> 0)):
+    #             print("Error, unable to delete the existing row")
+    #         else:
+    #             print ("OK")
+    #     else:
+    #         print("Error as the created object was not found")
+    # objRun = clsCosmosWrapper()
+    # objRun.removeAll()
+
     
 
 
