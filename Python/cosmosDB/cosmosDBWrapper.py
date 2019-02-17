@@ -101,6 +101,7 @@ class clsCosmosWrapper(cosmosBase):
     def removeAll(self):
         # lst = list(super().getClient().ReadItems(super().getCollectionSelfLink(), {'maxItemCount':300}))
         # super().removeExistingDocuments(lst)
+        return
     
 ###############################################################################        
     
@@ -169,6 +170,7 @@ if __name__ == "__main__":
     #         print("Error as the created object was not found")
     # objRun = clsCosmosWrapper()
     # objRun.removeAll()
+    pass
 
     
 
