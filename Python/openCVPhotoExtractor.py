@@ -312,7 +312,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
                         'param-maskDiffThreshold' : maskDiffThreshold,
                         'param-partOfFileName' : partOfFileName
                         }
-        obj.logExperimentResult(documentDict= dictObject)
+        obj.logExperimentResult(documentDict= dictObject, removeExisting=False)
     return len(g_fileList), TotalNumberOfImagesDetected,  elapsed_time  #, true_true, false_positive, false_negative
 
 if __name__ == "__main__":

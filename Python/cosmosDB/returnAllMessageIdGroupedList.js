@@ -43,7 +43,7 @@ function returnAllCount(messageId) {
     var collection = getContext().getCollection();
     var output = [];
     
-    var commonSQL = 'SELECT c.ExperimentName, c.Offset_Value, c.CurrentCount, c.MaxItems, c.Time, c.Status, c.id FROM c WHERE ( c.MessageId = \'{messageId}\')';
+    var commonSQL = 'SELECT c.ExperimentName, c.Offset_Value, c.CurrentCount, c.MaxItems, c.Time, c.DateTime, c.Status, c.id FROM c WHERE ( c.MessageId = \'{messageId}\')';
     var commmonSQL_w_messageId = commonSQL.replace('{messageId}', messageId );
     
  

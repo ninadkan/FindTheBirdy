@@ -15,7 +15,7 @@ import common
 import azureFS.azureFileShareTest as fs
 import azureFS.mask_creation as mask
 import azureFS.azureCommon as azcommon
-import cosmosDB.cosmosStatusUpdate as sudate
+import cosmosDB.cosmosStatusUpdate
 import uuid
 
 
@@ -277,7 +277,7 @@ class clsOpenCVProcessImages:
         return len(self.listOfImagesToBeProcessed), TotalNumberOfImagesDetected,  elapsed_time  #, true_true, false_positive, false_negative
 
     def writeProgressLogToDatabase(self, experimentName, offset, currentCount=-1, maxItems=-1, elapsed_time='',  statusMessage=''):
-        objRun = sudate.clsStatusUpdate() 
+        objRun = cosmosDB.cosmosStatusUpdate.clsStatusUpdate() 
         objRun.insert_document(self.messageID, experimentName, offset, currentCount, maxItems, elapsed_time, statusMessage )        
         return
 

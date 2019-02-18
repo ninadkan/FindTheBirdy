@@ -40,13 +40,15 @@ dispatch={
 }
 
 async def processMessages(client, partition, consumerGrp, logger, cleanUp = False):
+    global _msgType
     start_time = time.time()
     total = 0
     last_sn = -1
     last_offset = "-1"
 
     msgOperations = cosmosDB.cosmosImageOperations.clsCosmosImageProcessingOperations()
-    last_offset_value = msgOperations.get_offsetValue(EVENTHUB, partition, consumerGrp, msgType)
+    last_offset_value = msgOperations.get_offsetValue(EVENTHUB, consumerGrp, partition, _msgType)
+    logger.warning('Message Type = {}. offset value = {}'.format(_msgType, last_offset_value))
     
     # OFFSET = Offset(returnValue['result']) # returns -1 if no previous one are found. 
     # receiver = client.add_receiver(consumerGrp, partition, prefetch=5000, offset=Offset(last_offset_value))
@@ -57,8 +59,8 @@ async def processMessages(client, partition, consumerGrp, logger, cleanUp = Fals
     #batch = receiver.receive(timeout=60*5)
     receiver_timeOut = 5
 
-    timeout = time.time() + 60*6 # six minutes from now
-    statusUpdate = cosmosDB.cosmosStatusUpdate.clsStatusUpdate() 
+    timeout = time.time() + 60*6 # six statusUpdateminutes from now
+    
     while (time.time() < timeout):
         batch = await receiver.receive(timeout=receiver_timeOut)
         if (batch):
@@ -73,7 +75,7 @@ async def processMessages(client, partition, consumerGrp, logger, cleanUp = Fals
                 if (brv == True):
 
                     # each message has an indicator of what type it is; That defines our eventReceiver Type
-                    if (loaded_r[common._MESSAGE_TYPE_TAG]== msgType):
+                    if (loaded_r[common._MESSAGE_TYPE_TAG]== _msgType):
                         total =+1
                         if (dispatch[loaded_r[common._MESSAGE_TYPE_TAG]]):
                             logger.warning(loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID])
@@ -89,9 +91,9 @@ async def processMessages(client, partition, consumerGrp, logger, cleanUp = Fals
                             continue
                     else:
                         # nothing to do with us, ignore and continue
-                        logger.warning('{} :Incompatible message type received, ignoring'.format(consumerGrp,loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID]))
                         if (cleanUp== True):
-                            msgOperations.insert_offset_document(EVENTHUB, consumerGrp,partition, last_offset.value, msgType)
+                            logger.warning('{} :Incompatible message type received, updating offset'.format(consumerGrp,loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID]))
+                            msgOperations.insert_offset_document(EVENTHUB, consumerGrp,partition, last_offset.value, _msgType)
                         continue
                 else:
                     logger.error('Message body is not json! {}'.format(event_data.body_as_str()))
@@ -103,6 +105,7 @@ async def processMessages(client, partition, consumerGrp, logger, cleanUp = Fals
     await client.stop_async()
     run_time = end_time - start_time
     print("{} : Received {} messages in {} seconds".format(consumerGrp, total, run_time))
+    return 
 
 try:
 
@@ -125,10 +128,10 @@ try:
     logger.warning(consumerGroup)
     logger.warning(args.drain)
 
-    msgType = None
-    msgType = common._ConsumerGrp_MessageType_Mapping[consumerGroup]
+    _msgType = None
+    _msgType = common._ConsumerGrp_MessageType_Mapping[consumerGroup]
 
-    if (msgType is None): 
+    if (_msgType is None): 
        raise ValueError('unknown message type specified {}'.format(consumerGroup))
 
     loop = asyncio.get_event_loop()

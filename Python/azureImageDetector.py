@@ -65,6 +65,7 @@ def processRequest( json, data, headers, params ):
         break
     return result
 
+#DO NOT USE DIRECTLY... WILL BE REMOVED
 def processImages(  _key = '', 
                     outputFolder = common._SRCIMAGEFOLDER,
                     confThreshold = _CONF_THRESHOLD, 
@@ -193,7 +194,7 @@ def processImages(  _key = '',
                         'param - numberOfIterations' : numberOfIterations,
                         'param - imageTag' : imageTag
                     }
-        obj.logExperimentResult(documentDict= dictObject)
+        obj.logExperimentResult(documentDict= dictObject, removeExisting=False)
     
     return TotalBirdsFound
 

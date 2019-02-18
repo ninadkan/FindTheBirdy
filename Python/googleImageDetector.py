@@ -148,7 +148,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
                         'param - imageTag' : imageTag,
                         common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID:messageId
                     }
-        obj.logExperimentResult(documentDict= dictObject)
+        obj.logExperimentResult(documentDict= dictObject, removeExisting=False)
 
     return TotalBirdsFound 
 

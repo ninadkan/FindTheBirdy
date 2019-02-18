@@ -1,3 +1,3 @@
-curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"experimentNames\" : [\"2018-04-15\"]}" --verbose http://localhost:5002/birdDetector/v1.0/processExperiments
+#curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"experimentNames\" : [\"2018-04-15\"]}" --verbose http://localhost:5002/birdDetector/v1.0/processExperiments
 #curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"experimentNames\" : [\"2018-04-16\"]}" --verbose http://localhost:5002/birdDetector/v1.0/processExperiments
-#curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"experimentNames\" : [\"2018-04-15\",\"2018-04-16\"]}" --verbose http://localhost:5002/birdDetector/v1.0/processExperiments
+curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"experimentNames\" : [\"2018-04-15\",\"2018-04-16\"]}" --verbose http://localhost:5002/birdDetector/v1.0/processExperiments

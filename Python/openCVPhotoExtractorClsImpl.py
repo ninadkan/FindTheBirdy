@@ -175,10 +175,10 @@ class clsOpenCVObjectDetector:
                                         common._OPERATIONS_STATUS_MESSAGE_ID : self.get_MessageId(),
                                         common._OPERATIONS_STATUS_EXPERIMENT_NAME :self.experimentName,
                                         common._OPERATIONS_STATUS_OFFSET :0,
-                                        common._OPERATIONS_STATUS_ELAPSED_TIME : 'Greater than {} seconds'.format(str(wait_time)),
+                                        common._OPERATIONS_STATUS_ELAPSED_TIME : '{}'.format(str(wait_time)),
                                         common._OPERATIONS_STATUS_STATUS_MESSAGE :"ERROR"
                                     }                    
-                    statusUpdate.insert_document_from_dict(dict, removeExisting=False)
+                    statusUpdate.insert_document_from_dict(dictObject, removeExisting=False)
 
             else:
                 # use docker to manage the image processing, should I not be doing separate threading? 
@@ -278,7 +278,7 @@ class clsOpenCVObjectDetector:
                             'param-partOfFileName' : partOfFileName,
                             common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID:messageId
                           }
-            obj.logExperimentResult(documentDict= dictObject)
+            obj.logExperimentResult(documentDict= dictObject, removeExisting=False)
 
 
 
