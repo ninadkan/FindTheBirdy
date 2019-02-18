@@ -119,6 +119,7 @@ class clsStatusUpdate(clsCosmosOperationsBase):
 
     # -------------------------------------------------------------------------   
     def is_operationCompleted(self, messageId, experimentName, numberOfRecordsExpected):
+        # dickey that this depends on the other detector records not created before this is called
         brv = False
         lst = self.get_documents(messageId, experimentName)
         if (lst is not None):
