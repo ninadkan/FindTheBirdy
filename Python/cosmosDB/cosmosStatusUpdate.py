@@ -16,15 +16,13 @@ class clsStatusUpdate(clsCosmosOperationsBase):
         mandatoryList = [   common._OPERATIONS_STATUS_MESSAGE_ID, 
                             common._OPERATIONS_STATUS_EXPERIMENT_NAME,
                             common._OPERATIONS_STATUS_OFFSET]
-        super().__init__(mandatoryList, common._OPERATIONSCOLLECTIONNAME, host, key, databaseId)
+        super().__init__(mandatoryColumns=mandatoryList, collectionName=common._COLLECTIONAME , host=host, key=key, databaseId=databaseId)
         self.sprocReadAllMessageIdGroupedLink = super().getStoredProcLink('returnAllMessageIdGroupedList')
         assert (self.sprocReadAllMessageIdGroupedLink is not None)   
 
         self.sprocGetAllDocsForMsgIdLink = super().getStoredProcLink('getAllDocumentsForMessageId')
         assert (self.sprocGetAllDocsForMsgIdLink is not None)  
 
-        self.sp3Link = super().getStoredProcLink('storedProcedure3')
-        assert (self.sp3Link is not None)          
         return
 
     # -------------------------------------------------------------------------
