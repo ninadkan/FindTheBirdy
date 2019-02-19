@@ -1,4 +1,3 @@
-Data/
 Data/*.jpg
 Data/outputOpenCV/*.jpg
 Data/AllBirds/*.jpg
@@ -17,7 +16,6 @@ python/yolo/yolov3.weights
 python/mobileNet/MobileNetSSD_deploy.caffemodel
 python/googleImageDetector.pyc
 #Python/mobileNet/MobileNetSSD_deploy.caffemodel
-data/
 docker/keys
 data/*.jpg
 /data/outputopencv/*.jpg
