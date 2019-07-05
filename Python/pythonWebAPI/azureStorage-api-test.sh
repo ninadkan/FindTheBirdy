@@ -1,0 +1,1 @@
+curl -H "Content-Type: application/json" -H "Origin: http://localhost" -H "Access-Control-Request-Method: POST" -d "{\"_sourceFileShareFolderName\" : \"2018-04-15\", \"_sourceFileShareFolderName\" : \"2018-04-15\"}" --verbose http://localhost:5555/azureStorage/v1.0/GetAllExperimentsWithMaskAndImageFile
