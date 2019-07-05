@@ -1,0 +1,82 @@
+
+<main class="pb-3" role="main">
+
+<h1>Object Detection </h1>
+<h2>Experiment: Display Selected Image and Label</h2>
+<h2>Not yet operational</h2>    
+<hr/>
+
+<input type="hidden" id="selectedCollectionId" value="" />
+<select name="ExperimentCollection" id="ExperimentCollection" class="form-control col-md-12"></select>
+
+<div id="operations">
+    <table class="table table-condensed table-bordered" align="center">
+        <tbody>
+            <tr valign="middle">
+                <th align="center" width="15%">Description :</th>
+                <th align="center" width="15%">Operations / Input</th>
+                <th align="center" width="70%">Media / Image</th>
+            </tr>
+            <tr valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Refresh Load</label></td>
+                <td align="left"><button id="btnRefreshLoad" class="btn btn-info btn-block">Refresh Load</button></td>
+                <td rowspan="10" id="dynamicImage"></td>
+            </tr>
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Load Location</label></td>
+                <td align="left"><input id="txtLoadLocation" name="txtLoadLocation" value="linuxraspshare/Share/" /></td>
+            </tr>
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Load Filter</label></td>
+                <td align="left"><input id="txtLoadFilter" name="txtLoadFilter" value="2018-11-15_" /></td>
+            </tr>
+            <tr>
+                <td><p></p> </td>
+                <td></td>
+            </tr>
+
+            <tr valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Timer (milliseconds)</label></td>
+                <td align="left"><input id="txtTimer" name="txtTimer" value="1000" /></td>
+            </tr>
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Start Stop Animation</label></td>
+                <td align="left"><button id="btnStartStopAnimation" class="btn btn-success btn-block" onclick="btnStartStopAnimationHandler()">Start</button></td>
+            </tr>
+            <tr>
+                <td><p></p></td>
+                <td></td>
+            </tr>
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Load Tag</label></td>
+                <td align="left"><button id="btnLoadPresenceTag" class="btn btn-info btn-block" onclick="btnLoadPresenceTagHandler()">Load Tag</button></td>
+            </tr>
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Save Location</label></td>
+                <td align="left"><input id="txtSaveLocation" name="txtSaveLocation" value="" /></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Update Tag</label></td>
+                <td align="left"><button id="btnSavePresenceTag" class="btn btn-primary btn-block" onclick="btnSavePresenceTagHandler()">Save Tag</button></td>
+            </tr>
+
+            <tr>
+                <td><label class="col-md-12 control-label"></label></td>
+                <td></td>
+                <td>
+                    <table align="center">
+                        <tr align="center" valign="middle">
+                            <td width="33%"><button id="btnAddPresenceTag" class="btn btn-success" onclick="btnAddPresenceTagHandler()">Add Tag</button></td>
+                            <th width="33%"><label class="col-md-12 control-label" id="PresenceTag">Presence Tag</label></th>
+                            <td width="33%"><button id="btnRemovePresenceTag" class="btn btn-success" onclick="btnRemovePresenceTagHandler()">Remove Tag</button></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<hr />
+<div id="textDiv"></div>
+</main>

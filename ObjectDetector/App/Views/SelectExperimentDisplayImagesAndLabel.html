@@ -1,0 +1,164 @@
+
+<main class="pb-3" role="main">
+
+<h1>Object Detection </h1>
+<h2>Experiment: Select Experiment, Display Images And Label </h2>    
+<hr/>
+
+<div class="container">
+    <div class="pagination-top-placeholder">
+</div>
+
+<hr />
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Azure File Share :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtAzureFileShareAccount" value="secureappstorage" />
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">SAS Key :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtSAS" type="password" value='?sv=2018-03-28&ss=bfqt&srt=sco&sp=rwdlacup&se=2019-08-08T01:35:21Z&st=2019-07-05T17:35:21Z&spr=https,http&sig=SMqkCxdgdK8yD9url9AKrORV4WbGAW0sXau435DShes%3D' />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Destination Share :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtDestinationShare" value="experiment-data" />
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Destination Directory :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtDestinationDirectory" value="object-detection" />
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Use source directory:</label>
+    </div>
+    <div class="col-md-1 ">
+         <input class="form-control" type="checkbox" id="chkSourceDirectory" />
+    </div>
+</div>
+
+<div class="row ">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Experiment Name :</label>
+    </div>
+    <div class="col-md-2">
+        <select id="ExperimentCollection" class="form-control"></select>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Output Folder :</label>
+    </div>
+    <div class="col-md-2">
+        <input class="form-control btn-block" id="txtOutputFolder" value="output" />
+    </div>
+</div>
+
+<!-- @*<div class="row">
+        <div class="col-md-1">
+            <label class="control-label"> </label>
+        </div>
+        <div class="col-md-2 text-right ">
+            <label class="control-label vcenter">Cosmos DB Name:</label>
+        </div>
+        <div class="col-md-2">
+            <input class="form-control btn-block" id="txtDbExperimentName" value="experiment-find-the-birdy" disabled />
+        </div>
+        <div class="col-md-2 text-right ">
+            <label class="control-label vcenter">Document Id :</label>
+        </div>
+        <div class="col-md-2">
+            <input class="form-control btn-block" id="txtDocumentId" value="userDetector" disabled />
+        </div>
+    </div>*@ -->
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Operations:</label>
+    </div>
+    <div class="col-md-2">
+        <button id="btnLoadExperiments" class="btn btn-primary" >Load Experiments</button>
+    </div>
+    <div class="col-md-2">
+        <button id="btnLoadTag" class="btn btn-primary"  disabled>Load Tags</button>
+    </div>
+    <div class="col-md-2">
+        <button id="btnSaveTag" class="btn btn-primary" ></button>Save Tags</button>
+    </div>
+</div>
+
+<div class="row form-group">
+    <div class="col-md-1">
+        <label class="control-label"> </label>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Operation Result  :</label>
+    </div>
+    <div class="col-md-6">
+        <label class="form-control btn-block" id="lblResult"></label>
+    </div>
+</div>
+
+<div id="dynamicImages">
+    <!-- @*<div class="row">
+            <div class="col-md-2 nopad text-center">
+                <label class="image-checkbox" id="1">
+                    <img class="img-responsive img-thumbnail" src="https://dummyimage.com/600x400/000/fff">
+                    <input type="checkbox" value="" />
+                    <i class="fa fa-check hidden"></i>
+                </label>
+            </div>
+            <div class="col-md-2 nopad text-center">
+                <label class="image-checkbox" id="2">
+                    <img class="img-responsive" src="https://dummyimage.com/600x400/000/fff" />
+                    <input type="checkbox" value="" />
+                    <i class="fa fa-check hidden"></i>
+                </label>
+            </div>
+            <div class="col-md-2 nopad text-center">
+                <label class="image-checkbox" id="3">
+                    <img class="img-responsive" src="https://dummyimage.com/600x400/000/fff" />
+                    <input type="checkbox" value="" />
+                    <i class="fa fa-check hidden"></i>
+                </label>
+            </div>
+            <div class="col-md-2 nopad text-center">
+                <label class="image-checkbox" id="4">
+                    <img class="img-responsive" src="https://dummyimage.com/600x400/000/fff" />
+                    <input type="checkbox" value="" />
+                    <i class="fa fa-check hidden"></i>
+                </label>
+            </div>
+            <div class="col-md-2 nopad text-center">
+                <label class="image-checkbox" id="5">
+                    <img class="img-responsive" src="https://dummyimage.com/600x400/000/fff" />
+                    <input type="checkbox" value="" />
+                    <i class="fa fa-check hidden"></i>
+                </label>
+            </div>
+        </div>*@ -->
+</div>
+
+
+<div class="container">
+    <div class="pagination-bottom-placeholder"></div>
+</div>
+</main>

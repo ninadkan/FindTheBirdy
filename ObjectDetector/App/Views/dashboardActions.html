@@ -1,0 +1,47 @@
+
+<main class="pb-3" role="main">
+    <h1>Object Detection </h1>
+    <h2>Dashboard: Project Run Status</h2>
+    <div id="devOperations">
+        <table align="center" class="table table-striped table-bordered table-condensed table-hover">
+            <thead>
+                <tr valign="middle">
+                    <th width="10%" align="center"> Experiment Run Date</th>
+                    <th width="10%" align="center"> Number of Images Captured</th>
+                    <th width="10%" align="center"> Source Folder Size</th>
+                    <th width="10%" align="center"> Destination Experiment Folder Exist</th>
+                    <th width="10%" align="center"> Number of Images in destination folder</th>
+                    <th width="10%" align="center"> Image Size Destination Folder</th>
+                    <th width="10%" align="center"> Mask file exists</th>
+                    <th width="10%" align="center"> Number of Images detected by OpenCV</th>
+                    <th width="10%" align="center"> Size of OpenCV images detected</th>
+                    <th width="10%" align="center"></th>
+                </tr>
+                <tr align="center" valign="middle">
+                    <td colspan="4"></td>
+                    <td><button class="btn btn-success btn-refresh" id="btnRefresh">Refresh</button> </td>
+                    <td><button class="btn btn-success btn-destination-refresh" id="btnDestinationRefresh">Destination Refresh</button> </td>
+                    <td colspan="4"></td>
+                </tr>
+                <tr>
+                    <td colspan="10" ><label class="btn-block" id="lblResult"></label></td>
+                </tr>
+            </thead>
+
+            <tbody class="data-container">
+                    <tr>
+                        <td class="view-data-experiment-run-date"></td>
+                        <td class="view-data-number-of-images-captured"></td>
+                        <td class="view-data-experiment-source-folder-size"></td>
+                        <td class="view-data-destination-experiment-folder-exists"></td>
+                        <td class="view-data-number-of-images-in-destination-folder"></td>
+                        <td class="view-data-image-size-destination-folder"></td>
+                        <td class="view-data-mask-file-exists"></td>
+                        <td class="view-data-number-of-images-detected-by-openCV"></td>
+                        <td class="view-data-size-of-openCV-images-detected"></td>
+                        <td class="view-data-place-holder"></td>                                                                         
+                    </tr>
+            </tbody>
+        </table>
+    </div>
+</main>

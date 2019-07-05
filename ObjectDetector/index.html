@@ -1,0 +1,112 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page - ObjectDetector</title>
+    <link href="/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+    <link href="/css/site.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <span class="app-user navbar-text"></span>
+                            </li>
+                            <li class="nav-item">
+                                <a href="javascript:;" class="app-logout nav-link text-dark">Logout</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="javascript:;" class="app-login nav-link text-dark">Login</a>
+                            </li>
+                        <!-- <li class="app-user navbar-text"></li>
+                        <li><a href="javascript:;" class="app-logout">Logout</a></li>
+                        <li><a href="javascript:;" class="app-login">Login</a></li> -->
+                    </ul>
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="dropdown nav-item ">
+                            <a class="nav-link dropdown-toggle" id="menu01" aria-expanded="false" aria-haspopup="true" data-toggle="dropdown">Dashboard</a>
+                            <div class="dropdown-menu" aria-labelledby="menu01">
+                                <a class="dropdown-item" href="/#Results">Result</a>
+                                <a class="dropdown-item" href="/#DashboardActions">Pending Actions</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/#ExperimentRunStatus">Experiment Run Status</a>
+                                <a class="dropdown-item" href="/#ToBeImplemented">Performance and Scale</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/#ToBeImplemented">Operations: List All</a>
+                                <a class="dropdown-item" href="/#ToBeImplemented">Operations: Create</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/#TodoList">To Do List</a>   
+                                <a class="dropdown-item" href="/#UserData">User Data</a>                           
+                            </div>
+                        </li>
+                        <li class="dropdown nav-item">
+                            <a class="nav-link dropdown-toggle" id="menu02" aria-expanded="false" aria-haspopup="true" data-toggle="dropdown">Single Steps</a>
+                            <div class="dropdown-menu" aria-labelledby="menu02">
+                                <a class="dropdown-item" href="/#CopyFilesAndCreateExperiment">Copy n Create Experiments</a>
+                                <a class="dropdown-item" href="/#ToBeImplemented">Run Experiment</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/#CreateViewUpdateMask">Mask Images</a>
+                                <!-- <a class="dropdown-item" href="">Label Images</a> -->
+                                <a class="dropdown-item" href="/#SelectExperimentDisplayImagesAndLabel">Select Exp, Display Images and Label</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/#ReviewAllExperiments">Review All Experiments</a>
+                                <!-- <a class="dropdown-item" href="">Image Mask Images</a> -->
+                                <!-- <a class="dropdown-item" href="/#DisplayAndLabelSelectedImages">Display and Label Images</a> -->
+                            </div>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="/#Home">Home</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="panel-body"></div>
+        <div class="app-error"></div>
+    </div>
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            © 2019 - ObjectDetector - <a href="/#Privacy">Privacy</a>
+        </div>
+    </footer>
+    <!-- <script src="/lib/jquery/dist/jquery.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.3.4/bluebird.min.js"></script>
+    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/0.2.3/js/msal.js"></script>
+    <script src="lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+    <script src="lib/azure/dist/azure-storage.file.js"></script>
+
+    <script src="/js/site.js?v=JtNUxO7fMTKFnCgex2Zh5I9ihgk40fmVt7h_mphJ2tE"></script>
+   
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> -->
+    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/0.2.3/js/msal.min.js"></script> -->
+    <script src="App/Scripts/app.js"></script>
+    <script src="App/Scripts/Ctrls/homeCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/todoListCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/userDataCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/dashboardActionsCtrl.js"></script>   
+    <script src="App/Scripts/Ctrls/privacyCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/resultsCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/paginationCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/experimentRunStatusCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/tobeImplementedCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/copyFilesAndCreateExperimentCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/createViewUpdateMaskCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/reviewAllExperimentsCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/documentGetDetailsCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/displayAndLabelSelectedImagesCtrl.js"></script>
+    <script src="App/Scripts/Ctrls/selectExperimentDisplayImagesAndLabelCtrl.js"></script>
+    <script>
+        GlobalWrapper.displayHomePage();
+    </script>
+</body></html>

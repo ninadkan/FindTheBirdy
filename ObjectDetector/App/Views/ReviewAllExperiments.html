@@ -1,0 +1,50 @@
+
+<main class="pb-3" role="main">
+
+<h1>Object Detection </h1>
+<h2>Experiments: Display All Collection Results </h2>    
+
+<table class="table table-condensed borderless">
+        <thead>
+            <tr>
+                <th width="50%"></th>
+                <th width="50%"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <label class="col-md-12 control-label">Select Experiment:</label>
+                </td>
+                <td>
+                    <select name="ExperimentCollection" id="ExperimentCollection" class="form-control col-md-12"></select>
+                </td>
+            </tr>
+    </table>
+    
+    <div id="dynamicTable">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th width="30%">
+                        Provider
+                    </th>
+                    <th width="30%">
+                        Key
+                    </th>
+                    <th width="30%">
+                        Execution Time
+                    </th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="dynamicExperimentData"></tbody>
+        </table>
+    </div>
+    
+    
+    <div id="textDiv">
+         Result will be displayed here
+    </div>
+</main>

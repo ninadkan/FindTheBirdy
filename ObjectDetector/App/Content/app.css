@@ -1,0 +1,55 @@
+﻿.app-error {
+    color:red;
+}
+
+
+/* NK Additions*/
+
+.pagination {
+    display: inline-block;
+}
+
+    .pagination a {
+        color: black;
+        float: left;
+        padding: 8px 16px;
+        text-decoration: none;
+        transition: background-color .3s;
+        border: 1px solid #ddd;
+        margin: 0 4px;
+    }
+
+    .pagination input {
+        color: black;
+        float: left;
+        padding: 8px 16px;
+        text-decoration: none;
+        transition: background-color .3s;
+        border: 1px solid #ddd;
+        margin: 0 4px;
+    }
+
+    .pagination a.active {
+        background-color: #4CAF50;
+        color: white;
+        border: 1px solid #4CAF50;
+    }
+
+    .pagination a:hover:not(.active) {
+        background-color: #ddd;
+    }
+
+a.disabled {
+    pointer-events: none;
+    cursor: default;
+}
+
+
+
+
+.center {
+    padding: 100px 0;
+    line-height: 1.5;
+    vertical-align: middle;
+    text-align: justify;
+}

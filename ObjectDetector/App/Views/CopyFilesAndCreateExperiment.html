@@ -1,0 +1,147 @@
+
+<main class="pb-3" role="main">
+
+<h1>Object Detection </h1>
+<h2>Experiment: Copy Files and Create Experiments</h2>    
+<hr/>
+
+
+<div class="form-horizontal">
+    <div class="form-group">
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="control-label">Source Share :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtSourceShare" value="linuxraspshare" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Source Directory :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtSourceDirectory" value="Share" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Destination Share :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtDestinationShare" value="experiment-data" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Destination Dir :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtDestinationDirectory" value="object-detection" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">File Filter :</label>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" id="txtFileFilter" value=".jpg" />
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-2" align="right">
+                <label class="col-form-label">Experiment Name :</label>
+            </div>
+            <div class="col-md-2">
+                <select id="ExperimentCollection" class="form-control"></select>
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+            </div>
+            <div class="col-md-2">
+                <button id="btnGetUniqueExperimentNames" class="btn btn-primary btn-block btn-Get-Unique-ExperimentNames">Get Unique Exp</button>
+            </div>
+            <div class="col-md-1">
+            </div>
+            <div class="col-md-2">
+                <button id="btnGetNonProcessedExperiments" class="btn btn-primary btn-block btn-Get-Non-Processed-Experiments">Non Processed Exp</button>
+            </div>
+            <div class="col-md-1">
+            </div>
+            <div class="col-md-2">
+                <button id="btnCopyFiles" class="btn btn-primary btn-block btn-Copy-File-Handler" >Copy Files</button>
+            </div>
+            <div class="col-md-2">
+            </div>
+        </div>
+
+        <div>
+            <p></p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6" align="right">
+                <label class="col-form-label">Result :</label>
+            </div>
+            <div class="col-md-6">
+                <label class="col-form-label" id="lblResult"></label>
+            </div>
+        </div>
+        <div>
+            <p></p>
+        </div>
+    </div>
+</div>
+
+
+
+</main>

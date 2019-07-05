@@ -1,0 +1,104 @@
+
+<main class="pb-3" role="main">
+
+<h1>Object Detection </h1>
+<h2>Experiment : Create, View and Update Image Masks </h2>    
+
+<div id="devOperations">
+    <table class="table table-condensed" align="center">
+        <tbody>
+            <tr valign="middle">
+                <th align="center" width="30%"></th>
+                <th align="center" width="40%"></th>
+                <th align="center" width="30%"></th>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Source Share</label></td>
+                <td align="left" colspan="2"><input id="txtSourceShare" value="experiment-data" /></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Source Directory</label></td>
+                <td align="left" colspan="2"><input class="btn-block" id="txtSourceDirectory" value="object-detection" /></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Experiment Name</label></td>
+                <td><select id="ExperimentCollection" class="form-control col-md-12"></select></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Image File Name</label></td>
+                <td align="left"><input id="txtImageFileName" name="txtImageFileName" /></td>
+                <td align="left"><label id="lblImageDimensions"> Image Dimensions </label></td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Mask file content </label></td>
+                <td align="center" colspan="2"><input class="btn-block" id="txtMaskPoints" /></td>
+            </tr>
+
+            <tr>
+                <td align="center"><button id="btnLoadExperiments" class="btn btn-info" >Refresh (Load Experiments)</button></td>
+                <td align="center"><button id="btnLoadImage" class="btn btn-primary" >Load Image</button></td>
+                <td align="center">
+                    <button id="btnUpdateMaskTags" class="btn btn-success" >Start Mask Update</button>
+                    <button id="btnSaveMask" class="btn btn-success" >Save Mask</button>
+                </td>
+            </tr>
+
+            <tr align="center" valign="middle">
+                <td align="right"><label class="col-md-12 control-label">Operation Result  : </label></td>
+                <td align="left" colspan="2"><label class="btn-block" id="lblResult"></label></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+    
+<hr />
+    
+<div id="devOperations">
+    <table>
+        <tbody>
+            <tr valign="middle">
+                <th align="center" width="50%"></th>
+                <th align="center" width="50%"></th>
+            </tr>
+            <tr valign="middle">
+                <td align="center"><label> Original Image: </label></td>
+                <td align="center"><label> Masked Image: </label></td>
+            </tr>
+            <tr>
+                <td>
+                    <div id=divCanvas>
+                        <canvas id="topCanvas"></canvas>
+                    </div>
+                </td>
+                <td align="center"><label class="btn-block"> </label></td>
+            </tr>
+            <tr>
+                <td>
+                    <div>
+                        <canvas id="imageCanvas"></canvas>
+                        <canvas id="sideCanvas"></canvas>
+                    </div>
+                </td>
+                
+                <td>
+                    <div class="column">
+                        <img id="maskImage" alt="ALT">
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="divImg">
+    <img id="dynamicImage"
+            src="" alt="ALT">
+</div>
+
+
+</main>
