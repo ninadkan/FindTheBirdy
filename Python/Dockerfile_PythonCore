@@ -14,6 +14,7 @@ ENV PATH="/home/python:${PATH}"
 RUN apt-get update \
         && apt-get install -y --no-install-recommends dialog \
         && apt-get update \
+        && apt-get install -y wget \
         && pip install opencv-contrib-python \
         && pip install flask \
         && pip install flask_cors \
@@ -69,7 +70,8 @@ COPY yoloBirdImageDetector.py ./
 # copy additional files
 COPY yolo/coco.names ./yolo/
 COPY yolo/yolov3.cfg ./yolo/
-COPY yolo/yolov3.weights ./yolo/
+#COPY yolo/yolov3.weights ./yolo/
+RUN wget https://pjreddie.com/media/files/yolov3.weights -O ./yolo/yolov3.weights
 
 COPY mobileNet/MobileNetSSD_deploy.caffemodel ./mobileNet/
 COPY mobileNet/MobileNetSSD_deploy.prototxt.txt ./mobileNet/
