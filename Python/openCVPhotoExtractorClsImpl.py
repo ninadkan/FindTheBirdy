@@ -15,11 +15,13 @@ import time
 from pathlib import Path
 import common
 import docker_clsOpenCVProcessImages as ds
-import azureFS.azureFileShareTest as fs
+import storageFileService as sf
+#import azureFS.azureFileShareTest as fs
 
 import eventMessageSender
 import asyncio
-import cosmosDB.cosmosStatusUpdate
+#import cosmosDB.cosmosStatusUpdate
+import cosmosStatusUpdate as cf
 
 
 _LOGRESULT = True   # Should we write the results to CosmosDB or not. This is dependent on _WRITEOUTPUT values.
@@ -43,6 +45,9 @@ class clsOpenCVObjectDetector:
         # To log result or not
         self.logResult = _LOGRESULT
         self.MessageId = None
+        #Storage and cosmos Object
+        self.storageSrv = sf.storageFileService(None)
+        self.cosmosStatusObj = cf.clsStatusUpdate()
         return
 
     def get_logResult(self):
@@ -91,10 +96,12 @@ class clsOpenCVObjectDetector:
         TotalImageCountLocal = 0
         self.srcImageFolder = self.srcImageFolder + "/" + self.experimentName
         self.destinationFolder = self.srcImageFolder + "/" + self.destinationFolder
-        brv, desc, myROI  = fs.createDirectory(common._FileShareName, self.destinationFolder)
+        print(common._FileShareName)
+        print(self.destinationFolder)
+        brv, desc, myROI  = self.storageSrv.createDirectory(common._FileShareName, self.destinationFolder)
         assert(brv == True), "Unable to create/locate output directory " + destinationFolder
 
-        brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, self.srcImageFolder)
+        brv, desc, lst = self.storageSrv.getListOfAllFiles(common._FileShareName, self.srcImageFolder)
         if (brv == True):
             if (not(lst is None or len(lst)<1)):
                 for i, imageFileName in enumerate(lst):
@@ -109,7 +116,7 @@ class clsOpenCVObjectDetector:
             else:
                 print("Directory is either None or zero order")
         else:
-            print("fs.getListOfAllFiles returned False")
+            print("self.storageSrv.getListOfAllFiles returned False")
         return fileListLocal, TotalImageCountLocal
 
     async def processImages(self,partOfFileName=''):
@@ -155,14 +162,14 @@ class clsOpenCVObjectDetector:
                 allMessagesProcessed = False
                 wait_time = 60* 6 # six minutes from now
                 timeout = time.time() + wait_time
-                statusUpdate = cosmosDB.cosmosStatusUpdate.clsStatusUpdate() 
+               
                 while (allMessagesProcessed == False and time.time() < timeout):
                     # print('Sleeping...')
                     await asyncio.sleep(_SLEEP_TIME_BEFFORE_CHECK) 
                     #time.sleep(_SLEEP_TIME_BEFFORE_CHECK)
                     print("status check ...")
                     
-                    allMessagesProcessed = statusUpdate.is_operationCompleted(self.get_MessageId(), self.experimentName, numberOfMessagesSent)
+                    allMessagesProcessed = self.cosmosStatusObj.is_operationCompleted(self.get_MessageId(), self.experimentName, numberOfMessagesSent)
 
                 print("... wait loop over status = {}".format(allMessagesProcessed))
                 if (allMessagesProcessed):
@@ -178,7 +185,7 @@ class clsOpenCVObjectDetector:
                                         common._OPERATIONS_STATUS_ELAPSED_TIME : '{}'.format(str(wait_time)),
                                         common._OPERATIONS_STATUS_STATUS_MESSAGE :"ERROR"
                                     }                    
-                    statusUpdate.insert_document_from_dict(dictObject, removeExisting=False)
+                    self.cosmosStatusObj.insert_document_from_dict(dictObject, removeExisting=False)
 
             else:
                 # use docker to manage the image processing, should I not be doing separate threading? 
@@ -228,8 +235,6 @@ class clsOpenCVObjectDetector:
         # else: # this should not be an error when there are no files which've been copied. 
             #assert (False), "Error Loading file list" 
         
-
-        
         # Write the log thingy now
         TotalNumberOfImagesDetected, detectedImages = self.totalNumberOfImagesDetected()
         elapsed_time = time.time() - start_time
@@ -245,7 +250,7 @@ class clsOpenCVObjectDetector:
                 internaldetectedImages.append(jsonObject)
                 internalTotalNumberOfImagesDetected +=1
         else:
-            brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, self.destinationFolder)
+            brv, desc, lst = self.storageSrv.getListOfAllFiles(common._FileShareName, self.destinationFolder)
             if (brv == True):
                 if (not(lst is None or len(lst)<1)):
                     for i, imageFileName in enumerate(lst):
@@ -258,7 +263,7 @@ class clsOpenCVObjectDetector:
     def WriteLogsToDatabase(self, experimentName, elapsed_time, partOfFileName, detectedImages, TotalNumberOfImagesDetected, TotalImageCount, messageId = None):
         if (self.logResult == True):
             import datetime
-            from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
+            from  cosmosDBWrapper import clsCosmosWrapper
 
             obj = clsCosmosWrapper()
             objProc = ds.clsOpenCVProcessImages()

@@ -33,6 +33,7 @@
         if (data) {
             var tp = $.parseJSON(data);
             if (tp) {
+                console.log(tp)
                 var result = tp["result"];
                 if (result && result.length > 0) {
                     _previousResultData = result;

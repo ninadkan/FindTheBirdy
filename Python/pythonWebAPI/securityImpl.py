@@ -4,12 +4,14 @@ from flask import request, Response
 from expiringdict import ExpiringDict
 import json
 import storageBlobService
-import storageFileService
+
 import appSecrets
 import cosmosDBApiMapper
 
-
-from  cosmosDBWrapper import clsCosmosWrapper
+import sys
+sys.path.insert(0, '../') # needed as common is in the parent folder
+import storageFileService
+from cosmosDBWrapper import clsCosmosWrapper
 from cosmosImageOperations import clsCosmosImageProcessingOperations
 from cosmosStatusUpdate import clsStatusUpdate
 
@@ -88,7 +90,7 @@ class securityImpl:
                                 # Also creates the storage service internally
                                 if (storage_key_list):
                                     if (len(storage_key_list) > 0 ):
-                                        print(storage_key_list[0])
+                                        #print(storage_key_list[0])
                                         self.storageObject.set_storageKey(storage_key_list[0])
                                         self.storageFileObject.set_storageKey(storage_key_list[0])
                                         self.storageKeyLoaded = True
@@ -96,9 +98,9 @@ class securityImpl:
                                     if (self.cosmosDBObjCreated == False):
                                         print("creating cosmos")
                                         if (len(storage_key_list) >= 4 ):
-                                            print(storage_key_list[1])
-                                            print(storage_key_list[2])
-                                            print(storage_key_list[3])      
+                                            #print(storage_key_list[1])
+                                            #print(storage_key_list[2])
+                                            #print(storage_key_list[3])      
                                             self.clsObj = clsCosmosWrapper(host=storage_key_list[1], key = storage_key_list[2], databaseId=storage_key_list[3])
                                             self.clsImageOperations = clsCosmosImageProcessingOperations(host=storage_key_list[1], key = storage_key_list[2], databaseId=storage_key_list[3])
                                             self.clsStatusOperations = clsStatusUpdate(host=storage_key_list[1], key = storage_key_list[2], databaseId=storage_key_list[3])

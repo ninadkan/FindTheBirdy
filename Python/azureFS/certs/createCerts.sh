@@ -1,1 +1,0 @@
-../../cosmosDB/certs/createCerts.sh

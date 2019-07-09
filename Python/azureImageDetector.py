@@ -6,9 +6,11 @@ import sys
 from pathlib import Path
 
 import common
-import azureFS.azureFileShareTest as fs
-import azureFS.mask_creation as mask
+# import azureFS.azureFileShareTest as fs
+# import azureFS.mask_creation as mask
 
+import storageFileService as sf
+globalStorageSrv = sf.storageFileService(None)
 
 # https://github.com/Microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Computer%20Vision%20API%20Example.ipynb 
 # https://anaconda.org/conda-forge/requests
@@ -37,7 +39,7 @@ def processRequest( json, data, headers, params ):
     data: Used when processing image read from disk. See API Documentation
     headers: Used to pass the key information and the data type request
     """
-
+    global globalStorageSrv
     retries = 0
     result = None
     while True:
@@ -101,7 +103,7 @@ def processImages(  _key = '',
         outputFolder = outputFolder + "/" + experimentName
         outputFolder = outputFolder + "/" + common._DESTINATIONFOLDER
 
-        brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, outputFolder)
+        brv, desc, lst = globalStorageSrv.getListOfAllFiles(common._FileShareName, outputFolder)
         if (brv == True):
             for i, imageFileName in enumerate(lst):
                 FILE_LIST.append(imageFileName.name)
@@ -120,7 +122,7 @@ def processImages(  _key = '',
             with open( pathToFileInDisk, 'rb' ) as f:
                 data = f.read()
         else:
-            brv, desc, data = mask.GetRawImageAsBytes(common._FileShareName, outputFolder, imageName)
+            brv, desc, data = globalStorageSrv.GetRawImageAsBytes(common._FileShareName, outputFolder, imageName)
             assert(brv == True), "Error Get Raw Image" + imageName
 
             
@@ -180,7 +182,7 @@ def processImages(  _key = '',
     elapsed_time = time.time() - start_time
     if (logResult == True):
         import datetime
-        from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
+        from  cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
         dictObject ={   common._IMAGE_DETECTION_PROVIDER_TAG : __name__,
                         common._EXPERIMENTNAME_TAG : experimentName,
@@ -199,7 +201,7 @@ def processImages(  _key = '',
     return TotalBirdsFound
 
 if __name__ == "__main__":
-    processImages()
+    processImages(experimentName='2018-04-15')
 
 
 

@@ -2,7 +2,34 @@
 <main class="pb-3" role="main">
 
 <h1>Object Detection </h1>
-<h2>Experiments: Display All Collection Results </h2>    
+<h2>Experiments: Display All Collection Results </h2>
+<hr/>
+
+<div class="row">
+    <div class="col-md-1">
+        <label class="control-label">  </label>
+    </div>
+    <div class="col-md-2 align-middle">
+        <button id="btnLoadCollections" class="btn btn-primary align-middle" >Load Collections</button>
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Filter:</label>
+    </div>
+    <div class="col-md-2 align-middle">
+        <input class="form-control btn-block align-middle" id="txtFilterKey" value="MessageId" />
+    </div>
+    <div class="col-md-2 text-right ">
+        <label class="control-label vcenter">Filter Value: </label>
+    </div>
+    <div class="col-md-2 align-middle">
+        <input class="form-control btn-block align-middle" id="txtFilterValue" value='null' />
+    </div>
+    <div class="col-md-1">
+        <label class="control-label">  </label>
+    </div>
+</div>
+
+
 
 <table class="table table-condensed borderless">
         <thead>
@@ -27,16 +54,16 @@
             <thead>
                 <tr>
                     <th width="30%">
-                        Provider
+                        Id
                     </th>
                     <th width="30%">
                         Key
                     </th>
                     <th width="30%">
-                        Execution Time
+                        Some Details
                     </th>
-                    <th></th>
-                    <th></th>
+                    <th>Action 1</th>
+                    <th>Action 2</th>
                 </tr>
             </thead>
             <tbody id="dynamicExperimentData"></tbody>

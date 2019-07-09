@@ -311,17 +311,21 @@ def returnAllExperimentResult():
 # Image Processsing Operations 
 ###############################################################################
 
-@app.route('/cosmosDBOperations/v1.0/operationsInsertLastOffsetDocument', methods=['POST'])
+@app.route('/cosmosDB/v1.0/operationsInsertLastOffsetDocument', methods=['POST'])
 def operationsInsertLastOffsetDocument():
     return ValidateSecurityAndProcessRequestCommon(request, cosmosDBApiMapper.operationsInsertLastOffsetDocument, constImageOperationsValue)
 
-@app.route('/cosmosDBOperations/v1.0/operationsGetLastOffset', methods=['POST'])
+@app.route('/cosmosDB/v1.0/operationsGetLastOffset', methods=['POST'])
 def operationsGetLastOffset():
     return ValidateSecurityAndProcessRequestCommon(request, cosmosDBApiMapper.operationsGetLastOffset, constImageOperationsValue)
 
-@app.route('/cosmosDBOperations/v1.0/removeLastOffsetRecord', methods=['POST'])
+@app.route('/cosmosDB/v1.0/removeLastOffsetRecord', methods=['POST'])
 def removeLastOffsetRecord():
     return ValidateSecurityAndProcessRequestCommon(request, cosmosDBApiMapper.removeLastOffsetRecord, constImageOperationsValue)
+
+@app.route('/cosmosDB/v1.0/removeExistingDocumentDict', methods=['POST'])
+def removeExistingDocumentDict():
+    return ValidateSecurityAndProcessRequestCommon(request, cosmosDBApiMapper.removeExistingDocumentDict, constImageOperationsValue)
 
 ###############################################################################
 # Operations Status 
@@ -335,6 +339,10 @@ def returnAllMessageIdGroupedList():
 def removeAllDocumentsForSpecificMessageId():
     return ValidateSecurityAndProcessRequestCommon(request, cosmosDBApiMapper.removeAllDocumentsForSpecificMessageId, constStatusOperations)
 
+@app.route('/cosmosDB/v1.0/removeExistingDocumentDictStatus', methods=['POST'])
+def removeExistingDocumentDictStatus():
+    return ValidateSecurityAndProcessRequestCommon(request, cosmosDBApiMapper.removeExistingDocumentDictStatus, constStatusOperations)
+
 if __name__ == '__main__':
     import os
     HOST = os.environ.get('SERVER_HOST', 'localhost')
@@ -342,4 +350,4 @@ if __name__ == '__main__':
         PORT = int(os.environ.get('SERVER_PORT', '5555'))
     except ValueError:
         PORT = 5555
-    app.run(HOST, PORT)
+    app.run(debug=True,host=HOST, port=PORT)

@@ -1,5 +1,4 @@
 #to use this file, uncomment the required stub and invoke
-
 from mobileNetImageDetector import processImages
 Detector = "Mobile Net Detector"
 
@@ -20,7 +19,7 @@ Detector = "Mobile Net Detector"
 import time
 
 start_time = time.time()
-TotalBirdsFound  = processImages()
+TotalBirdsFound  = processImages(experimentName='2018-04-15')
 end_time = time.time() - start_time
 
 print("")

@@ -4,7 +4,7 @@
     var refreshMainPageCallBack = null;
     var resetPageCallBack = null;
     var resetPageParameter = null;     
-    var _itemsPerPage = 16; 
+    var _itemsPerPage = 25; 
     var _totalSize = 0;
     var _currentSelectedPage = 1;
     var _totalNumberOfPages = 0;
@@ -384,8 +384,8 @@
             _innerHtml.push('<option value="2">2</option>');
             _innerHtml.push('<option value="3">3</option>');
             _innerHtml.push('<option value="5">5</option>');
-            _innerHtml.push('<option value="10" selected="selected">10</option>');
-            _innerHtml.push('<option value="25">25</option>');
+            _innerHtml.push('<option value="10">10</option>');
+            _innerHtml.push('<option value="25" selected="selected">25</option>');
             _innerHtml.push('<option value="50">50</option>');
             _innerHtml.push('</select>');
             _innerHtml.push('items per page');

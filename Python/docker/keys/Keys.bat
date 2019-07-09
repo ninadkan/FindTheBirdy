@@ -3,8 +3,8 @@ set COSMOSDB_HOST=ninadkcosmosdb
 set COSMOSDB_KEY=S1xcQSZiSUDWpBwhAkQ5BHo6f9QuggZgqZPhuok718ziTPe7Dawk8XgCVNrxagnqZhyCSOevgnUcntyD0q3tyg==
 set COSMOSDB_DATABASE=experiment-find-the-birdy
 set AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
-set AZURE_ACN_NAME=nkdsvm
-set AZURE_ACN_STRG_KEY=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==
+set AZURE_ACN_NAME=secureappstorage
+set AZURE_ACN_STRG_KEY=xBusNj6HF7AFVldvQGKUef+aqSi/UvowgrkLP11MvIT+kdKrPe9FsraIG62m126xECovL5nZxREqkWEFOsvrsQ==
 set AZURE_EVENT_HUB_CONTAINER_NAME=eventlogcontainer
 
 set EVENT_HUB_NAMESPACE=ninadkeventhub

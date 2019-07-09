@@ -1,4 +1,8 @@
+
+import sys
+sys.path.insert(0, '../') # needed as common is in the parent folder
 import storageFileService
+
 from flask import Flask, jsonify, abort, make_response
 from flask import send_file
 import json

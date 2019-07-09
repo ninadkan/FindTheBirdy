@@ -2,11 +2,15 @@
 import time
 from common import _SRCIMAGEFOLDER, _DESTINATIONFOLDER, _FileShare, _FileShareName
 import openCVPhotoExtractorClsImpl
-import azureFS.azureFileShareTest as fs
+#import azureFS.azureFileShareTest as fs
+import storageFileService as sf
 import platform
 import os
 
+globalStorageSrv = sf.storageFileService(None)
+
 def delete_existing_files(experimentName):
+    global globalStorageSrv
     brv = False
     if (_FileShare == False):
         
@@ -42,7 +46,7 @@ def delete_existing_files(experimentName):
         srcImageFolder = _SRCIMAGEFOLDER + "/" + experimentName
         destinationFolder = srcImageFolder + "/" + _DESTINATIONFOLDER
         print(destinationFolder)
-        brv, desc, ret  = fs.removeAllFiles(_FileShareName, destinationFolder)
+        brv, desc, ret  = globalStorageSrv.removeAllFiles(_FileShareName, destinationFolder)
         assert(brv == True), "Unable to create/locate output directory " + destinationFolder
     return brv
 
@@ -62,6 +66,7 @@ def checkExportKeysSetup():
     return brv
 
 def runExperiments(ExperimentNames = None, startIndex = 0,NumberOfExperimentsToProcess = -1):
+    global globalStorageSrv
 # ExperimentName contains the list of experiments that need to be started. 
 # what is our starting offset
 # startIndex = 27
@@ -75,7 +80,7 @@ def runExperiments(ExperimentNames = None, startIndex = 0,NumberOfExperimentsToP
         if (_FileShare == False):
             ExperimentNames = os.listdir(_SRCIMAGEFOLDER)
         else:
-            rv, elapsedTime, ExperimentNames = fs.TestGetAllExperimentNames(_FileShareName, _SRCIMAGEFOLDER)
+            rv, elapsedTime, ExperimentNames = globalStorageSrv.TestGetAllExperimentNames(_FileShareName, _SRCIMAGEFOLDER)
 
     # Lets start our test. 
     if (ExperimentNames is not None and len(ExperimentNames) > 0):

@@ -9,6 +9,7 @@ import cv2
 import os
 import time
 import json
+import os
 
 
 from pathlib import Path
@@ -176,13 +177,9 @@ def processImages(  historyImage = _HISTORYIMAGE,
     global g_destinationFolder
     global g_filenameExtension
 
-
     g_srcImageFolder = common._SRCIMAGEFOLDER 
     g_destinationFolder = common._DESTINATIONFOLDER
     g_filenameExtension = _FILENAMEEXTENSION = '.jpg'
-
-
-
 
     g_srcImageFolder = os.path.join(g_srcImageFolder,experimentName)
 
@@ -263,7 +260,12 @@ def processImages(  historyImage = _HISTORYIMAGE,
                     
             if (diff > maskDiffThreshold): # passes the first test of difference
                     ret, thresh = cv2.threshold(currentmask, varThreshold, 255, 0)
-                    im2, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                    contours = None
+                    hierarchy = None
+                    if (os.name == "posix"): # differences in implementations
+                        contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                    else:
+                        im2, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
                     contour_length = len(contours)
                     if (not (contour_length == 0 or contour_length > contourCountThreshold)): 
                         # passes second test of contour length 
@@ -292,7 +294,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
 
     if (logResult == True):
         import datetime
-        from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
+        from  cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
         dictObject = {  common._IMAGE_DETECTION_PROVIDER_TAG : __name__,
                         common._EXPERIMENTNAME_TAG : experimentName,

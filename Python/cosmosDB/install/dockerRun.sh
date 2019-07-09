@@ -1,1 +1,0 @@
-sudo docker run -d -t -i -e COSMOSDB_HOST=ninadkcosmosdb -e COSMOSDB_KEY=S1xcQSZiSUDWpBwhAkQ5BHo6f9QuggZgqZPhuok718ziTPe7Dawk8XgCVNrxagnqZhyCSOevgnUcntyD0q3tyg== -e COSMOSDB_DATABASE=experiment-find-the-birdy -p 222:443 cosmosdb:0.1

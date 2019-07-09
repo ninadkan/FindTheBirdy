@@ -4,10 +4,14 @@ import os
 import argparse
 from pathlib import Path
 import time
+
 import common
 
-import azureFS.azureFileShareTest as fs
-import azureFS.mask_creation as mask
+# import azureFS.azureFileShareTest as fs
+# import azureFS.mask_creation as mask
+
+import storageFileService as sf
+globalStorageSrv = sf.storageFileService(None)
 
 
 # Initialize DEFAULTS
@@ -149,6 +153,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
     nmsThreshold _NMS_THRESHOLD nmsThreshold used in the cv2.dnn.NMSBoxes fn
     '''
     global g_detectedImages
+    global globalStorageSrv
     g_detectedImages = []
     start_time = time.time()
 
@@ -162,7 +167,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
         outputFolder = outputFolder + "/" + experimentName
         outputFolder = outputFolder + "/" + common._DESTINATIONFOLDER
 
-        brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, outputFolder)
+        brv, desc, lst = globalStorageSrv.getListOfAllFiles(common._FileShareName, outputFolder)
         if (brv == True):
             for i, imageFileName in enumerate(lst):
                 FILE_LIST.append(imageFileName.name)
@@ -184,7 +189,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
             pathToFileInDisk= os.path.join(outputFolder,imageName)
             imageFrame = cv2.imread(pathToFileInDisk)
         else:
-            brv, desc, imageFrame = mask.GetRawImage(common._FileShareName, outputFolder, imageName)
+            brv, desc, imageFrame = globalStorageSrv.GetRawImage(common._FileShareName, outputFolder, imageName)
             assert(brv == True), "Unable to load " + imageName
 
         assert(imageFrame is not None), "Unable to load " + imageName
@@ -197,7 +202,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
 
     if (logResult == True):
         import datetime
-        from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
+        from  cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
         dictObject ={   common._IMAGE_DETECTION_PROVIDER_TAG : __name__,
                         common._EXPERIMENTNAME_TAG : experimentName,

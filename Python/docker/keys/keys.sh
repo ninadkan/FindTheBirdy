@@ -3,8 +3,8 @@ export COSMOSDB_HOST=ninadkcosmosdb
 export COSMOSDB_KEY=S1xcQSZiSUDWpBwhAkQ5BHo6f9QuggZgqZPhuok718ziTPe7Dawk8XgCVNrxagnqZhyCSOevgnUcntyD0q3tyg==
 export COSMOSDB_DATABASE=experiment-find-the-birdy
 export AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
-export AZURE_ACN_NAME=nkdsvm
-export AZURE_ACN_STRG_KEY=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA==
+export AZURE_ACN_NAME=secureappstorage
+export AZURE_ACN_STRG_KEY=xBusNj6HF7AFVldvQGKUef+aqSi/UvowgrkLP11MvIT+kdKrPe9FsraIG62m126xECovL5nZxREqkWEFOsvrsQ==
 export AZURE_EVENT_HUB_CONTAINER_NAME=eventlogcontainer
 
 export EVENT_HUB_NAMESPACE=ninadkeventhub

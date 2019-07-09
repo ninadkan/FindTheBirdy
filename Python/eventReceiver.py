@@ -24,7 +24,7 @@ import signal
 import functools
 
 import eventMessageProcessor
-import cosmosDB.cosmosImageOperations
+import cosmosImageOperations
 import loggingBase 
 import asyncio
 
@@ -46,21 +46,20 @@ async def processMessages(client, partition, consumerGrp, logger, cleanUp = Fals
     last_sn = -1
     last_offset = "-1"
 
-    msgOperations = cosmosDB.cosmosImageOperations.clsCosmosImageProcessingOperations()
+    msgOperations = cosmosImageOperations.clsCosmosImageProcessingOperations()
     last_offset_value = msgOperations.get_offsetValue(EVENTHUB, consumerGrp, partition, _msgType)
     logger.warning('Message Type = {}. offset value = {}'.format(_msgType, last_offset_value))
     
     # OFFSET = Offset(returnValue['result']) # returns -1 if no previous one are found. 
     # receiver = client.add_receiver(consumerGrp, partition, prefetch=5000, offset=Offset(last_offset_value))
-    receiver = client.add_async_receiver(consumerGrp, partition, prefetch=5000, offset=Offset(last_offset_value))
+    receiver = client.add_async_receiver(consumerGrp, partition, prefetch=5000, offset=Offset(last_offset_value), keep_alive=0 )
     #client.run()
     await client.run_async()
     
     #batch = receiver.receive(timeout=60*5)
-    receiver_timeOut = 5
-
-    timeout = time.time() + 60*6 # six statusUpdateminutes from now
-    
+    receiver_timeOut = 6
+    timeout = time.time() + 60*receiver_timeOut # eight statusUpdateminutes from now
+   
     while (time.time() < timeout):
         batch = await receiver.receive(timeout=receiver_timeOut)
         if (batch):
@@ -73,7 +72,6 @@ async def processMessages(client, partition, consumerGrp, logger, cleanUp = Fals
                 #logger.error("Received: {}, {}".format(last_offset.value, last_sn))
                 brv, loaded_r = common.is_json(event_data.body_as_str())
                 if (brv == True):
-
                     # each message has an indicator of what type it is; That defines our eventReceiver Type
                     if (loaded_r[common._MESSAGE_TYPE_TAG]== _msgType):
                         total =+1
@@ -99,7 +97,7 @@ async def processMessages(client, partition, consumerGrp, logger, cleanUp = Fals
                     logger.error('Message body is not json! {}'.format(event_data.body_as_str()))
                     continue
                 
-                timeout = time.time() + 60*5 # reset our timer
+                timeout = time.time() + 60*receiver_timeOut # reset our timer
                 logger.warning('{} : checkout time increased ...{}'.format(consumerGrp, time.strftime("%H:%M:%S", time.localtime())))
     end_time = time.time()
     await client.stop_async()
@@ -127,6 +125,7 @@ try:
     consumerGroup = args.consumergrp
     logger.warning(consumerGroup)
     logger.warning(args.drain)
+    #logger.warning('OS NAME ' + os.name)
 
     _msgType = None
     _msgType = common._ConsumerGrp_MessageType_Mapping[consumerGroup]

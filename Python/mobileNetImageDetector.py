@@ -8,8 +8,10 @@ import time
 
 import common
 
-import azureFS.azureFileShareTest as fs
-import azureFS.mask_creation as mask
+# import azureFS.azureFileShareTest as fs
+# import azureFS.mask_creation as mask
+import storageFileService as sf
+globalStorageSrv = sf.storageFileService(None)
 
 # initialize the list of class labels MobileNet SSD was trained to
 # detect, then generate a set of bounding box colors for each class
@@ -104,6 +106,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
     numberOfIterations NO_OF_ITERATIONS = Maximum number of images to be searched. set to <0 for all
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
+    global globalStorageSrv
     start_time = time.time()
 
     FILE_LIST = []
@@ -116,7 +119,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
         outputFolder = outputFolder + "/" + experimentName
         outputFolder = outputFolder + "/" + common._DESTINATIONFOLDER
 
-        brv, desc, lst = fs.getListOfAllFiles(common._FileShareName, outputFolder)
+        brv, desc, lst = globalStorageSrv.getListOfAllFiles(common._FileShareName, outputFolder)
         if (brv == True):
             for i, imageFileName in enumerate(lst):
                 FILE_LIST.append(imageFileName.name)
@@ -135,7 +138,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
         if (common._FileShare == False):
             imageFrame = cv2.imread(os.path.join(outputFolder,imageName))
         else:
-            brv, desc, imageFrame = mask.GetRawImage(common._FileShareName, outputFolder, imageName)
+            brv, desc, imageFrame = globalStorageSrv.GetRawImage(common._FileShareName, outputFolder, imageName)
             assert(brv == True), "Unable to load " + imageName
 
         assert(imageFrame is not None), "Unable to load " + imageName
@@ -148,7 +151,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
 
     if (logResult == True):
         import datetime
-        from  cosmosDB.cosmosDBWrapper import clsCosmosWrapper
+        from  cosmosDBWrapper import clsCosmosWrapper
         obj = clsCosmosWrapper()
         dictObject ={   common._IMAGE_DETECTION_PROVIDER_TAG : __name__,
                         common._EXPERIMENTNAME_TAG : experimentName,
@@ -169,4 +172,4 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
 
 
 if __name__ == "__main__":
-    processImages()
+    processImages(experimentName='2018-04-15')

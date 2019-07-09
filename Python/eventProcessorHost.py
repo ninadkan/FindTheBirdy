@@ -13,7 +13,6 @@ import functools
 
 import eventMessageProcessor
 
-
 from azure.eventprocessorhost import (
     AbstractEventProcessor,
     AzureStorageCheckpointLeaseManager,
