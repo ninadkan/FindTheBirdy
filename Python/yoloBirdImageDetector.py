@@ -37,9 +37,14 @@ verbosity = False
 
 g_detectedImages = []
 
+import logging
+from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
+g_logObj = getGlobalLogObject(__name__)
+
 def init(classesFile, modelConfiguration, modelWeights):
     global g_net
     global g_classes
+    
     with open(classesFile, 'rt') as f:
         g_classes = f.read().rstrip('\n').split('\n')
     g_net = cv2.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
@@ -57,6 +62,7 @@ def getOutputsNames():
 # Remove the bounding boxes with low confidence using non-maxima suppression
 def postprocess(imageName, imageFrame, outs, confThreshold, imageTag, nmsThreshold):
     global g_detectedImages
+    global g_logObj
     bBirdFound = False
     frameHeight = imageFrame.shape[0]
     frameWidth = imageFrame.shape[1]
@@ -97,14 +103,16 @@ def postprocess(imageName, imageFrame, outs, confThreshold, imageTag, nmsThresho
         #DEBUG__
         # Get the label for the class name and its confidence
         if g_classes:
-            assert(classId < len(g_classes))
+            if(classId > len(g_classes)):
+                g_logObj.error("Less Images")
+                return bBirdFound
             bird = '%s' % (g_classes[classIds[i]])
             if (bird == imageTag):
                 bBirdFound = True
                 g_detectedImages.append({ common._IMAGE_NAME_TAG:imageName, common._CONFIDENCE_SCORE_TAG:float('{0:.4f}'.format(confidences[i]))})
                 if (verbosity == True):
-                    print("")
-                    print("Image name = {0}, Bird Found = {1}, Confidence Score = {2}".format(imageName, bBirdFound, confidences[i]))
+                    g_logObj.info("")
+                    g_logObj.info("Image name = {0}, Bird Found = {1}, Confidence Score = {2}".format(imageName, bBirdFound, confidences[i]))
 
                 break; 
     return bBirdFound
@@ -181,7 +189,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
     for i, imageName in enumerate(FILE_LIST):
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
-        print('.', end='', flush=True)
+        #print('.', end='', flush=True)
 
         imageFrame = None
 
@@ -190,9 +198,13 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
             imageFrame = cv2.imread(pathToFileInDisk)
         else:
             brv, desc, imageFrame = globalStorageSrv.GetRawImage(common._FileShareName, outputFolder, imageName)
-            assert(brv == True), "Unable to load " + imageName
+            if(brv == False):
+                g_logObj.error("Unable to load " + imageName)
+                return 0
 
-        assert(imageFrame is not None), "Unable to load " + imageName
+        if(imageFrame is None):
+            g_logObj.error( "Unable to load " + imageName)
+            return 0
 
         bBirdFound =  YoloBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThreshold, imageTag, nmsThreshold)
         if (bBirdFound == True):

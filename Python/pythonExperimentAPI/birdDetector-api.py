@@ -24,7 +24,6 @@ import asyncio
 
 import sys
 sys.path.insert(0, '../') # needed as common is in the parent folder
-sys.path.insert(0, '../pythonMessaging') # needed as common is in the parent folder
 import common
 import eventMessageSender as msgSender
 import loggingBase

@@ -28,6 +28,9 @@ import argparse
 # sys.path.insert(0, '../') # needed as common is in the parent folder
 import common
 
+import logging
+from loggingBase import clsLoggingBase
+
 
 
 def ifNullReadAndAssignFromEnviron(variableName, KEY):
@@ -38,13 +41,13 @@ def ifNullReadAndAssignFromEnviron(variableName, KEY):
 
 ###############################################################################   
 
-class cosmosBase:
+class cosmosBase(clsLoggingBase):
     def __init__(self, host, key, databaseId, collectionName):
         # self.ID_FOR_USER_DETECTION = common._ID_FOR_USER_DETECTION
         # self.DETECTED_IMAGES_TAG = common._DETECTED_IMAGES_TAG
         # self.EXPERIMENTNAME = common._EXPERIMENTNAME_TAG
         # self.IMAGE_DETECTION_PROVIDER = common._IMAGE_DETECTION_PROVIDER_TAG
-        
+        super().__init__(__name__)
         self.host = ifNullReadAndAssignFromEnviron(host, 'COSMOSDB_HOST')
         assert(self.host is not None), "cosmosDB host not specified"
         self.key =  ifNullReadAndAssignFromEnviron(key, 'COSMOSDB_KEY')
@@ -59,17 +62,17 @@ class cosmosBase:
         assert(self.client is not None), "Unable to create client"
         #Check existence of database and create it it does not exist
         self.dbSelfLink = None
-        #print("Querying database...")
+        #super().getLoggingObj().info("Querying database...")
         databases = list(self.client.QueryDatabases({
             "query": "SELECT * FROM r WHERE r.id=@id",
             "parameters": [
                 { "name":"@id", "value": self.databaseId }
             ] }))
         if len(databases) > 0: # exists, take the first one, it should return only one
-            #print("Database found...")
+            #super().getLoggingObj().info("Database found...")
             self.dbSelfLink = databases[0]['_self'] 
         else:
-            print("Creating database ...")
+            super().getLoggingObj().info("Creating database ...")
             self.dbSelfLink = self.client.CreateDatabase({"id": self.databaseId})['_self']
         assert (self.dbSelfLink is not None)
 
@@ -105,6 +108,8 @@ class cosmosBase:
         return self.dbSelfLink
     def getCollectionSelfLink(self):
         return self.collectionLink
+    # def getLoggingObj(self):
+    #     return super().getLoggingObj()
 
     # def setHost(self, value):
     #     self.Host = value
@@ -133,7 +138,8 @@ class cosmosBase:
             self.client.DeleteItem(doc['_self'])
 
     def returnAllDocuments(self, collectionLink):
-        return list(self.client.ReadItems(collectionLink, {'maxItemCount':10}))
+        # the SDK takes care of retrieving all the documents. 
+        return list(self.client.ReadItems(collectionLink, {'maxItemCount':100}))
 
     def returnDocument(self, documentLink):
         return self.client.ReadItem(documentLink)
@@ -144,21 +150,24 @@ class cosmosBase:
     def getDocumentFromQuery(self, query):
         results = None
         try:
-            results = list(self.client.QueryItems(self.collectionLink, query))
+            options = {} 
+            options['enableCrossPartitionQuery'] = True
+            results = list(self.client.QueryItems(self.collectionLink, query, options=options))
             return results
         except errors.HTTPFailure as e:
             if e.status_code == 404:
-                print("Document doesn't exist")
+                super().getLoggingObj().error("Document doesn't exist")
                 pass
             elif e.status_code == 400:
                 # Can occur when we are trying to query on excluded paths
-                print("Bad Request exception occured: ", e)
+                super().getLoggingObj().error("Bad Request exception occured: ", e)
                 pass
             else:
-                print("Bad Request!")
+                super().getLoggingObj().error("Bad Request!")
                 raise
         finally:
-            print()
+            #super().getLoggingObj().info("")
+            pass
         return results
 
     def getStoredProcLink(self, storedProcName):
@@ -189,7 +198,7 @@ class cosmosBase:
     #     spLink = self.getStoredProcLink('storedProcedure3')
     #     result = self.client.ExecuteStoredProcedure(spLink,
     #                                             {'temp': 'so'})
-    #     print(result)
+    #     super().getLoggingObj().info(result)
         
 
 ###############################################################################
@@ -200,6 +209,9 @@ class clsCosmosOperationsBase(cosmosBase):
         self.mandatoryColumnList = mandatoryColumns
         return
     # -------------------------------------------------------------------------
+
+    # def getLoggingObj(self):
+    #     return super().getLoggingObj()
 
     def insert_document_from_dict(self, dictObject, removeExisting=True):
         assert(dictObject is not None), "dictObject parameter is mandatory!"
@@ -276,8 +288,8 @@ class clsCosmosOperationsBase(cosmosBase):
             assert(dictObject[item] is not None), "Error, mandatory item not specified" + item
             parameters.append({"name":parameterName, "value": dictObject[item]})
 
-        #print(selectQuery)
-        #print(parameters)
+        #super().getLoggingObj().info(selectQuery)
+        #super().getLoggingObj().info(parameters)
 
         documentquery = { "query": selectQuery , "parameters": parameters }
         return super().getDocumentFromQuery(documentquery)
@@ -300,9 +312,24 @@ class clsCosmosOperationsBase(cosmosBase):
                     selectQuery += ' and r.'
                 parameters.append({"name":parameterName, "value": kwargs[key]})
 
-            #print(selectQuery)
-            #print(parameters)
+            #super().getLoggingObj().info(selectQuery)
+            #super().getLoggingObj().info(parameters)
             documentquery = { "query": selectQuery , "parameters": parameters }
             return super().getDocumentFromQuery(documentquery)
         else:
             return None
+
+# if __name__ == "__main__":
+#     #Copy from one collection to another. 
+#     objBase = cosmosBase(host=None, key=None, databaseId=None, collectionName=common._COLLECTIONAME)
+#     rv = objBase.returnAllDocuments(collectionLink=objBase.getCollectionSelfLink())
+#     if (rv):
+#         objResults = cosmosBase(host=None, key=None, databaseId=None, collectionName="Results")
+#         count = 0
+#         for item in rv:
+#             if ("MessageId" in item):
+#                 print (str(count)+ " : " + item["MessageId"])
+#                 objResults.createItem(item)
+#             else:
+#                 print (str(count))
+#             count +=1

@@ -26,20 +26,30 @@
                                 AZURE_PYTOHN_COSMOS_WEB_API );
     }
 
+
+    _previousResultData = null
+    _keysArray = null
+
+
     function processOperationsStatusData(data) {
         console.log("experimentRunStatusCtrl:processOperationsStatusData");
         PushPop_Wraper.popElement();
         //$('#dynamicTable').empty();
+        _previousResultData = null;
+        _keysArray = null;
         if (data) {
             var tp = $.parseJSON(data);
             if (tp) {
-                console.log(tp)
-                var result = tp["result"];
-                if (result && result.length > 0) {
-                    _previousResultData = result;
-                    internalPaginationCtrl.resetPaginationData(result.length);
+                console.log(tp);
+                console.log(Object.keys(tp))
+                _keysArray = Object.keys(tp)
+                //console.log(tp.length);
+                //var result = tp["result"];
+                // if (tp && tp.length > 0) {
+                _previousResultData = tp;
+                internalPaginationCtrl.resetPaginationData(_keysArray.length);
                     // Pagination control will call us back to refresh the display
-                }
+                // }
             }
         }
     }
@@ -55,41 +65,50 @@
         $('#dynamicTable').empty();
         output = [];
 
-        for (var i = startIndex; i < endIndex; i++) {
-            resultElement = _previousResultData[i];
-            var messageId = resultElement["MessageId"];
-            if (messageId != null) { // The result passes all records where the MessageId is NOT null
-                var experimentName = resultElement["ExperimentName"];
-                populateFirstRowOutput(output, messageId, experimentName);
-                var innerResults = resultElement["DetectionResult"];
-                if (innerResults != null && innerResults.length > 0) {
-                    for (var k = 0; k < innerResults.length; k++) {
-                        innerRecord = innerResults[k];
-                        var createDateTime = innerRecord["DateTime"];
-                        var id = innerRecord["id"];
 
-                        var provider = innerRecord["f_Provider"];
-                        if (provider != null) {
-                            var elapsedTime = (innerRecord["f_ElapsedTime"] == null) ? 0 : parseFloat(innerRecord["f_ElapsedTime"]).toFixed(2);
-                            var result = (innerRecord["f_Result"] == null) ? 0 : innerRecord["f_Result"];
-                            var totalRecords = (innerRecord["f_TotalRecords"] == null) ? 0 : innerRecord["f_TotalRecords"];
-                            populateOtherRows(output, result, totalRecords, elapsedTime, provider, time, id, createDateTime)
-                        }
-                        else {
-                            var currentCount = innerRecord["CurrentCount"];
-                            var maxItems = innerRecord["MaxItems"];
-                            var offset_Value = innerRecord["Offset_Value"];
-                            var status = innerRecord["Status"];
-                            var time = innerRecord["Time"];
-                            populateOtherRows(output, currentCount, maxItems, offset_Value, status, time, id, createDateTime)
-                        }
+        // arrarr.forEach(arr => {
+        //     arr.forEach(e => {
+        //       Object.keys(e).forEach(k => console.log(k))
+        //     })
+        //   })
+
+        for (var i = startIndex; i < endIndex; i++) {
+            messageId = _keysArray[i];
+            //var messageId = Object.keys(resultElement)
+            console.log(messageId)
+            
+            //console.log(resultElement)
+            populateFirstRowOutput(output, messageId, "dummy Experiment Name")
+            arrayItems = _previousResultData[messageId]
+            for (var k = 0; k < arrayItems.length; k++) {
+                innerRecord = arrayItems[k]
+                var createDateTime = innerRecord["DateTime"];
+                var dateParse = Date.parse(createDateTime)
+                if (dateParse){
+                    console.log(dateParse);
+                    var d = new Date()
+                    d.setDate(dateParse);
+                    if (d){
+                        createDateTime = (d.getMonth()+1) + '/' + d.getDate() + '/' +  d.getFullYear() + ':' +d.getHours() + '::' +d.getMinutes() + '::' + d.getSeconds()
                     }
                 }
-            }
-            else
-            {
-                console.log("experimentRunStatusCtrl:refreshMainPage- MessageID is null!")
-                populateFirstRowOutput(output, null, null, true); 
+                var id = innerRecord["id"];
+                var provider = innerRecord["f_Provider"];
+                var experimentName = innerRecord["ExperimentName"]
+                if (provider != null) {
+                    var elapsedTime = (innerRecord["f_ElapsedTime"] == null) ? 0 : parseFloat(innerRecord["f_ElapsedTime"]).toFixed(2);
+                    var result = (innerRecord["f_Result"] == null) ? 0 : innerRecord["f_Result"];
+                    var totalRecords = (innerRecord["f_TotalRecords"] == null) ? 0 : innerRecord["f_TotalRecords"];
+                    populateOtherRowsOne(output, experimentName, result, totalRecords, elapsedTime, provider, time, id, createDateTime)
+                }
+                else {
+                    var currentCount = innerRecord["CurrentCount"];
+                    var maxItems = innerRecord["MaxItems"];
+                    var offset_Value = innerRecord["Offset_Value"];
+                    var status = innerRecord["Status"];
+                    var time = innerRecord["Time"];
+                    populateOtherRows(output, experimentName, currentCount, maxItems, offset_Value, status, time, id, createDateTime)
+                }
             }
         }
         $('#dynamicTable').append(output.join(''));
@@ -144,7 +163,9 @@
         }
     }
 
-    function populateOtherRows(output, currentCount, maxItems, offset_Value, status, time, id, createDateTime) {
+
+
+    function populateOtherRowsOne(output, experimentName, result, totalRecords, elapsedTime, provider, time, id, createDateTime) {
         console.log("experimentRunStatusCtrl:populateOtherRows");
         /*
         <tr>
@@ -157,7 +178,44 @@
         </tr>
         */
         output.push('<tr>');
-        output.push('<td></td><td></td>');
+        output.push('<td></td>');
+        output.push('<td>');
+        output.push(experimentName);
+        output.push('</td>');
+        output.push('<td>');
+        output.push(createDateTime);
+        output.push('</td>');
+        output.push('<td>');
+        output.push(elapsedTime);
+        output.push('</td>');
+        output.push('<td>');
+        output.push(result + ";" + totalRecords );
+        output.push('</td>');
+        output.push('<td>');
+        output.push(provider);
+        output.push('</td>');
+        output.push('</tr>');
+    }
+    
+    
+
+    function populateOtherRows(output, experimentName, currentCount, maxItems, offset_Value, status, time, id, createDateTime) {
+        console.log("experimentRunStatusCtrl:populateOtherRows");
+        /*
+        <tr>
+            <td></td>
+            <td></td>
+            <td>0</td>
+            <td>102 , 102</td>
+            <td>Error</td>
+            <td>f4256f37-2023-4827-a063-390375a8230b</td>
+        </tr>
+        */
+        output.push('<tr>');
+        output.push('<td></td>');
+        output.push('<td>');
+        output.push(experimentName);
+        output.push('</td>');
         output.push('<td>');
         output.push(createDateTime);
         output.push('</td>');

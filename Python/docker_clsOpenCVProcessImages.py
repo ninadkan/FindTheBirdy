@@ -30,10 +30,15 @@ _MASKDIFFTHRESHOLD = 2
 _WRITEOUTPUT = True # should we write the output file to destination folder or not
 _VERBOSE = True     # verbosity. Set to True whilst debugging. Rest set to false. 
 
+import logging
+from loggingBase import clsLoggingBase
 
 
-class clsOpenCVProcessImages:
+
+class clsOpenCVProcessImages(clsLoggingBase):
     def __init__(self):
+
+        super().__init__(__name__)
         # image processing init parameters
         self.numImagesToCreateMeanBackground = _NUMIMAGESTOCREATEMEANBACKGROUND
         self.grayImageThreshold =  _GRAYIMAGETHRESHOLD
@@ -161,9 +166,9 @@ class clsOpenCVProcessImages:
                             else:
                                 completefileList.append(imageFileName.name)
                 else:
-                    print("Directory is either None or zero order")
+                    super().getLoggingObj().warn("Directory is either None or zero order")
             else:
-                print("self.storageSrv.getListOfAllFiles returned False")
+                super().getLoggingObj().warn("self.storageSrv.getListOfAllFiles returned False")
 
         # figure out the images that we need to process
         self.listOfImagesToBeProcessed = []
@@ -173,11 +178,13 @@ class clsOpenCVProcessImages:
             # this is usually for the first time execution when offset = 0
             self.listOfImagesToBeProcessed = completefileList[offset:offset + imageBatchSize]
     
-        #print(offset)
-        #print(imageBatchSize)
-        #print(len(self.listOfImagesToBeProcessed))
+        #super().getLoggingObj().warn(offset)
+        #super().getLoggingObj().warn(imageBatchSize)
+        #super().getLoggingObj().warn(len(self.listOfImagesToBeProcessed))
         # check ok
-        assert(len(self.listOfImagesToBeProcessed)> self.numImagesToCreateMeanBackground), "Number of Images passed are less than required to create background"
+        if (len(self.listOfImagesToBeProcessed)< self.numImagesToCreateMeanBackground):
+            super().getLoggingObj().error("Number of Images passed are less than required to create background")
+            
 
         # update the location where our image can be found
         self.imageSrcFolder = imageSrcFolder
@@ -206,16 +213,21 @@ class clsOpenCVProcessImages:
                 self.writeProgressLogToDatabase(experimentName,offset, i , len(self.listOfImagesToBeProcessed), '',  "OK")
 
 
-            print('.', end='', flush=True)
+            #print('.', end='', flush=True)
 
             imgColour = None
             if (common._FileShare == False):
                 imgColour = cv2.imread(os.path.join(imageSrcFolder, imageFileName))  
             else:
                 brv, desc, imgColour = self.storageSrv.GetRawImage(common._FileShareName, imageSrcFolder, imageFileName)
-                assert(brv == True), "Unable to load " + imageFileName
+                if(brv == False):
+                    super().getLoggingObj().error("Unable to load " + imageFileName)
+                    return None, None, None
 
-            assert(imgColour is not None), "Unable to load " + imageFileName
+            if(imgColour is None):
+                super().getLoggingObj().error("Unable to load " + imageFileName)
+                return None, None, None
+
             imgGray = cv2.cvtColor(imgColour, cv2.COLOR_BGR2GRAY)
             height, width = imgColour.shape[:2]
             imCrop = imgGray[0:int(height), 0:int(width)] #copy of the gray image 
@@ -279,8 +291,8 @@ class clsOpenCVProcessImages:
                                     break 
             
                 if (self.verbosity == True):
-                    print("")
-                    print(">>> Debugging image = {0}, Contour Length = {1:0.4f}, last boundingRectArea = {2:0.4f}, OpenCVDetected = {3}, diff = {4:0.4f}".format(imageFileName, contour_length, boundingRectArea, bOpenCVBirdDetected, diff))
+                    super().getLoggingObj().info("")
+                    super().getLoggingObj().info(">>> Debugging image = {0}, Contour Length = {1:0.4f}, last boundingRectArea = {2:0.4f}, OpenCVDetected = {3}, diff = {4:0.4f}".format(imageFileName, contour_length, boundingRectArea, bOpenCVBirdDetected, diff))
 
         elapsed_time = time.time() - start_time
         self.writeProgressLogToDatabase(experimentName,offset, len(self.listOfImagesToBeProcessed) , len(self.listOfImagesToBeProcessed), elapsed_time,  "OK")
@@ -295,8 +307,12 @@ class clsOpenCVProcessImages:
         self.g_colourMask = None 
         self.g_grayMask = None 
 
-        assert(self.listOfImagesToBeProcessed is not None), "FileList is None whilest invoking createMask"
-        assert(len(self.listOfImagesToBeProcessed) > 0), "FileList length is 0!"
+        if(self.listOfImagesToBeProcessed is None):
+            super().getLoggingObj().error("FileList is None whilest invoking createMask")
+            return
+        if (len(self.listOfImagesToBeProcessed) == 0):
+            super().getLoggingObj().error("FileList length is 0!")
+            return
         #select the ROI using the first image and use it to create mask
 
         imgFirst = None
@@ -304,9 +320,13 @@ class clsOpenCVProcessImages:
             imgFirst = cv2.imread(os.path.join(self.imageSrcFolder, self.listOfImagesToBeProcessed[0]))  
         else:
             brv, desc, imgFirst = self.storageSrv.GetRawImage(common._FileShareName, self.imageSrcFolder, self.listOfImagesToBeProcessed[0])
-            assert(brv == True), "Unable to load " + imageFileName
+            if(brv == False):
+                super().getLoggingObj().error("Unable to load " + imageFileName)
+                return
 
-        assert(imgFirst is not None), "Unable to load " + self.listOfImagesToBeProcessed[0]
+        if(imgFirst is None):
+            super().getLoggingObj().error("Unable to load " + self.listOfImagesToBeProcessed[0])
+            return
         gray_image = cv2.cvtColor(imgFirst, cv2.COLOR_BGR2GRAY)
 
         # height and width is fixed for the image that we are capturing. 
@@ -322,10 +342,16 @@ class clsOpenCVProcessImages:
                 myROI = json.load(filehandle)
         else:
             brv, desc, myROI = self.storageSrv.getMaskFileContent(common._FileShareName, self.imageSrcFolder)
-            assert(brv == True), "Unable to load " + self.storageSrv.maskFileName
+            if(brv == False):
+                super().getLoggingObj().error("Unable to load " + self.storageSrv.maskFileName)
+                return
 
-        assert(myROI is not None), "Unable to load MASK!!!"
-        assert((len(myROI)> 0)), "MASK Length is zero!!!"
+        if (myROI is None):
+            super().getLoggingObj().error( "Unable to load MASK!!!")
+            return
+        if((len(myROI) == 0)):
+            super().getLoggingObj().error( "MASK Length is zero!!!")
+            return
 
         #colour mask
         self.g_colourMask = imgFirst[0:height, 0:width]
@@ -349,9 +375,13 @@ class clsOpenCVProcessImages:
         Padding: Required because the contour bounding rectangle is not big 
         enough for the images to be recognised
         '''
-        #print('WriteOutputFile...')
-        assert(imgColour is not None), "Invalid parameter imgColour"
-        assert(self.g_colourMask is not None), "Invalid parameter self.g_colourMask"
+        #super().getLoggingObj().warn('WriteOutputFile...')
+        if(imgColour is None):
+            super().getLoggingObj().error( "Invalid parameter imgColour")
+            return None
+        if (self.g_colourMask is None):
+            super().getLoggingObj().error( "Invalid parameter self.g_colourMask")
+            return None
         
         ht, wt = imgColour.shape[:2]
 
@@ -379,10 +409,12 @@ class clsOpenCVProcessImages:
                 cv2.imwrite(outputFile,frame)           
             else:
                 data = cv2.imencode(common._FILENAMEEXTENSION, frame)[1].tostring()
-                #print("Saving data, filename = {0}".format(imageFileName))
+                #super().getLoggingObj().warn("Saving data, filename = {0}".format(imageFileName))
                 brv, desc, myROI = self.storageSrv.saveFileImage(common._FileShareName, self.imageDestinationFolder, imageFileName, data )
-                assert(brv == True), "Unable to save image file " + imageFileName
-        #print('...WriteOutputFile')
+                if(brv == False):
+                    super().getLoggingObj().error( "Unable to save image file " + imageFileName)
+                    return None
+        #super().getLoggingObj().warn('...WriteOutputFile')
         return frame
 
 
@@ -397,107 +429,5 @@ class clsOpenCVProcessImages:
         # return the MSE, the lower the error, the more "similar"
         # the two images are
         return err
-
-
-# if __name__ == "__main__":
-#     # python docker_clsOpenCVProcessImages.py -v processImages 2018-04-16 
-#     # python docker_clsOpenCVProcessImages.py -v processImages 2018-04-16 50
-#     # python docker_clsOpenCVProcessImages.py -v processImages 2018-04-16 50 25 20
-#     parser = argparse.ArgumentParser(
-#         description=__doc__,
-#         formatter_class=argparse.RawDescriptionHelpFormatter,
-#     )
-
-#     parser = argparse.ArgumentParser(description=__doc__,
-#                     formatter_class=argparse.RawDescriptionHelpFormatter)
-#     parser.add_argument("-v", "--verbose", help="increase output verbosity",action="store_true")
-#     subparsers = parser.add_subparsers(dest="command")
-#     process_parser = subparsers.add_parser("processImages", help=clsOpenCVProcessImages.processImages.__doc__)
-
-#     # necessary arguments
-#     process_parser.add_argument("-exn", common._ARGS_EXPERIMENT_NAME,nargs='?',help="Name of folder where experiment images are copied", required=True)
-#     process_parser.add_argument("-oft", common._ARGS_OFFSET, type=int, nargs='?', default=0, help="offset from image list")
-#     process_parser.add_argument("-bsz", common._ARGS_BATCH_SIZE, type=int, nargs='?', default=common._BATCH_SIZE, help="Number of images to be scanned in one execution")
-#     process_parser.add_argument("-nip", common._ARGS_NUMBER_OF_IMAGES_TO_PROCESS, type=int, nargs='?', default=-1, help="Number of files to be scanned. -1 for all, 0 for one")    
-#     process_parser.add_argument("-sif", common._ARGS_SRC_IMAGE_FOLDER, nargs='?', default=common._SRCIMAGEFOLDER, help="Source Folder")
-#     process_parser.add_argument("-dif", common._ARGS_DESTINATION_FOLDER, nargs='?', default=common._DESTINATIONFOLDER, help="Destination Folder")
-#     process_parser.add_argument("-fnx", common._ARGS_FILE_NAME_EXTENSTION, nargs='?',default=common._FILENAMEEXTENSION, help="file extension that needs to be copied")
-#     process_parser.add_argument("-pfn", common._ARGS_PART_OF_FILE_NAME, nargs='?',default=common._PARTOFFILENAME, help="If you want to subselect file from the images folder, specify the partial name here")
-
-
-#     # extra arguments
-#     process_parser.add_argument("-nib", common._ARGS_NUM_IMAGES_TO_CREATE_BKGRND, type=int, nargs='?', default=_NUMIMAGESTOCREATEMEANBACKGROUND, help="The amount of images used to construct mean background")
-#     process_parser.add_argument("-gth", common._ARGS_GRAY_THRESHOLD, type=int, nargs='?',default=_GRAYIMAGETHRESHOLD, help="Gray file threshold")
-#     process_parser.add_argument("-bar", common._ARGS_BOUNDING_RECT_AREA_THRESHOLD,type=int,  nargs='?', default=_BOUNDINGRECTANGLETHRESHOLD, help="minimum area of that a contour rectangle needs to have")
-#     process_parser.add_argument("-cct", common._ARGS_CONTOUR_COUNT_THRESHOLD, type=int,  nargs='?',default=_CONTOURCOUNTTHRESHOLD, help="Maximum number of contours that an image can have")
-#     process_parser.add_argument("-mdt", common._ARGS_MASK_DIFF_THRESHOLD, type=int,  nargs='?', default=_MASKDIFFTHRESHOLD, help="Minimum difference between two masks to distinguish two images")
-#     process_parser.add_argument("-awt", common._ARGS_WRITE_OUTPUT, nargs='?', default=_WRITEOUTPUT, help="True specifies that images should be copied to output folder")
-    
-#     args = parser.parse_args()
-#     if args.command == "processImages":
-
-#         # print("numImagesToCreateMeanBackground: {0}".format(args.numImagesToCreateMeanBackground))
-#         # print("grayImageThreshold: {0}".format(args.grayImageThreshold))
-#         # print("boundingRectAreaThreshold: {0}".format(args.boundingRectAreaThreshold))
-#         # print("contourCountThreshold: {0}".format(args.contourCountThreshold))
-#         # print("maskDiffThreshold: {0}".format(args.maskDiffThreshold))
-#         # print("writeOutput: {0}".format(args.writeOutput))
-#         # print("verbose: {0}".format(args.verbose))
-#         # print("srcImageFolder: {0}".format(args.srcImageFolder))
-#         # print("experimentName: {0}".format(args.experimentName))
-#         # print("offset: {0}".format(args.offset))
-#         # print("destinationFolder: {0}".format(args.destinationFolder))
-#         # print("imageBatchSize: {0}".format(args.imageBatchSize))
-#         # print("partOfFileName: {0}".format(args.partOfFileName))
-#         # print("numberOfImagesToProcess: {0}".format(args.numberOfImagesToProcess))
-
-#         objProc = clsOpenCVProcessImages()
-
-#         objProc.set_numImagesToCreateMeanBackground(args.numImagesToCreateMeanBackground)
-#         objProc.set_grayImageThreshold(args.grayImageThreshold)
-#         objProc.set_boundingRectAreaThreshold(args.boundingRectAreaThreshold)
-#         objProc.set_contourCountThreshold(args.contourCountThreshold)
-#         objProc.set_maskDiffThreshold(args.maskDiffThreshold)
-#         objProc.set_writeOutput(args.writeOutput)
-
-#         if (args.verbose):
-#             objProc.set_verbosity(True)
-#         else:
-#             objProc.set_verbosity(False)
-            
-#         # Important, that the structure of images to be loaded is pre-defined. 
-#         # Now the srcImageFolder contains the final directory name. 
-
-#         srcImageFolder = None
-#         destinationFolder = None
-#         if (common._FileShare == False):
-#             srcImageFolder = os.path.join(str(args.srcImageFolder),str(args.experimentName))
-#             destinationFolder = os.path.join(srcImageFolder,args.destinationFolder)
-#             if not os.path.exists(destinationFolder):
-#                 #print("creating folder {0}".format(destinationFolder))
-#                 os.makedirs(destinationFolder)    
-#         else:
-#             srcImageFolder = str(args.srcImageFolder) + "/" + str(args.experimentName)
-#             destinationFolder = srcImageFolder + "/" + args.destinationFolder
-#             brv, desc, myROI  = self.storageSrv.createDirectory(common._FileShareName, destinationFolder)
-#             assert(brv == True), "Unable to create/locate output directory " + destinationFolder
-
-#         messageId = str(uuid.uuid4())
-#         objProc.set_MessageId(messageId)
-
-#         l, tt, t = objProc.processImages(   offset = int(args.offset), 
-#                                             imageSrcFolder = str(srcImageFolder),  
-#                                             imageDestinationFolder = str(destinationFolder), 
-#                                             experimentName = str(args.experimentName), 
-#                                             imageBatchSize = int(args.imageBatchSize), 
-#                                             partOfFileName=  str(args.partOfFileName),
-#                                             numberOfImagesToProcess = int(args.numberOfImagesToProcess) )
-
-#         #print ("")
-#         #print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "; Total images processed = {0}, detected = {1}".format(l, tt))                            
-
-
-
-
 
 

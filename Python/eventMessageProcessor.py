@@ -14,74 +14,46 @@ import openCVPhotoExtractorClsImpl
 import docker_clsOpenCVProcessImages
 import asyncio
 
+import logging
+from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
+g_logObj = getGlobalLogObject(__name__)
 
+# ============================ start Experiment Message ============================ #
 
-# async def processMessageBody(context, messages, consumerGrp, logger=None):
-#     brv = False
-#     try:
-#         for message in messages:
-#             msgBody =  message.body_as_str()
-#             brv, loaded_r = common.is_json(message.body_as_str())
-#             if (brv == True):
-#                 if (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_START_EXPERIMENT):
-#                     if(consumerGrp == common._MESSAGE_CONSUMER_GRP_STARTEXPERIMENT):
-#                         #logger.warning(loaded_r)
-#                         brv = await processStartExperimentMessage(loaded_r, logger)
-#                         if (brv == True):
-#                             await context.checkpoint_async()
-#                 elif (loaded_r[common._MESSAGE_TYPE_TAG]== common._MESSAGE_TYPE_PROCESS_EXPERIMENT):
-#                     if (consumerGrp == common._MESSAGE_CONSUMER_GRP_OPENCV):
-#                         #logger.warning(loaded_r)
-#                         brv = processExperimentImages(loaded_r, logger)
-#                         if (brv == True):
-#                             await context.checkpoint_async()
-#                 else:
-#                     logger.warning("Unknown, non-compatible message!!!  {}".format(msgBody))
-#             else:
-#                 logger.warning(" Message is not JSON!!!  {}".format(msgBody))
-#             if (brv == False):
-#                 break
-
-#         # if (brv == True):
-#         #     logger.warning("Events processed {}".format(context.sequence_number))
-#         #     # remember that the checkpoint is after a batch has been delivered;
-#         #     # not after every message
-#         #     await context.checkpoint_async()
-#         # else:
-#         #     logger.error("Error Processing Messages !!!")
-#     except Exception as e:
-#         # check pointing any way
-#         logger.error("Error Processing Messages in !!!" + message.body_as_str())
-#         logger.error("Internal error {} {}".format(e.message, e.args))
-#     return brv
-
-async def processStartExperimentMessage(msgBody, logger):
+async def processStartExperimentMessage(msgBody):
+    global g_logObj
     brv = False
     experimentName = msgBody[common._MESSAGE_TYPE_START_EXPERIMENT_EXPERIMENT_NAME]
 
-    logger.warn("Start Experiment Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID], 
+    g_logObj.info("Start Experiment Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID], 
                                                                         msgBody[common._MESSAGE_TYPE_START_EXPERIMENT_EXPERIMENT_NAME ],
                                                                         msgBody[common._MESSAGE_TYPE_START_EXPERIMENT_CREATION_DATE_TIME ]))    
-    assert(experimentName is not None), "No experiment name passed!"
+    if (experimentName is None):
+        g_logObj.error("No experiment name passed!")
+        return brv
     brv = test.delete_existing_files(experimentName)
     if (brv == True):
         # send messages to start processing the images,
         procObject = openCVPhotoExtractorClsImpl.clsOpenCVObjectDetector(experimentName=experimentName)
         procObject.set_MessageId(msgBody[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID])
         #l, tt,  t = procObject.processImages(partOfFileName='2018-12-14_04')
-        
         l, tt,  t = await procObject.processImages()
-        logger.warn ("Return from processStartExperimentMessage!!!")
-        logger.warn("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))
+        g_logObj.warn ("Return from processStartExperimentMessage!!!")
+        g_logObj.warn("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))
     else:
         # log error the message 
-        logger.warn("Unable to delete files")
+        g_logObj.warn("Unable to delete files")
     return True
 
+
+# ============================ process Experiment Images Message ============================ #
 dummySleep=1
 
-async def processExperimentImages(msgBody, logger):
-    logger.warn("Process Experiment Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID], 
+
+
+async def processExperimentImages(msgBody):
+    global g_logObj
+    g_logObj.info("Process Experiment Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID], 
                                                                         msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
                                                                         msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_OFFSET_POSITION ]))
     objProc = docker_clsOpenCVProcessImages.clsOpenCVProcessImages()
@@ -93,72 +65,124 @@ async def processExperimentImages(msgBody, logger):
                                             experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
                                             imageBatchSize = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_BATCH_SIZE ],
                                             partOfFileName=  msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_PART_OF_FILE_NAME ])
-    logger.warn("... Processed Images {} {} {}".format( msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID],
+    g_logObj.info("... Processed Images {} {} {}".format( msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID],
                                                         msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
                                                         msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_OFFSET_POSITION ]))
-    logger.warn("...Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "; Total images processed = {0}, detected = {1}".format(l, tt))   
+    g_logObj.info("...Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "; Total images processed = {0}, detected = {1}".format(l, tt))   
     await asyncio.sleep(dummySleep)
     return True
 
-async def processImagesUsingGoogleDetector(msgBody, logger):
-    #export GOOGLE_APPLICATION_CREDENTIALS=<path_to_service_account_file>
-    logger.warn("Google Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
+# ============================ Image Processors ============================ #
+async def commonProcessImageDetector(msgBody, detectorType, callBackfn):
+    global g_logObj
+    brv = False
+    g_logObj.info("{} Detector Message Received ... {} {} {}".format(   detectorType, 
+                                                                        msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
                                                                         msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
-                                                                        msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
+                                                                        msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))
+    if (msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ] is None):
+        g_logObj.info("...{} Detector, Dummy message received".format(detectorType))
+        brv = True
+    else:                                                              
+        brv = callBackfn(msgBody)
+    await asyncio.sleep(dummySleep)
+    g_logObj.info("...{} Detector".format(detectorType))
+    return brv
+
+
+async def processImagesUsingGoogleDetector(msgBody):
+    return commonProcessImageDetector(msgBody, "google" , eventMessageProcessor.GoogleDetector)
+    # global g_logObj
+    # g_logObj.info("Google Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
+    #                                                                     msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
+    #                                                                     msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
+    # from googleImageDetector import processImages as googleTest
+    # googleTest(experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
+    #             messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
+    # await asyncio.sleep(dummySleep)
+    # g_logObj.info("...Google Detector")
+    # return True
+
+async def GoogleDetector(msgBody):
     from googleImageDetector import processImages as googleTest
     googleTest(experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
                 messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
-    await asyncio.sleep(dummySleep)
-    logger.warning("...Google Detector")
     return True
 
 
-async def processImagesUsingAzureDetector(msgBody, logger):
-    logger.warn("Azure Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
-                                                                    msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
-                                                                    msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
+async def processImagesUsingAzureDetector(msgBody):
+    return commonProcessImageDetector(msgBody, "Azure" , eventMessageProcessor.AzureDetector  )
+    # global g_logObj
+    # g_logObj.info("Azure Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
+    #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
+    #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
     # from azureImageDetector import processImages as azureTest, verbosity as azureVerbosity
     # Detector = "Azure Detector"
     # print(Detector)
     # azureTest(experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
     #            messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
-    await asyncio.sleep(dummySleep)
-    logger.warning("...Azure Detector")
+    # await asyncio.sleep(dummySleep)
+    # g_logObj.info("...Azure Detector")
+    # return True
+
+async def AzureDetector(msgBody):
     return True
 
-async def processImagesUsingMobileNetDetector(msgBody, logger):
-    logger.warn("Mobile Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
-                                                                    msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
-                                                                    msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
-    # Run the tests now
+async def processImagesUsingMobileNetDetector(msgBody):
+    return commonProcessImageDetector(msgBody, "Mobile Net Detector" , eventMessageProcessor.MobileNetDetector )
+    # g_logObj.info("Mobile Net Detector")
+    # g_logObj.info("Mobile Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
+    #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
+    #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
+    # # Run the tests now
+    # from mobileNetImageDetector import processImages as mobileTest
+    # g_logObj.info("Mobile Net Detector")
+    # mobileTest(experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
+    #             messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
+    # await asyncio.sleep(dummySleep)
+    # g_logObj.info("...Mobile Detector")
+
+    # return True
+
+async def MobileNetDetector(msgBody):
     from mobileNetImageDetector import processImages as mobileTest
-    logger.warning("Mobile Net Detector")
     mobileTest(experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
                 messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
-    await asyncio.sleep(dummySleep)
-    logger.warning("...Mobile Detector")
-
     return True
+  
 
 
-async def processImagesUsingYoloDetector(msgBody, logger):
-    logger.warn("Yolo Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
-                                                                    msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
-                                                                    msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
+
+async def processImagesUsingYoloDetector(msgBody):
+    return commonProcessImageDetector(msgBody, "Yolo Detector" , eventMessageProcessor.YoloDetector )
+    # g_logObj.info("Yolo Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
+    #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
+    #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
+    # from yoloBirdImageDetector import processImages as yoloTest
+    # g_logObj.info("Yolo Detector")
+    # yoloTest(   experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
+    #             messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
+    # await asyncio.sleep(dummySleep)
+    # g_logObj.info("...Yolo Detector")    
+    # return True
+
+async def YoloDetector(msgBody):
     from yoloBirdImageDetector import processImages as yoloTest
-    logger.warning("Yolo Detector")
     yoloTest(   experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
                 messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
-    await asyncio.sleep(dummySleep)
-    logger.warning("...Yolo Detector")    
     return True
 
-async def processImagesUsingTenslorFlowDetector(msgBody, logger):
-    logger.warn("Tensorflow Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
-                                                                msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
-                                                                msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
-    await asyncio.sleep(dummySleep)
-    logger.warning("...Tensorflow Detector")        
+
+async def processImagesUsingTenslorFlowDetector(msgBody):
+    return commonProcessImageDetector(msgBody, "Tensor Flow Detector" , eventMessageProcessor.TenslorFlowDetector )
+    # g_logObj.info("Tensorflow Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
+    #                                                             msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
+    #                                                             msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
+    # await asyncio.sleep(dummySleep)
+    # g_logObj.info("...Tensorflow Detector")        
+    # return True
+
+async def TenslorFlowDetector(msgBody):
     return True
 
 

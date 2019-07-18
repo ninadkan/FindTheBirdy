@@ -81,9 +81,9 @@ COPY mobileNet/MobileNetSSD_deploy.prototxt.txt ./mobileNet/
 COPY processExperimentReceiver.sh ./
 
 # copy configuration files
-COPY docker/keys/keys.sh ./
-COPY docker/keys/key.json ./
-COPY docker/initPythonCore.sh ./
+COPY Docker/keys/keys.sh ./
+COPY Docker/keys/key.json ./
+COPY Docker/initPythonCore.sh ./
 
 RUN chmod +x processExperimentReceiver.sh
 RUN chmod +x initPythonCore.sh

@@ -9,8 +9,13 @@ import os
 
 globalStorageSrv = sf.storageFileService(None)
 
+import logging
+from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
+g_logObj = getGlobalLogObject(__name__)
+
 def delete_existing_files(experimentName):
     global globalStorageSrv
+    global g_logObj
     brv = False
     if (_FileShare == False):
         
@@ -27,30 +32,33 @@ def delete_existing_files(experimentName):
 
         if UNIX_DEFINED:
             files = os.path.join(files,'*')
-            print(files)
+            g_logObj.info(files)
             cpCommand = "rm -r " +  files
         else:
             files = os.path.join(files,'*.*')
-            print(files)
+            g_logObj.info(files)
             cpCommand = "del /q " + files
 
         try:
-            print(cpCommand)
+            g_logObj.info(cpCommand)
             os.system(cpCommand)
             brv = True
         except Exception as e:
-            print(e)
+            g_logObj.error(e)
         return
     else:
         # cloudy environment
         srcImageFolder = _SRCIMAGEFOLDER + "/" + experimentName
         destinationFolder = srcImageFolder + "/" + _DESTINATIONFOLDER
-        print(destinationFolder)
+        g_logObj.info(destinationFolder)
         brv, desc, ret  = globalStorageSrv.removeAllFiles(_FileShareName, destinationFolder)
-        assert(brv == True), "Unable to create/locate output directory " + destinationFolder
+        if(brv == False):
+            g_logObj.error( "Unable to create/locate output directory " + destinationFolder)
+            return brv
     return brv
 
 def checkExportKeysSetup():
+    global g_logObj
     # check that the environment contains all the right variables defined
     brv = True
     ExportKeys = ['COSMOSDB_HOST', 'COSMOSDB_KEY', 'COSMOSDB_DATABASE', 'AZURE_VISION_API_KEY', 'GOOGLE_APPLICATION_CREDENTIALS']
@@ -60,13 +68,14 @@ def checkExportKeysSetup():
         import sys
         _key = os.environ.get(keysToBeFound)
         if (_key is None ) or (len(_key) == 0):
-            print("{0} Export Key not specified. Exiting".format(keysToBeFound))
+            g_logObj.error("{0} Export Key not specified. Exiting".format(keysToBeFound))
             brv = False
             #sys.exit(0) # let someone else decide if they want to exit 
     return brv
 
 def runExperiments(ExperimentNames = None, startIndex = 0,NumberOfExperimentsToProcess = -1):
     global globalStorageSrv
+    global g_logObj
 # ExperimentName contains the list of experiments that need to be started. 
 # what is our starting offset
 # startIndex = 27
@@ -89,7 +98,7 @@ def runExperiments(ExperimentNames = None, startIndex = 0,NumberOfExperimentsToP
                 if ((NumberOfExperimentsToProcess > 0) and (i > NumberOfExperimentsToProcess+startIndex)):
                     break; # come of of the loop, we've iterated enough
 
-                print(ExperimentName.name)
+                g_logObj.info(ExperimentName.name)
                 BoundingRectList = [1000] #[2500, 2000, 1500, 1000]
                 for item in BoundingRectList:
                         delete_existing_files(ExperimentName.name)
@@ -97,34 +106,34 @@ def runExperiments(ExperimentNames = None, startIndex = 0,NumberOfExperimentsToP
                         procObject = openCVPhotoExtractorClsImpl.clsOpenCVObjectDetector(experimentName=ExperimentName.name)
                         #l, tt,  t = procObject.processImages(partOfFileName='2018-12-14_04')
                         l, tt,  t = procObject.processImages()
-                        print ("")
-                        print("Bounding Rectangle value = {0}".format(item))                
-                        print("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))
-                        #print ("True detection = {0:0.2f}, false +ve = {1:0.2f} , false negative = {2:0.2f}".format(tt, fp, fn))
+                        g_logObj.info ("")
+                        g_logObj.info("Bounding Rectangle value = {0}".format(item))                
+                        g_logObj.info("Elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(t))+ "Total images processed = {0}, detected = {1}".format(l, tt))
+                        #g_logObj.info ("True detection = {0:0.2f}, false +ve = {1:0.2f} , false negative = {2:0.2f}".format(tt, fp, fn))
 
                 from yoloBirdImageDetector import processImages as yoloTest
                 Detector = "Yolo Detector"
-                print(Detector)
+                g_logObj.info(Detector)
                 yoloTest(experimentName=ExperimentName.name)
 
                 # Run the tests now
                 from mobileNetImageDetector import processImages as mobileTest
                 Detector = "Mobile Net Detector"
-                print(Detector)
+                g_logObj.info(Detector)
                 mobileTest(experimentName=ExperimentName.name)
 
                 # Need to set environment variable AZURE_VISION_API_KEY
                 # Py36 environment
                 # from azureImageDetector import processImages as azureTest, verbosity as azureVerbosity
                 # Detector = "Azure Detector"
-                # print(Detector)
+                # g_logObj.info(Detector)
                 # azureTest(experimentName=ExperimentName.name)
 
 
                 #export GOOGLE_APPLICATION_CREDENTIALS=<path_to_service_account_file>
                 from googleImageDetector import processImages as googleTest
                 Detector = "Google Detector"
-                print(Detector)
+                g_logObj.info(Detector)
                 googleTest(experimentName=ExperimentName.name)
 
 

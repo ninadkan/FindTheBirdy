@@ -1,0 +1,3 @@
+REM sudo docker run -d -t -i -e AZURE_ACN_NAME=nkdsvm -e AZURE_ACN_STRG_KEY=d19WRpMDg3zbG8FGFdHH0fXnVq52+IVBMMWTIivE/4/DBOoi++1nzqc9swHTenVGrwK24OmP0EUPiDmaZrFhEA== -p 443:443 azurefs:0.1
+REM docker run -d -t -i -p 5002:5002 pythonmessagingapi:0.1
+docker run -e AZURE_ACN_NAME=secureappstorage -e EVENT_HUB_SENDER_SAS_POLICY=sender -e EVENT_HUB_SENDER_SAS_KEY=jgJtaN8LAugWNbFDQDLrDu+pRDZJTCiswDhT5NygCkE= -e EVENT_HUB_ADDRESS=sb://ninadkeventhub.servicebus.windows.net/objectdetectorevents -p 5002:5002 pythonmessagingapi:0.1

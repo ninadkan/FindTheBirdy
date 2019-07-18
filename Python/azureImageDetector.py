@@ -12,6 +12,12 @@ import common
 import storageFileService as sf
 globalStorageSrv = sf.storageFileService(None)
 
+import logging
+from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
+g_logObj = getGlobalLogObject(__name__)
+
+
+
 # https://github.com/Microsoft/Cognitive-Vision-Python/blob/master/Jupyter%20Notebook/Computer%20Vision%20API%20Example.ipynb 
 # https://anaconda.org/conda-forge/requests
 
@@ -31,6 +37,7 @@ _LOG_RESULT = True
 _EXPERIMENTNAME = ''
 g_detectedImages = []
 
+
 def processRequest( json, data, headers, params ):
     """
     Helper function to process the request to Project Oxford
@@ -40,18 +47,19 @@ def processRequest( json, data, headers, params ):
     headers: Used to pass the key information and the data type request
     """
     global globalStorageSrv
+    global g_logObj
     retries = 0
     result = None
     while True:
         response = requests.request( 'post', _url, json = json, data = data, headers = headers, params = params )
         if response.status_code == 429: 
-            print( "Message: %s" % ( response.json() ) )
+            g_logObj.info( "Message: %s" % ( response.json() ) )
             if retries <= _maxNumRetries: 
                 time.sleep(1) 
                 retries += 1
                 continue
             else: 
-                print( 'Error: failed after retrying!' )
+                g_logObj.warn( 'Error: failed after retrying!' )
                 break
         elif response.status_code == 200 or response.status_code == 201:
             if 'content-length' in response.headers and int(response.headers['content-length']) == 0: 
@@ -62,8 +70,8 @@ def processRequest( json, data, headers, params ):
                 elif 'image' in response.headers['content-type'].lower(): 
                     result = response.content
         else:
-            print( "Error code: %d" % ( response.status_code ) )
-            print( "Message: %s" % ( response.json() ) )
+            g_logObj.error( "Error code: %d" % ( response.status_code ) )
+            g_logObj.error( "Message: %s" % ( response.json() ) )
         break
     return result
 
@@ -83,6 +91,7 @@ def processImages(  _key = '',
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
     global g_detectedImages
+    global g_logObj
     g_detectedImages = []
     start_time = time.time() 
     if (len(_key)== 0):
@@ -114,7 +123,7 @@ def processImages(  _key = '',
     for i, imageName in enumerate(FILE_LIST):
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
-        print('.', end='', flush=True)
+        #print('.', end='', flush=True)
 
         data = None
         if (common._FileShare == False):
@@ -123,7 +132,9 @@ def processImages(  _key = '',
                 data = f.read()
         else:
             brv, desc, data = globalStorageSrv.GetRawImageAsBytes(common._FileShareName, outputFolder, imageName)
-            assert(brv == True), "Error Get Raw Image" + imageName
+            if (brv != True)
+                g_logObj.error( "Error Get Raw Image" + imageName)
+            return
 
             
         # Computer Vision parameters
@@ -153,8 +164,12 @@ def processImages(  _key = '',
                 sortedList = sorted(result['tags'], key=lambda x: x['confidence'], reverse=True)
                 if (len(sortedList) > 0):
                     for item in sortedList: 
-                        assert('confidence' in item is not None) , "Confidence column missing"
-                        assert('name' in item is not None) , "Name column missing"
+                        if('confidence' in item is None):
+                            g_logObj.error("Confidence column missing")
+                            return
+                        if ('name' in item is None) :
+                            g_logObj.error ("Name column missing")
+                            return
                         confidence = item['confidence']
                         if (confidence > confThreshold):
                             tagName = item['name']
@@ -163,8 +178,8 @@ def processImages(  _key = '',
                                 TotalBirdsFound = TotalBirdsFound +1
                                 g_detectedImages.append({common._IMAGE_NAME_TAG:imageName, common._CONFIDENCE_SCORE_TAG:float('{0:.4f}'.format(confidence))})
                                 if (verbosity == True):
-                                    print("")
-                                    print("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
+                                    #print("")
+                                    g_logObj.info("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
                                 break
                             else:
                                 if ('hint' in item): # see if they think its available as a hint. 
@@ -175,8 +190,8 @@ def processImages(  _key = '',
                                         TotalHintBirdScore = TotalHintBirdScore +1
                                         g_detectedImages.append({ common._IMAGE_NAME_TAG:imageName, common._CONFIDENCE_SCORE_TAG:float('{0:.4f}'.format(confidence)), 'Hint': TotalHintBirdScore})
                                         if (verbosity == True):
-                                            print("")
-                                            print("Image name = {0}, imageTag = {1} , Confidence Score = {2} - Hint Option".format(imageName, imageTag, confidence))
+                                            #print("")
+                                            g_logObj.info("Image name = {0}, imageTag = {1} , Confidence Score = {2} - Hint Option".format(imageName, imageTag, confidence))
                                         break
 
     elapsed_time = time.time() - start_time

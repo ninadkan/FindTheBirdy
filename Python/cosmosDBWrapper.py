@@ -91,8 +91,10 @@ class clsCosmosWrapper(cosmosBase):
 
     # -------------------------------------------------------------------------
     def returnAllExperimentResultImpl(self):
+        super().getLoggingObj().warn("returnAllExperimentResultImpl")
         # need to get the sproc_link 
         return super().getClient().ExecuteStoredProcedure(self.sprocReadAllExperimentLink, None)
+
 
     # -------------------------------------------------------------------------
     def removeAll(self):

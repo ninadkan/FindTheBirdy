@@ -27,16 +27,18 @@ import cosmosStatusUpdate as cf
 _LOGRESULT = True   # Should we write the results to CosmosDB or not. This is dependent on _WRITEOUTPUT values.
                     # as it looks at the files copied into destination folder
 _MAX_NUM_OF_DOCKER_CONTAINERS = int(3)
-_SLEEP_TIME_BEFFORE_CHECK = int(5) # # seems like a good value, remember its in seconds; me thinks 
+_SLEEP_TIME_BEFFORE_CHECK = int(10) # # seems like a good value, remember its in seconds me thinks 
 
-
+import logging
+from loggingBase import clsLoggingBase
 
 # The source folder structure is: SourceShareFolder() + CommonFolder(='object-detection') + ExperimentName=('DD-MM-YYYY')
 # The destination folder is source folder plus destination (='output')
 # Depending on the protocol used to access the files, https or SMB, the base folder changes
 
-class clsOpenCVObjectDetector:
+class clsOpenCVObjectDetector(clsLoggingBase):
     def __init__(self, experimentName):
+        super().__init__(__name__)
         # Load passed parameters
         self.experimentName = experimentName
         # directory and folder parameters
@@ -75,7 +77,7 @@ class clsOpenCVObjectDetector:
         self.destinationFolder = os.path.join(self.srcImageFolder,self.destinationFolder)
 
         if not os.path.exists(self.destinationFolder):
-            print("creating folder {0}".format(self.destinationFolder))
+            super().getLoggingObj().info("creating folder {0}".format(self.destinationFolder))
             os.makedirs(self.destinationFolder)
 
         # populate the file_list for this class
@@ -96,10 +98,12 @@ class clsOpenCVObjectDetector:
         TotalImageCountLocal = 0
         self.srcImageFolder = self.srcImageFolder + "/" + self.experimentName
         self.destinationFolder = self.srcImageFolder + "/" + self.destinationFolder
-        print(common._FileShareName)
-        print(self.destinationFolder)
+        super().getLoggingObj().info(common._FileShareName)
+        super().getLoggingObj().info(self.destinationFolder)
         brv, desc, myROI  = self.storageSrv.createDirectory(common._FileShareName, self.destinationFolder)
-        assert(brv == True), "Unable to create/locate output directory " + destinationFolder
+        if(brv == False):
+            super().getLoggingObj().error( "Unable to create/locate output directory " + self.destinationFolder)
+            return None, None
 
         brv, desc, lst = self.storageSrv.getListOfAllFiles(common._FileShareName, self.srcImageFolder)
         if (brv == True):
@@ -114,9 +118,11 @@ class clsOpenCVObjectDetector:
                             fileListLocal.append(imageFileName.name)
                             TotalImageCountLocal +=1
             else:
-                print("Directory is either None or zero order")
+                super().getLoggingObj().warn("Directory is either None or zero order")
+                return None, None
         else:
-            print("self.storageSrv.getListOfAllFiles returned False")
+            super().getLoggingObj().error("self.storageSrv.getListOfAllFiles returned False")
+            return None, None
         return fileListLocal, TotalImageCountLocal
 
     async def processImages(self,partOfFileName=''):
@@ -148,7 +154,6 @@ class clsOpenCVObjectDetector:
                 imageBatchSize = int(l/common._NUMBER_OF_EVENT_HUB_PARTITIONS) 
                 numberOfMessagesSent = 0
                 for pos in range(0, l , imageBatchSize):
-                    
                     await eventMessageSender.sendProcessExperimentMessage(  self.get_MessageId(), 
                                                                             self.experimentName, 
                                                                             self.srcImageFolder,
@@ -157,35 +162,42 @@ class clsOpenCVObjectDetector:
                                                                             pos,
                                                                             partOfFileName)
                     numberOfMessagesSent += 1
-
-                print("All messages ={} have now been send; waiting ..".format(numberOfMessagesSent))
+                super().getLoggingObj().info("All messages ={} have now been send; waiting ..".format(numberOfMessagesSent))
                 allMessagesProcessed = False
                 wait_time = 60* 6 # six minutes from now
+                stay_alive_time = 60*3 # 3 minutes wait time before sending a dummy message
                 timeout = time.time() + wait_time
+                next_stay_alive_time = time.time() + stay_alive_time
                
                 while (allMessagesProcessed == False and time.time() < timeout):
-                    # print('Sleeping...')
+                    # super().getLoggingObj().info('Sleeping...')
                     await asyncio.sleep(_SLEEP_TIME_BEFFORE_CHECK) 
                     #time.sleep(_SLEEP_TIME_BEFFORE_CHECK)
-                    print("status check ...")
-                    
+                    super().getLoggingObj().info("status check ...")
                     allMessagesProcessed = self.cosmosStatusObj.is_operationCompleted(self.get_MessageId(), self.experimentName, numberOfMessagesSent)
-
-                print("... wait loop over status = {}".format(allMessagesProcessed))
-                if (allMessagesProcessed):
-                    await eventMessageSender.sendDetectorMessages(self.get_MessageId(), 
-                                                                  self.experimentName, 
-                                                                  self.destinationFolder)
-                else:
-                    # log timeout error! 
-                    dictObject =    {  
-                                        common._OPERATIONS_STATUS_MESSAGE_ID : self.get_MessageId(),
-                                        common._OPERATIONS_STATUS_EXPERIMENT_NAME :self.experimentName,
-                                        common._OPERATIONS_STATUS_OFFSET :0,
-                                        common._OPERATIONS_STATUS_ELAPSED_TIME : '{}'.format(str(wait_time)),
-                                        common._OPERATIONS_STATUS_STATUS_MESSAGE :"ERROR"
-                                    }                    
-                    self.cosmosStatusObj.insert_document_from_dict(dictObject, removeExisting=False)
+                    #super().getLoggingObj().info("... wait loop over status = {}".format(allMessagesProcessed))
+                    if (allMessagesProcessed):
+                        await eventMessageSender.sendDetectorMessages(  self.get_MessageId(), 
+                                                                        self.experimentName, 
+                                                                        self.destinationFolder)
+                    else:
+                        # if (time.time() > next_stay_alive_time):
+                        #     # send a stay alive message - this might interfere with auto kill feature of the 
+                        #     super().getLoggingObj().info("Sending Stay Alive message ...")
+                        #     await eventMessageSender.sendDetectorMessages(  self.get_MessageId(), 
+                        #                                                     None, 
+                        #                                                     None)
+                        #     next_stay_alive_time = time.time() + stay_alive_time
+                        #super().getLoggingObj().info("Time out error triggered ...")
+                        # log timeout error!
+                        dictObject =    {  
+                                            common._OPERATIONS_STATUS_MESSAGE_ID : self.get_MessageId(),
+                                            common._OPERATIONS_STATUS_EXPERIMENT_NAME :self.experimentName,
+                                            common._OPERATIONS_STATUS_OFFSET :0,
+                                            common._OPERATIONS_STATUS_ELAPSED_TIME : '{}'.format(str(wait_time)),
+                                            common._OPERATIONS_STATUS_STATUS_MESSAGE :"TIME OUT ERROR"
+                                        }                    
+                        self.cosmosStatusObj.insert_document_from_dict(dictObject, removeExisting=False)
 
             else:
                 # use docker to manage the image processing, should I not be doing separate threading? 
@@ -206,34 +218,34 @@ class clsOpenCVObjectDetector:
                 for pos in range(0, l , imageBatchSize):
                     dockerImageName = "imagedetector:0.2"
                     envString['OFFSET'] = int(pos)
-                    #print (envString)
+                    #super().getLoggingObj().info (envString)
                     container = client.containers.run(dockerImageName, detach=True, environment=envString)
-                    #print(container.id)
+                    #super().getLoggingObj().info(container.id)
                     # set dictionary flag indicating the Container has not exited as yet                    
                     dictOfDockerContainerIds[container.id] = False
 
-                print("All containers are now running...")
+                super().getLoggingObj().info("All containers are now running...")
                 allContainersHaveExited = False
 
                 while (allContainersHaveExited == False):
-                    # print('Sleeping...')
+                    # super().getLoggingObj().info('Sleeping...')
                     time.sleep(_SLEEP_TIME_BEFFORE_CHECK) 
                     allContainersHaveExited = True
                     for key, value in dictOfDockerContainerIds.items():
                         if (value == False): # indicating that the container at last status check was still running
                             localContainer = client.containers.get(key)
                             if (localContainer is not None):
-                                #print(localContainer.logs())
-                                #print(key + " : " + str(value) +  " : " + localContainer.status)
+                                #super().getLoggingObj().info(localContainer.logs())
+                                #super().getLoggingObj().info(key + " : " + str(value) +  " : " + localContainer.status)
                                 if (localContainer.status == "exited"): #update the value
                                     dictOfDockerContainerIds[key] = True
                                 else: 
                                     allContainersHaveExited = False
                             else:
                                 # WTF !!
-                                print("Container Missing ::" + key)
-        # else: # this should not be an error when there are no files which've been copied. 
-            #assert (False), "Error Loading file list" 
+                                super().getLoggingObj().error("Container Missing ::" + key)
+                                return 0, 0, None
+
         
         # Write the log thingy now
         TotalNumberOfImagesDetected, detectedImages = self.totalNumberOfImagesDetected()

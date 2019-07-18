@@ -9,8 +9,8 @@ REM # python eventReceiver.py --partition 1 &
 REM # python eventReceiver.py --partition 2 &
 REM # python eventReceiver.py --partition 3
 REM Two values of drain in Windows environment
-set drain=
-REM drain=-d True
+REM set drain=
+set drain=-d True
 
 start python eventReceiver.py -p 0 -c startexperiment %drain% &
 start python eventReceiver.py -p 0 -c opencv %drain% &

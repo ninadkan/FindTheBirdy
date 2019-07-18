@@ -1,14 +1,22 @@
-#!flask/bin/python
 from flask import Flask, jsonify, abort, make_response
 import json
 import common
 
+import logging
+from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
+g_logObj = getGlobalLogObject(__name__)
+
 
 def get_collections(clsObj, request):
+    global g_logObj
+    g_logObj.debug("get_collections")
+
     result, link = clsObj.returnAllCollection()
     return jsonify({'result': result})
 
 def get_documents(clsObj, request):
+    global g_logObj
+    g_logObj.debug("get_documents")
     if not request.json or not 'collectionLink' in request.json:
         abort(400)
     collectionLink = request.json['collectionLink']
@@ -16,6 +24,9 @@ def get_documents(clsObj, request):
     return jsonify({'result': result})
 
 def get_document(clsObj, request):
+    global g_logObj
+    g_logObj.debug("get_document")
+
     from urllib.parse import unquote
     # docId = request.args.get('docId')
     # if not docId:
@@ -33,6 +44,9 @@ def get_document(clsObj, request):
     return jsonify(result)
 
 def saveLabelledImageList(clsObj, request):
+    global g_logObj
+    g_logObj.debug("saveLabelledImageList")
+
     if not request.json or not common._DETECTED_IMAGES_TAG in request.json \
         or not common._EXPERIMENTNAME_TAG in request.json \
         or not common._IMAGE_DETECTION_PROVIDER_TAG in request.json :
@@ -44,6 +58,9 @@ def saveLabelledImageList(clsObj, request):
     return make_response(jsonify({'OK': 'OK'}), 200)
 
 def returnLabelledImageList(clsObj, request):
+    global g_logObj
+    g_logObj.debug("returnLabelledImageList")
+
     if not request.json or not common._IMAGE_DETECTION_PROVIDER_TAG in request.json \
         or not common._EXPERIMENTNAME_TAG in request.json:
         abort(400)
@@ -57,6 +74,10 @@ def returnLabelledImageList(clsObj, request):
         return make_response(json.dumps({'result': rv}), 200)
 
 def returnAllExperimentResult(clsObj, request):
+
+    global g_logObj
+    g_logObj.debug("returnAllExperimentResult")
+
     rv = clsObj.returnAllExperimentResultImpl()
     
     if (rv == None):
@@ -68,6 +89,8 @@ def returnAllExperimentResult(clsObj, request):
 # Image Processsing Operations 
 ###############################################################################
 def operationsInsertLastOffsetDocument(clsImageOperations, request):
+    global g_logObj
+    g_logObj.debug("operationsInsertLastOffsetDocument")
 
     if not request.json or not common._OPERATIONS_EVENTLOG_TAG in request.json \
         or not common._OPERATIONS_CONSUMER_GROUP_TAG in request.json \
@@ -85,6 +108,9 @@ def operationsInsertLastOffsetDocument(clsImageOperations, request):
 
 def operationsGetLastOffset(clsImageOperations, request):
 
+    global g_logObj
+    g_logObj.debug("operationsGetLastOffset")
+
     if not request.json or not common._OPERATIONS_EVENTLOG_TAG in request.json \
         or not common._OPERATIONS_CONSUMER_GROUP_TAG in request.json \
         or not common._OPERATIONS_PARTITION_ID in request.json \
@@ -101,6 +127,10 @@ def operationsGetLastOffset(clsImageOperations, request):
         return make_response(json.dumps({'result': rv}), 200)
 
 def removeLastOffsetRecord(clsImageOperations, request):
+
+    global g_logObj
+    g_logObj.debug("removeLastOffsetRecord")
+
     if not request.json or not common._OPERATIONS_EVENTLOG_TAG in request.json \
         or not common._OPERATIONS_CONSUMER_GROUP_TAG in request.json \
         or not common._OPERATIONS_PARTITION_ID in request.json \
@@ -116,6 +146,10 @@ def removeLastOffsetRecord(clsImageOperations, request):
     return make_response(json.dumps({'result': "OK"}), 200)
 
 def removeExistingDocumentDict(clsImageOperations, request):
+
+    global g_logObj
+    g_logObj.debug("removeExistingDocumentDict")
+    
     if not request.json or not 'id' in request.json:
         abort(400)
     dictObject = {'id':request.json['id']}
@@ -129,6 +163,9 @@ def removeExistingDocumentDict(clsImageOperations, request):
 # Operations Status 
 ###############################################################################
 def returnAllMessageIdGroupedList(clsStatusOperations, request):
+    global g_logObj
+    g_logObj.debug("returnAllMessageIdGroupedList")
+
     rv = clsStatusOperations.returnAllMessageIdGroupedListImpl()
     
     if (rv == None):
@@ -138,6 +175,9 @@ def returnAllMessageIdGroupedList(clsStatusOperations, request):
 
 
 def removeAllDocumentsForSpecificMessageId(clsStatusOperations, request):
+    global g_logObj
+    g_logObj.debug("removeAllDocumentsForSpecificMessageId")
+
     if not request.json or not common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID in request.json: 
         abort(400)
 
@@ -150,6 +190,10 @@ def removeAllDocumentsForSpecificMessageId(clsStatusOperations, request):
 
 
 def removeExistingDocumentDictStatus(clsStatusOperations, request):
+
+    global g_logObj
+    g_logObj.debug("removeExistingDocumentDictStatus")
+
     if not request.json or not 'id' in request.json:
         abort(400)
     dictObject = {'id':request.json['id']}

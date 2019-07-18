@@ -1,0 +1,45 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionId": {
+            "value": "ba1d4485-2ac1-4c28-be39-56e5a0f0185c"
+        },
+        "name": {
+            "value": "ComputerVisionWebApp"
+        },
+        "location": {
+            "value": "North Europe"
+        },
+        "hostingEnvironment": {
+            "value": ""
+        },
+        "hostingPlanName": {
+            "value": "ComputerVisionProjectPlan"
+        },
+        "serverFarmResourceGroup": {
+            "value": "ComputerVisionProject"
+        },
+        "alwaysOn": {
+            "value": false
+        },
+        "sku": {
+            "value": "Basic"
+        },
+        "skuCode": {
+            "value": "B2"
+        },
+        "workerSize": {
+            "value": "1"
+        },
+        "workerSizeId": {
+            "value": "1"
+        },
+        "numberOfWorkers": {
+            "value": "1"
+        },
+        "linuxFxVersion": {
+            "value": "PYTHON|3.6"
+        }
+    }
+}

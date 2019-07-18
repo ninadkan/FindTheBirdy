@@ -12,6 +12,10 @@ ADDRESS = os.environ.get('EVENT_HUB_ADDRESS')
 USER = os.environ.get('EVENT_HUB_SENDER_SAS_POLICY')
 KEY = os.environ.get('EVENT_HUB_SENDER_SAS_KEY')
 
+import logging
+from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
+g_logObj = getGlobalLogObject(__name__)
+
 def _getStartExperimentMessagePayload(experimentName):
     import uuid
     messageId = uuid.uuid4()
@@ -58,6 +62,9 @@ def _getDetectorTypeMessagePayload(MessageId, experimentName, destinationFolder,
 
 
 async def sendMessageAsync(payload, partition="0"):
+    global g_logObj
+    g_logObj.debug("sendMessageAsync")
+    
     client = EventHubClientAsync(ADDRESS, debug=True, username=USER, password=KEY) 
     sender = client.add_async_sender(partition=partition)
     await client.run_async()
@@ -71,6 +78,8 @@ async def sendStartExperimentMessage(experimentNames):
     global ADDRESS
     global USER
     global KEY
+    global g_logObj
+    g_logObj.debug("sendStartExperimentMessage")
     
     if not ADDRESS:
         raise ValueError("No EventHubs URL supplied.") 
@@ -100,7 +109,8 @@ async def sendProcessExperimentMessage(   MessageId,
     global USER
     global KEY
     global pool
-    
+    global g_logObj
+    g_logObj.debug("sendProcessExperimentMessage")
     guid = None
 
     if not ADDRESS:
@@ -128,13 +138,13 @@ async def sendDetectorMessages(MessageId,experimentName,destinationFolder):
     global USER
     global KEY
     global pool
+    global g_logObj
+    g_logObj.debug("sendDetectorMessages")
     guid = None
 
     if not ADDRESS:
         raise ValueError("No EventHubs URL supplied.")                                    
-
     lstGuids = []
-    
     for key, value in detectorsTypes.items():
         r, guid = _getDetectorTypeMessagePayload(MessageId, experimentName, destinationFolder, value )
         lstGuids.append(json.dumps({experimentName:guid}))

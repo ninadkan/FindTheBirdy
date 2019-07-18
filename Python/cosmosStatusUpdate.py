@@ -17,8 +17,8 @@ class clsStatusUpdate(clsCosmosOperationsBase):
                             common._OPERATIONS_STATUS_EXPERIMENT_NAME,
                             common._OPERATIONS_STATUS_OFFSET]
         super().__init__(mandatoryColumns=mandatoryList, collectionName=common._COLLECTIONAME , host=host, key=key, databaseId=databaseId)
-        self.sprocReadAllMessageIdGroupedLink = super().getStoredProcLink('returnAllMessageIdGroupedList')
-        assert (self.sprocReadAllMessageIdGroupedLink is not None)   
+        # self.sprocReadAllMessageIdGroupedLink = super().getStoredProcLink('returnAllMessageIdGroupedList')
+        # assert (self.sprocReadAllMessageIdGroupedLink is not None)   
 
         self.sprocGetAllDocsForMsgIdLink = super().getStoredProcLink('getAllDocumentsForMessageId')
         assert (self.sprocGetAllDocsForMsgIdLink is not None)  
@@ -27,10 +27,55 @@ class clsStatusUpdate(clsCosmosOperationsBase):
 
     # -------------------------------------------------------------------------
     def returnAllMessageIdGroupedListImpl(self):
+        super().getLoggingObj().warn("returnAllMessageIdGroupedListImpl")
         # need to get the sproc_link 
-        assert (self.sprocReadAllMessageIdGroupedLink is not None)      
-        lst = super().getClient().ExecuteStoredProcedure(self.sprocReadAllMessageIdGroupedLink, None)
-        #print (lst)
+        sqlFist = "SELECT c.MessageId, c.ExperimentName FROM c"
+        lst = None
+        query = { 'query': sqlFist}    
+        # proves that I don't need to wrap around the parent--> parent method. 
+        lst = super().getDocumentFromQuery(query)
+        if (lst):
+            dictMessageId = dict()
+            
+            for item in lst:
+                if ('MessageId' in item):
+                    dictMessageId[item['MessageId']] = item['ExperimentName']
+
+            strSecond = '('
+            for k, v in dictMessageId.items():
+                strSecond += '"' + k + '",'
+                   
+            #remove the last added comma
+            lastIndex = strSecond.rfind(',')
+            if (lastIndex >=0):
+                strSecond = strSecond[0:lastIndex]
+            
+            strSecond += ')'
+            #print(strSecond)
+
+            parameterName = "@selectionList"
+
+            commonSQL = 'SELECT c.MessageId, c.ExperimentName, c.Offset_Value, c.CurrentCount as CurrentCount, ' 
+            commonSQL += 'c.MaxItems as MaxItems, c.Time, c.Status, c.DateTime, c.id, '
+            commonSQL += 'c.ImageDetectionProvider as f_Provider, c.ElapsedTime as f_ElapsedTime, c["result - birdFound"] as f_Result, '
+            commonSQL += 'c["result - totalNumberOfRecords"] as f_TotalRecords FROM c WHERE c.MessageId  IN '
+            commonSQL +=  strSecond
+            #print (commonSQL)
+
+            query = {'query': commonSQL}                    
+
+            #print (query)
+            lst = super().getDocumentFromQuery(commonSQL)
+            if (lst and len(lst)>0):
+                resultDict = dict()
+                for item in lst:
+                    if ('MessageId' in item):
+                        key = item['MessageId']
+                        if key not in resultDict: 
+                            resultDict[key] = list()
+                        resultlst = resultDict[key]
+                        resultlst.append(item)
+                lst = resultDict
         return lst
 
     # -------------------------------------------------------------------------
@@ -151,7 +196,8 @@ class clsStatusUpdate(clsCosmosOperationsBase):
     # # -------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    objRun = clsStatusUpdate() 
+    objRun = clsStatusUpdate()
+    objRun.returnAllMessageIdGroupedListImpl()
     # parameterObj = [{'inputParameter': 'd57f71e4-1163-4bfc-b3c4-842ce6d6a7eb' }]
     #parameterObj = ['d57f71e4-1163-4bfc-b3c4-842ce6d6a7eb']
     #parameterObj = {'value': 'd57f71e4-1163-4bfc-b3c4-842ce6d6a7eb'}

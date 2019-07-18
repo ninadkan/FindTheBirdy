@@ -1,0 +1,60 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceName": {
+            "value": "ComputerVisionKubeCluster"
+        },
+        "location": {
+            "value": "northeurope"
+        },
+        "dnsPrefix": {
+            "value": "ComputerVisionKubeCluster-dns"
+        },
+        "agentCount": {
+            "value": 2
+        },
+        "agentVMSize": {
+            "value": "Standard_B2s"
+        },
+        "servicePrincipalClientId": {
+            "value": "3beeaf12-7660-48c9-b39a-e1c889265311"
+        },
+        "servicePrincipalClientSecret": {
+            "value": "0OpZvjeyTfR00C@a5mL./ItAIiOU=/.G"
+        },
+        "kubernetesVersion": {
+            "value": "1.12.8"
+        },
+        "networkPlugin": {
+            "value": "azure"
+        },
+        "enableRBAC": {
+            "value": true
+        },
+        "enableHttpApplicationRouting": {
+            "value": true
+        },
+        "vnetSubnetID": {
+            "value": "/subscriptions/ba1d4485-2ac1-4c28-be39-56e5a0f0185c/resourceGroups/ComputerVisionProject/providers/Microsoft.Network/virtualNetworks/ComputerVisionProject-vnet/subnets/default"
+        },
+        "serviceCidr": {
+            "value": "10.0.0.0/16"
+        },
+        "dnsServiceIP": {
+            "value": "10.0.0.10"
+        },
+        "dockerBridgeCidr": {
+            "value": "172.17.0.1/16"
+        },
+        "principalId": {
+            "value": "c21103e9-7bb5-401b-a6ab-6ea3d3a8e5f9"
+        },
+        "aciVnetSubnetName": {
+            "value": "virtual-node-aci"
+        },
+        "aciConnectorLinuxEnabled": {
+            "value": true
+        }
+    }
+}

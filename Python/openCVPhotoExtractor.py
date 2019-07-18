@@ -35,6 +35,10 @@ _WRITEOUTPUT = True
 _LOGRESULT = False
 _EXPERIMENTNAME = ''
 
+import logging
+from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
+g_logObj = getGlobalLogObject(__name__)
+
 
 
 # https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
@@ -53,7 +57,7 @@ def init(partOfFileName=''):
     global g_fileList  
     global g_colourMask 
     global g_grayMask 
-
+    global g_logObj
 
     g_fileList = [] 
     g_colourMask = None 
@@ -68,11 +72,14 @@ def init(partOfFileName=''):
             else:
                 g_fileList.append(file)
 
-    assert (len(g_fileList) > 0), "Error Loading file list" 
+    if (len(g_fileList) == 0):
+        g_logObj.error( "Error Loading file list")
+        return 
     #select the ROI using the first image and use it to create mask
     filename= os.path.join(g_srcImageFolder, g_fileList[0])
     imgFirst = cv2.imread(filename)
-    assert(imgFirst is not None), "Unable to load " + filename
+    if (imgFirst is None):
+        g_logObj.error(  "Unable to load " + filename)
     gray_image = cv2.cvtColor(imgFirst, cv2.COLOR_BGR2GRAY)
 
     # height and width is fixed for the image that we are capturing. 
@@ -87,8 +94,12 @@ def init(partOfFileName=''):
         #places = [current_place.rstrip() for current_place in filehandle.readlines()]
         myROI = json.load(filehandle)
 
-    assert(myROI is not None), "Unable to load MASK!!!"
-    assert((len(myROI)> 0)), "MASK Length is zero!!!"
+    if(myROI is None):
+        g_logObj.error( "Unable to load MASK!!!")
+        return
+    if((len(myROI) == 0)):
+        g_logObj.error(  "MASK Length is zero!!!")
+        return
 
     #colour mask
     g_colourMask = imgFirst[0:height, 0:width]
@@ -116,8 +127,13 @@ def WriteOutputFile(imgColour, imageFileName, x, y, w, h, detectedImages, Paddin
     enough for the images to be recognised
     '''
     global g_colourMask
-    assert(imgColour is not None), "Invalid parameter imgColour"
-    assert(g_colourMask is not None), "Invalid parameter g_colourMask"
+    global g_logObj
+    if ((imgColour is None):
+        g_logObj.error(  "Invalid parameter imgColour")
+        return None
+    if(g_colourMask is None):
+        g_logObj.error(  "Invalid parameter g_colourMask")
+        return None
     
     ht, wt = imgColour.shape[:2]
 
@@ -176,6 +192,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
     global g_srcImageFolder
     global g_destinationFolder
     global g_filenameExtension
+    global g_logObj
 
     g_srcImageFolder = common._SRCIMAGEFOLDER 
     g_destinationFolder = common._DESTINATIONFOLDER
@@ -188,7 +205,7 @@ def processImages(  historyImage = _HISTORYIMAGE,
     g_destinationFolder = os.path.join(g_srcImageFolder,g_destinationFolder)
 
     if not os.path.exists(g_destinationFolder):
-        print("creating folder {0}".format(g_destinationFolder))
+        g_logObj.info("creating folder {0}".format(g_destinationFolder))
         os.makedirs(g_destinationFolder)
 
 
@@ -217,11 +234,13 @@ def processImages(  historyImage = _HISTORYIMAGE,
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
 
-        print('.', end='', flush=True)
+        #print('.', end='', flush=True)
 
         filename = os.path.join(g_srcImageFolder, imageFileName)
         imgColour = cv2.imread(filename)  
-        assert(imgColour is not None), "Unable to load " + filename
+        if (imgColour is None):
+            g_logObj.error( "Unable to load " + filename)
+            return None, None, None
         imgGray = cv2.cvtColor(imgColour, cv2.COLOR_BGR2GRAY)
         height, width = imgColour.shape[:2]
         imCrop = imgGray[0:int(height), 0:int(width)] #copy of the gray image 
@@ -287,8 +306,8 @@ def processImages(  historyImage = _HISTORYIMAGE,
                                 break 
         
             if (g_verbosity == True):
-                print("")
-                print(">>> Debugging image = {0}, Contour Length = {1:0.4f}, last boundingRectArea = {2:0.4f}, OpenCVDetected = {3}, diff = {4:0.4f}".format(imageFileName, contour_length, boundingRectArea, bOpenCVBirdDetected, diff))
+                g_logObj.info("")
+                g_logObj.info(">>> Debugging image = {0}, Contour Length = {1:0.4f}, last boundingRectArea = {2:0.4f}, OpenCVDetected = {3}, diff = {4:0.4f}".format(imageFileName, contour_length, boundingRectArea, bOpenCVBirdDetected, diff))
 
     elapsed_time = time.time() - start_time
 

@@ -39,6 +39,11 @@ g_net = None
 verbosity = False
 g_detectedImages = []
 
+import logging
+from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
+g_logObj = getGlobalLogObject(__name__)
+
+
 # load our serialized _MODEL from disk
 def init(prototxt, model):
     global g_net
@@ -52,6 +57,7 @@ def init(prototxt, model):
 
 def MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThreshold, imageTag):
     global g_detectedImages 
+    global g_logObj
     g_detectedImages = []
     bRV = False
  
@@ -76,8 +82,8 @@ def MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confT
                 bRV = True
                 g_detectedImages.append({common._IMAGE_NAME_TAG:imageName, common._CONFIDENCE_SCORE_TAG:float('{0:.4f}'.format(confidence))})
                 if (verbosity == True):
-                    print("")
-                    print("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
+                    g_logObj.info("")
+                    g_logObj.info("Image name = {0}, imageTag = {1} , Confidence Score = {2}".format(imageName, imageTag, confidence))
                 break
     return bRV
 
@@ -107,6 +113,7 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
     imageTag IMAGE_TAG = The tag to be searched for, default = "bird"
     '''
     global globalStorageSrv
+    global g_logObj
     start_time = time.time()
 
     FILE_LIST = []
@@ -132,16 +139,20 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
     for i, imageName in enumerate(FILE_LIST):
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
-        print('.', end='', flush=True)
+        #print('.', end='', flush=True)
 
         imageFrame = None
         if (common._FileShare == False):
             imageFrame = cv2.imread(os.path.join(outputFolder,imageName))
         else:
             brv, desc, imageFrame = globalStorageSrv.GetRawImage(common._FileShareName, outputFolder, imageName)
-            assert(brv == True), "Unable to load " + imageName
+            if(brv == False):
+                g_logObj.error(  "Unable to load " + imageName)
+                return 0
 
-        assert(imageFrame is not None), "Unable to load " + imageName
+        if (imageFrame is None):
+            g_logObj.error(  "Unable to load " + imageName)
+            return 0
 
         bBirdFound =  MobileNetBirdDetector(imageName, imageFrame, scaleFactor, shapeWeight, confThreshold, imageTag)
         if (bBirdFound == True):

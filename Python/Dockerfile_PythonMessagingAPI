@@ -1,0 +1,91 @@
+FROM python:3.6
+LABEL maintainer="ninad_kanthi@hotmail.com"
+
+RUN mkdir /home/python
+
+ENV PATH="/home/python:${PATH}"
+
+#TODO: Remove the bits that you done need here
+
+RUN apt-get update \
+        && apt-get install -y --no-install-recommends dialog \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends openssh-server \
+        && apt-get install -y wget \
+        && pip install opencv-contrib-python \
+        && pip install flask \
+        && pip install flask_cors \
+        && pip install azure-storage-file \
+        && pip install azure-storage-blob \
+        && pip install azure-storage-common \
+        && pip install azure-cosmos \
+        && pip install azure-keyvault \
+        && pip install azure-eventhub \
+        && pip install expiringdict \
+        && pip install google-api-core \
+        && pip install google-auth \
+        && pip install google-cloud-automl \
+        && pip install google-cloud-vision \
+        && pip install googleapis-common-protos \    
+        && pip install PyJWT \
+        && pip install requests-oauthlib \
+        && pip install rsa \
+        && pip install gunicorn \               
+        && pip install uamqp
+
+WORKDIR /home/python
+
+EXPOSE 443 5002
+
+# copy python files
+# dir /b *.py > pythonFile.txt
+# replace ^ 'COPY ' 
+# replace $ ' ./'
+
+#TODO: Remove files which are not needed
+
+COPY asyncioBase.py ./
+COPY azureImageDetector.py ./
+COPY common.py ./
+COPY cosmosBase.py ./
+COPY cosmosDBApiMapper.py ./
+COPY cosmosDBWrapper.py ./
+COPY cosmosImageOperations.py ./
+COPY cosmosStatusUpdate.py ./
+COPY docker_clsOpenCVProcessImages.py ./
+COPY eventMessageProcessor.py ./
+COPY eventMessageSender.py ./
+COPY eventProcessorHost.py ./
+COPY eventReceiver.py ./
+COPY googleImageDetector.py ./
+COPY imageDetectorTest.py ./
+COPY loggingBase.py ./
+COPY mobileNetImageDetector.py ./
+COPY openCVPhotoExtractor.py ./
+COPY openCVPhotoExtractorClsImpl.py ./
+COPY openCVPhotoExtractorTest.py ./
+COPY storageFileService.py ./
+COPY yoloBirdImageDetector.py ./
+
+# Copy Web API files
+COPY pythonWebAPI/app.py ./
+COPY pythonWebAPI/appSecrets.py ./
+COPY pythonWebAPI/securityImpl.py ./
+COPY pythonWebAPI/storageBlobService.py ./
+COPY pythonWebAPI/storageFileApiMapper.py ./
+COPY pythonWebAPI/validateJWT.py ./
+
+# COPY Messaging Web API Files
+COPY pythonExperimentAPI/birdDetector-api.py ./
+
+# copy start-up files
+COPY pythonExperimentAPI/initPythonMessagingAPI.sh ./
+COPY pythonExperimentAPI/startUnicorn.sh ./
+#copy certificate file
+COPY Docker/keys/privkey.key ./
+COPY Docker/keys/fullchain.pem ./
+
+RUN chmod +x initPythonMessagingAPI.sh
+RUN chmod +x startUnicorn.sh
+
+ENTRYPOINT ["./initPythonMessagingAPI.sh"]

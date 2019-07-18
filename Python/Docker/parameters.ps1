@@ -1,0 +1,8 @@
+﻿$RESOURCEGROUP_NAME="ComputerVisionProject"
+$LOCATION="North Europe"
+$SUBSCRIPTION="ba1d4485-2ac1-4c28-be39-56e5a0f0185c"
+$FQDN="blogs.$SUBSCRIPTION"
+$VERSION="-v1"
+$CONTAINER_REGISTRY_NAME="ComputerVisionProject"
+$FQN_CONTAINER_REGISTRY_NAME="computervisionproject.azurecr.io"
+$DOCKER_IMAGE_PYTHON_CORE="pythoncore:0.1"

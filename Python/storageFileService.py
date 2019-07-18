@@ -9,15 +9,19 @@ import datetime
 import numpy as np
 import cv2
 
+import logging
+from loggingBase import clsLoggingBase
 
-class storageFileService():
+
+class storageFileService(clsLoggingBase):
     """
     This class wraps the Blob storage. Should be created in two phases. First passing the 
     account name and second passing the accountkey from the KeyVault. After this the service 
     object is created and can be used to access the blob items 
     """
 
-    def __init__(self, account_name): 
+    def __init__(self, account_name):
+        super().__init__(__name__)
         self.account_name=account_name
         self.account_key=None 
         self.service = None
@@ -29,8 +33,9 @@ class storageFileService():
         if (self.account_name):
             self.service = FileService(account_name= self.account_name, account_key=self.account_key)
         return
-
+    
     def preCheck(self, _sourceFileShareFolderName, _sourceDirectoryName, AdditionalCheck=True):
+        super().getLoggingObj().debug('preCheck')
         if (self.service == None):
             if ((self.account_name is None) or len(self.account_name) == 0):
                 AZURE_ACN_NAME = 'AZURE_ACN_NAME'

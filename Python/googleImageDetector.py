@@ -41,6 +41,10 @@ _LOG_RESULT = True
 _EXPERIMENTNAME = ''
 g_detectedImages = []
 
+import logging
+from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
+g_logObj = getGlobalLogObject(__name__)
+
 def init():
     # [END vision_python_migration_import]
     # Instantiates a g_client
@@ -48,11 +52,17 @@ def init():
     global g_client
     g_client = vision.ImageAnnotatorClient()
 
+
+
 def DetectBirdInImage( outputFolder,imageName,confThreshold, imageTag):
     global globalStorageSrv
     global g_client
-    assert(g_client is not None), "Invoke init before calling run"
+    global g_logObj
     bRV = False
+    if(g_client is None):
+        g_logObj.error(  "Invoke init before calling run")
+        bRV, "", ""
+    
      # Loads the image into memory
 
     content = None
@@ -61,10 +71,14 @@ def DetectBirdInImage( outputFolder,imageName,confThreshold, imageTag):
             content = image_file.read()
     else:
         brv, desc, content = globalStorageSrv.GetRawImageAsBytes(common._FileShareName, outputFolder, imageName)
-        assert(brv == True), "Error Get Raw Image" + imageName
+        if(brv == False):
+            g_logObj.error(   "Error Get Raw Image" + imageName)
+            return bRV, "", ""
 
     
-    assert(content is not None), "Unable to read image file " + imageName
+    if(content is None):
+        g_logObj.error(   "Unable to read image file " + imageName)
+        return bRV, "", ""
 
     image = types.Image(content=content)
 
@@ -73,7 +87,7 @@ def DetectBirdInImage( outputFolder,imageName,confThreshold, imageTag):
     labels = response.label_annotations
 
     for label in labels:
-        #print(label)
+        #g_logObj.info(label)
         if ((imageTag.lower() in label.description.lower()) and (label.score > confThreshold)):
             return True, label.description, label.score
 
@@ -97,6 +111,8 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
     '''
     global g_detectedImages
     global globalStorageSrv
+    global g_logObj
+
     g_detectedImages = []
     start_time = time.time() 
     TotalBirdsFound = 0
@@ -122,15 +138,15 @@ def processImages(  outputFolder = common._SRCIMAGEFOLDER,
         if ((numberOfIterations > 0) and (i > numberOfIterations)):
             break; # come of of the loop
         # Not allowed in python 2.7
-        print('.', end='', flush=True)
+        #g_logObj.info('.', end='', flush=True)
    
         bBirdFound, description, confidenceScore = DetectBirdInImage(outputFolder,imageName,confThreshold, imageTag )
         if (bBirdFound == True):
             TotalBirdsFound = TotalBirdsFound +1
             g_detectedImages.append({common._IMAGE_NAME_TAG:imageName, common._CONFIDENCE_SCORE_TAG:float('{0:.4f}'.format(confidenceScore))})
             if (verbosity == True):
-                print("")
-                print("Image name = {0}, imageTag = {1} , Confidence Score = {2:0.4f}, Description = {3}".format(imageName, imageTag, confidenceScore, description))
+                g_logObj.info("")
+                g_logObj.info("Image name = {0}, imageTag = {1} , Confidence Score = {2:0.4f}, Description = {3}".format(imageName, imageTag, confidenceScore, description))
 
 
     elapsed_time = time.time() - start_time

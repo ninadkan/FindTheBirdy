@@ -17,20 +17,23 @@ from cosmosStatusUpdate import clsStatusUpdate
 
 
 import json
+import logging
 
 import sys
 sys.path.insert(0, '../')
 import common
+from loggingBase import clsLoggingBase
 
 MX_NUM_USER=1000
 MX_TOKEN_AGE=300 # seconds, 5 minutes
 
-class securityImpl:
+class securityImpl(clsLoggingBase):
     """
     This class acts as the controller of everything related to security.
     Single instance of this class should be created 
     """
     def __init__(self):
+        super().__init__(__name__)
         self.jwtValidator = validateJWT()
         self.valid_audiences = [appSecrets.ClientId, appSecrets.serviceIdentifierUri]
 		#self.ClientId = appSecrets.ClientId
@@ -39,11 +42,13 @@ class securityImpl:
         self.userIdCache = ExpiringDict(max_len=MX_NUM_USER, max_age_seconds=MX_TOKEN_AGE)
         self.storageObject = storageBlobService.StorageBlobServiceWrapper(appSecrets.KV_Storage_AccountName)
         self.storageFileObject = storageFileService.storageFileService(appSecrets.KV_Storage_AccountName)
+
         self.storageKeyLoaded = False
         self.clsObj = None           # our global instance
         self.clsImageOperations = None    # our global instance
         self.clsStatusOperations = None
         self.cosmosDBObjCreated = False
+        
         return
 
     def get_StorageObject(self):
@@ -62,6 +67,7 @@ class securityImpl:
         return self.clsStatusOperations
 
     def validateRequest(self,request):
+        super().getLoggingObj().debug("validateRequest")
         bRV = False
         response = None
         scopeTest = 'user_impersonation'
@@ -96,7 +102,7 @@ class securityImpl:
                                         self.storageKeyLoaded = True
                                         bRV = True # set this to true now. 
                                     if (self.cosmosDBObjCreated == False):
-                                        print("creating cosmos")
+                                        print("creating cosmos secure object")
                                         if (len(storage_key_list) >= 4 ):
                                             #print(storage_key_list[1])
                                             #print(storage_key_list[2])
@@ -117,6 +123,7 @@ class securityImpl:
         return bRV, response
        
     def validateUserCredentials(self,bearerToken) :
+        super().getLoggingObj().debug("validateUserCredentials")
         bRV = False
         r = None
         try:
@@ -130,6 +137,7 @@ class securityImpl:
         return bRV, r
    
     def get_token_with_authorization_code(self, bearerToken):
+        super().getLoggingObj().debug("get_token_with_authorization_code")
         import requests
 
         resp = None
@@ -157,6 +165,7 @@ class securityImpl:
         return resp
 
     def getStorageKeySecret(self,token_credentials):
+        super().getLoggingObj().debug("getStorageKeySecret")
         from msrestazure.azure_active_directory import AADTokenCredentials
         resourceKeyVault ="https://vault.azure.net"
         secret_bundle = []
