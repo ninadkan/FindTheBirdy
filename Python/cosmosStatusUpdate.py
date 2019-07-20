@@ -171,9 +171,16 @@ class clsStatusUpdate(clsCosmosOperationsBase):
             if (len(lst) == numberOfRecordsExpected):
                 brv = True
                 for item in lst:
-                    if (int(item[common._OPERATIONS_STATUS_CURRENT_COUNT]) != int(item[common._OPERATIONS_STATUS_MAX_ITEMS])):
-                        brv = False # we found one where the match is not correct. 
-                        break
+                    if (   (common._OPERATIONS_STATUS_CURRENT_COUNT in item )and 
+                           (common._OPERATIONS_STATUS_MAX_ITEMS in item) and
+                           (item[common._OPERATIONS_STATUS_CURRENT_COUNT] is not None ) and 
+                           (item[common._OPERATIONS_STATUS_MAX_ITEMS] is not None)):
+                        if (int(item[common._OPERATIONS_STATUS_CURRENT_COUNT]) != int(item[common._OPERATIONS_STATUS_MAX_ITEMS])):
+                            brv = False # we found one where the match is not correct. 
+                            break
+                    # else: # not able to get values, set it to not true
+                    #     brv = False
+                    #     break
         else:
             brv = False
         return brv

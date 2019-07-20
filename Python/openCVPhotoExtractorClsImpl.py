@@ -151,7 +151,7 @@ class clsOpenCVObjectDetector(clsLoggingBase):
                 # ideally store the message that you've got here and that you've started processing.
                 # send the eventmessages to 
                 # The number of Docker containers should be equal to number of EventHub Partitions
-                imageBatchSize = int(l/common._NUMBER_OF_EVENT_HUB_PARTITIONS) 
+                imageBatchSize = 45 # int(l/(common._NUMBER_OF_EVENT_HUB_PARTITIONS*2))
                 numberOfMessagesSent = 0
                 for pos in range(0, l , imageBatchSize):
                     await eventMessageSender.sendProcessExperimentMessage(  self.get_MessageId(), 
@@ -164,7 +164,7 @@ class clsOpenCVObjectDetector(clsLoggingBase):
                     numberOfMessagesSent += 1
                 super().getLoggingObj().info("All messages ={} have now been send; waiting ..".format(numberOfMessagesSent))
                 allMessagesProcessed = False
-                wait_time = 60* 6 # six minutes from now
+                wait_time = 60* 7 # six minutes from now
                 stay_alive_time = 60*3 # 3 minutes wait time before sending a dummy message
                 timeout = time.time() + wait_time
                 next_stay_alive_time = time.time() + stay_alive_time
@@ -181,24 +181,25 @@ class clsOpenCVObjectDetector(clsLoggingBase):
                                                                         self.experimentName, 
                                                                         self.destinationFolder)
                     else:
-                        # if (time.time() > next_stay_alive_time):
-                        #     # send a stay alive message - this might interfere with auto kill feature of the 
-                        #     super().getLoggingObj().info("Sending Stay Alive message ...")
-                        #     await eventMessageSender.sendDetectorMessages(  self.get_MessageId(), 
-                        #                                                     None, 
-                        #                                                     None)
-                        #     next_stay_alive_time = time.time() + stay_alive_time
-                        #super().getLoggingObj().info("Time out error triggered ...")
-                        # log timeout error!
-                        dictObject =    {  
-                                            common._OPERATIONS_STATUS_MESSAGE_ID : self.get_MessageId(),
-                                            common._OPERATIONS_STATUS_EXPERIMENT_NAME :self.experimentName,
-                                            common._OPERATIONS_STATUS_OFFSET :0,
-                                            common._OPERATIONS_STATUS_ELAPSED_TIME : '{}'.format(str(wait_time)),
-                                            common._OPERATIONS_STATUS_STATUS_MESSAGE :"TIME OUT ERROR"
-                                        }                    
-                        self.cosmosStatusObj.insert_document_from_dict(dictObject, removeExisting=False)
+                        if (time.time() > next_stay_alive_time):
+                            # send a stay alive message - this might interfere with auto kill feature of the 
+                            super().getLoggingObj().info("Sending Stay Alive message ...")
+                            await eventMessageSender.sendDetectorMessages(  self.get_MessageId(), 
+                                                                            None, 
+                                                                            None)
+                            next_stay_alive_time = time.time() + stay_alive_time
 
+                if (allMessagesProcessed is False):
+                    super().getLoggingObj().info("Time out error triggered ...")
+                    #log timeout error!
+                    dictObject =    {  
+                                        common._OPERATIONS_STATUS_MESSAGE_ID : self.get_MessageId(),
+                                        common._OPERATIONS_STATUS_EXPERIMENT_NAME :self.experimentName,
+                                        common._OPERATIONS_STATUS_OFFSET :0,
+                                        common._OPERATIONS_STATUS_ELAPSED_TIME : '{}'.format(str(wait_time)),
+                                        common._OPERATIONS_STATUS_STATUS_MESSAGE :"TIME OUT ERROR"
+                                    }                    
+                    self.cosmosStatusObj.insert_document_from_dict(dictObject, removeExisting=False)
             else:
                 # use docker to manage the image processing, should I not be doing separate threading? 
                 import docker

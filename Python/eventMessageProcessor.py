@@ -49,8 +49,6 @@ async def processStartExperimentMessage(msgBody):
 # ============================ process Experiment Images Message ============================ #
 dummySleep=1
 
-
-
 async def processExperimentImages(msgBody):
     global g_logObj
     g_logObj.info("Process Experiment Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID], 
@@ -91,7 +89,7 @@ async def commonProcessImageDetector(msgBody, detectorType, callBackfn):
 
 
 async def processImagesUsingGoogleDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "google" , eventMessageProcessor.GoogleDetector)
+    return commonProcessImageDetector(msgBody, "google" , GoogleDetector)
     # global g_logObj
     # g_logObj.info("Google Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
     #                                                                     msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
@@ -111,7 +109,7 @@ async def GoogleDetector(msgBody):
 
 
 async def processImagesUsingAzureDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "Azure" , eventMessageProcessor.AzureDetector  )
+    return commonProcessImageDetector(msgBody, "Azure" , AzureDetector  )
     # global g_logObj
     # g_logObj.info("Azure Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
     #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
@@ -129,7 +127,7 @@ async def AzureDetector(msgBody):
     return True
 
 async def processImagesUsingMobileNetDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "Mobile Net Detector" , eventMessageProcessor.MobileNetDetector )
+    return commonProcessImageDetector(msgBody, "Mobile Net Detector" , MobileNetDetector )
     # g_logObj.info("Mobile Net Detector")
     # g_logObj.info("Mobile Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
     #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
@@ -154,7 +152,7 @@ async def MobileNetDetector(msgBody):
 
 
 async def processImagesUsingYoloDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "Yolo Detector" , eventMessageProcessor.YoloDetector )
+    return commonProcessImageDetector(msgBody, "Yolo Detector" , YoloDetector )
     # g_logObj.info("Yolo Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
     #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
     #                                                                 msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    
@@ -174,7 +172,7 @@ async def YoloDetector(msgBody):
 
 
 async def processImagesUsingTenslorFlowDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "Tensor Flow Detector" , eventMessageProcessor.TenslorFlowDetector )
+    return commonProcessImageDetector(msgBody, "Tensor Flow Detector" , TenslorFlowDetector )
     # g_logObj.info("Tensorflow Detector Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
     #                                                             msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
     #                                                             msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))    

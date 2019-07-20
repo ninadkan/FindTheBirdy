@@ -1,6 +1,3 @@
-
-
-
 FROM python:3.6
 LABEL maintainer="ninad_kanthi@hotmail.com"
 
