@@ -1,0 +1,23 @@
+﻿version: '3.3'
+
+services:
+
+   pythoncore:
+     image: computervisionproject.azurecr.io/pythoncore:0.2
+     restart: always
+   web:
+     image: computervisionproject.azurecr.io/web:0.1
+     ports: 
+        - "443:443"
+        - "6420:6420"
+     restart: always
+   messaging:
+     image: computervisionproject.azurecr.io/pythonmessagingapi:0.2
+     ports: 
+        - "5002:5002"
+     restart: always
+   api:
+     image: computervisionproject.azurecr.io/pythonapi:0.2
+     ports: 
+        - "5555:5555"
+     restart: always

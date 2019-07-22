@@ -11,7 +11,7 @@ const fs = require('fs')
 var path = require('path');
 
 // Initialize variables.
-var port = 6420; // process.env.PORT || 8080;
+var port = 443; // process.env.PORT || 8080;
 
 
     // Configure morgan module to log all requests.

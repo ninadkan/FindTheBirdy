@@ -1,0 +1,54 @@
+FROM node:10
+LABEL maintainer="ninad_kanthi@hotmail.com"
+
+RUN mkdir /usr/src/webapp
+ENV PATH="/usr/src/webapp:${PATH}"
+WORKDIR /usr/src/webapp
+
+RUN apt-get update \
+        && apt-get install -y --no-install-recommends dialog \
+        && apt-get update
+
+#dir /b * >files.txt
+COPY index.html /usr/src/webapp/
+COPY keytmp.pem /usr/src/webapp/
+COPY LICENSE /usr/src/webapp/
+COPY package-lock.json /usr/src/webapp/
+COPY package.json /usr/src/webapp/
+COPY README.md /usr/src/webapp/
+COPY run.bat /usr/src/webapp/
+COPY server.js /usr/src/webapp/
+
+#dir /ad /s /b > dirStruct.txt
+
+ADD App /usr/src/webapp/App
+ADD css /usr/src/webapp/css
+ADD images /usr/src/webapp/images
+ADD js /usr/src/webapp/js
+ADD lib /usr/src/webapp/lib
+ADD security /usr/src/webapp/security
+ADD App/Content /usr/src/webapp/App/Content
+ADD App/Scripts /usr/src/webapp/App/Scripts
+ADD App/Views /usr/src/webapp/App/Views
+ADD App/Scripts/Ctrls /usr/src/webapp/App/Scripts/Ctrls
+ADD lib/azure /usr/src/webapp/lib/azure
+ADD lib/bootstrap /usr/src/webapp/lib/bootstrap
+ADD lib/bootstrap-4.3.1-dist /usr/src/webapp/lib/bootstrap-4.3.1-dist
+ADD lib/jquery /usr/src/webapp/lib/jquery
+ADD lib/jquery-validation /usr/src/webapp/lib/jquery-validation
+ADD lib/jquery-validation-unobtrusive /usr/src/webapp/lib/jquery-validation-unobtrusive
+ADD lib/azure/dist /usr/src/webapp/lib/azure/dist
+ADD lib/bootstrap/dist /usr/src/webapp/lib/bootstrap/dist
+ADD lib/bootstrap/dist/css /usr/src/webapp/lib/bootstrap/dist/css
+ADD lib/bootstrap/dist/js /usr/src/webapp/lib/bootstrap/dist/js
+ADD lib/bootstrap-4.3.1-dist/css /usr/src/webapp/lib/bootstrap-4.3.1-dist/css
+ADD lib/bootstrap-4.3.1-dist/js /usr/src/webapp/lib/bootstrap-4.3.1-dist/js
+ADD lib/jquery/dist /usr/src/webapp/lib/jquery/dist
+ADD lib/jquery-validation/dist /usr/src/webapp/lib/jquery-validation/dist
+
+RUN mkdir /usr/src/webapp/node_modules
+RUN npm install
+
+EXPOSE 443 6420
+
+CMD ["node", "server.js"]
