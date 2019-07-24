@@ -82,7 +82,7 @@ COPY pythonWebAPI/validateJWT.py ./
 COPY pythonWebAPI/initPythonWebAPI.sh ./
 COPY pythonWebAPI/startUnicorn.sh ./
 #copy certificate file
-COPY pythonWebAPI/privkey.key ./
+COPY pythonWebAPI/privkey.pem ./
 COPY pythonWebAPI/fullchain.pem ./
 
 RUN chmod +x initPythonWebAPI.sh

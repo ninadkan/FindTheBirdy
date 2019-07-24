@@ -82,7 +82,7 @@ COPY pythonExperimentAPI/birdDetector-api.py ./
 COPY pythonExperimentAPI/initPythonMessagingAPI.sh ./
 COPY pythonExperimentAPI/startUnicorn.sh ./
 #copy certificate file
-COPY pythonExperimentAPI/privkey.key ./
+COPY pythonExperimentAPI/privkey.pem ./
 COPY pythonExperimentAPI/fullchain.pem ./
 
 RUN chmod +x initPythonMessagingAPI.sh

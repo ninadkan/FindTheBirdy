@@ -32,7 +32,7 @@ var http = require('http')
     //http.createServer(app).listen(80);
 
 const httpsOptions = {
-    key: fs.readFileSync('./security/privkey.key'),
+    key: fs.readFileSync('./security/privkey.pem'),
     cert: fs.readFileSync('./security/fullchain.pem')
 }
 
