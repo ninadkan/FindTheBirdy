@@ -18,6 +18,7 @@ import logging
 from loggingBase import getGlobalHandler, getGlobalLogObject, clsLoggingBase
 g_logObj = getGlobalLogObject(__name__)
 
+dummySleep=1
 # ============================ start Experiment Message ============================ #
 
 async def processStartExperimentMessage(msgBody):
@@ -43,11 +44,12 @@ async def processStartExperimentMessage(msgBody):
     else:
         # log error the message 
         g_logObj.warn("Unable to delete files")
+    await asyncio.sleep(dummySleep)
     return True
 
 
 # ============================ process Experiment Images Message ============================ #
-dummySleep=1
+
 
 async def processExperimentImages(msgBody):
     global g_logObj

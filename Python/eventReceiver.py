@@ -41,10 +41,10 @@ dispatch={
     common._MESSAGE_TYPE_DETECTOR_MOBILE_NET:eventMessageProcessor.processImagesUsingMobileNetDetector,
     common._MESSAGE_TYPE_DETECTOR_TENSORFLOW:eventMessageProcessor.processImagesUsingTenslorFlowDetector
 }
-async def isJsonWrapper(jsonBody):
-    rValue, msg_r = common.is_json(jsonBody)
-    await asyncio.sleep(1)
-    return rValue, msg_r
+# async def isJsonWrapper(jsonBody):
+#     rValue, msg_r = common.is_json(jsonBody)
+#     await asyncio.sleep(1)
+#     return rValue, msg_r
 
 
 
@@ -77,17 +77,20 @@ async def processMessages(client, partition, consumerGrp, cleanUp = False):
             for event_data in batch:
                 last_offset = event_data.offset
                 last_sn = event_data.sequence_number
-
                 g_logObj.info('{} :Number of messages in the batch {}'.format(consumerGrp, len(batch)))
-                brv, loaded_r = await isJsonWrapper(event_data.body_as_str())
-                
+                brv, loaded_r =  common.is_json(event_data.body_as_str())
                 if (brv == True):
                     # each message has an indicator of what type it is; That defines our eventReceiver Type
                     if (loaded_r[common._MESSAGE_TYPE_TAG]== _msgType):
                         total =+1
                         if (dispatch[loaded_r[common._MESSAGE_TYPE_TAG]]):
                             g_logObj.info(loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID])
-                            brv = True if cleanUp else await dispatch[loaded_r[common._MESSAGE_TYPE_TAG]](loaded_r)
+                            if (cleanUp):
+                                brv = True
+                            else:
+                                loop = asyncio.get_event_loop()
+                                brv = loop.run_until_complete(dispatch[loaded_r[common._MESSAGE_TYPE_TAG]](loaded_r))
+                            # if we've success or its a clean-up, we increment our pointer. 
                             if (brv == True):
                                 brv = msgOperations.insert_offset_document( EVENTHUB, 
                                                                             consumerGrp,
@@ -116,7 +119,6 @@ async def processMessages(client, partition, consumerGrp, cleanUp = False):
     return 
 
 try:
-
     ADDRESS = os.environ.get('EVENT_HUB_ADDRESS')
     USER = os.environ.get('EVENT_HUB_RECEIVER_SAS_POLICY')
     KEY = os.environ.get('EVENT_HUB_RECEIVER_SAS_KEY')
