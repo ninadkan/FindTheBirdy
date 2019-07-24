@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "findthebird-ninadk",
+  "private_key_id": "2bd0122fe04a013273fedd65c2c8a8904447bcec",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDWiJ9b5zpRgOWd\nX7kJy6781q/52MoD81G6RSZ6B5fi1u6w4ayVJBIwxLCfajucrRlo61Cl2BVOGL+t\n4OgNN+g93RUpQEc274en+0X8moRsHgWIJD0DTITf+Rky1krs0YQgHBOgxBJm+gDx\niIrPaYlulPNB9/Ik/CdSHIw13GILA+KXsw2KzNeWlw9gGey6FB+X+cM5C2Ie8oPK\n0Q2BR0nQLNHGSGYH0pyrR8jjCN3qGc3kPScBYAaJC6QCW52InGdAyg0hcjv6frre\nE1Oob/vC3DkJ7UEme9ogcMctxWbo0NcrSqAzOfBi7hxiHvoqbe4gcnNocg9SZlnS\nu1ezYjzFAgMBAAECggEAX11PHY7dZTKbn0fYXMreqAUVJ8afEn98coVfs7ohYdQy\nOY2v5oIo1eXxL4QNKLnnxDRqXrZ9zgABYN1LueiCw9E9oV8x6PE0R89STpYvTFJS\nGjElsAw5Osij023f04LVLWLdtMbD+WOjvLp6HfYngfETa105FgjCv+TxzNWA/ay1\nh0GcbsqD83ISh6XY7e1TOImtsB4Ezm2z9S/nGJ17sQyvGNkJiT+fizCpoIb+5skb\nw1BrWzdlKWOSN+23hGdaC+LLBBlFyCTWxiGfGaFTeaI6gCur3rGvEH6+G3ohDjUD\njRsHECT9XZNNLsJ/5u5lUFsqGrgAYcQ/t4L9q13HRwKBgQDwdYSIuW5689Az885I\nCloXQL+ES0o5kVivkwBF17IVgqIO+i3IHZ2bloucR5jXWYnmji5obwRDs0Bs0nzk\nbi998jZ85x3B0n8LB7Xr1qd/v1mJfr5D6P8sCSLXyGja0GuZiIzAW2vXbJofloKS\nn9pR/x8JJSjAZ6Y3Vfvh/m4XZwKBgQDkZij8R45Bcqb1fTC+iWKGpw2xB+9UCcjt\nHkIt53M4eOVczR0ET/bTflB1ns1XDh3vP/thOvlVhXT/J2ZFDiaJoJLKfDB1YYmw\nnGUi7rrHjQX25gfsn9Omw9+yIwTITcmOTab6LEu6HUyEEZDuWHjwF4hNeMmpPH6Y\nAPh62UgK8wKBgQCUdvqtsFAWehNDAHWM5VdapA+bjyD1CljHjuvMM7Ewtsd4l99M\nf3ygZAMvKsWjsRUD1SWyNVlcs4BDsHKMV7va94HM/KXS1jS6irg4NQCWT37o9ehj\n5agneDybHpIfCDBnS3gcDFY5XESM3FEiVrBlkC+JZfgTU+u8nso2bvFqYQKBgQDT\nIJCAbBDW9Qna4ce+SbcW67NfUwtrrsPaVN8uGcZLjI3Q1BYfl199r0TnBU2hTH5l\nW8qe3WoAISa+eggyi1saW6F1pYkR6IDkDh37RZzIu9aonYjzteZrQKM2wuI32pgX\ngDZ7CZlSyKSjbK2Bda0Nm2M24hHf6/jFwBfxT4sl+wKBgEefZ9EEwMKRJCNtjhOL\nBmhA9jJOGuu9DkAwt78S09m+VRyFq+Gh2KIml9amCb42UKUX46LMisKL7IZE/Llx\nVJbtBj/HpOQnUXPjjKYs7xONGe7OBJHqevEeOT/hJJRK3Dj/6oeryH8qTAnEFRk3\nvZIZlcaU0OnPq+xXSCUUNdYA\n-----END PRIVATE KEY-----\n",
+  "client_email": "vision-quickstart@findthebird-ninadk.iam.gserviceaccount.com",
+  "client_id": "111481075704302517140",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/vision-quickstart%40findthebird-ninadk.iam.gserviceaccount.com"
+}

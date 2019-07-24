@@ -1,0 +1,27 @@
+﻿version: '3.3'
+
+services:
+
+   pythoncore:
+     image: pythoncore:0.2
+     restart: always
+   web:
+     image: web:0.2
+     ports: 
+        - "443:443"
+     restart: always
+   messaging:
+     image: pythonmessagingapi:0.2
+     ports: 
+        - "5002:5002"
+     environment:
+      AZURE_ACN_NAME: secureappstorage
+      EVENT_HUB_SENDER_SAS_POLICY: sender 
+      EVENT_HUB_SENDER_SAS_KEY: jgJtaN8LAugWNbFDQDLrDu+pRDZJTCiswDhT5NygCkE=
+      EVENT_HUB_ADDRESS: sb://ninadkeventhub.servicebus.windows.net/objectdetectorevents
+     restart: always
+   api:
+     image: pythonapi:0.2
+     ports: 
+        - "5555:5555"
+     restart: always

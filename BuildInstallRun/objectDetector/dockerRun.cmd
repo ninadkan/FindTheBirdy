@@ -1,0 +1,1 @@
+docker run -it -p 443:443 -p 6420:6420 web:0.2

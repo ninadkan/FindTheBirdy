@@ -1,0 +1,16 @@
+set GOOGLE_APPLICATION_CREDENTIALS=key.json
+set COSMOSDB_HOST=ninadkcosmosdb
+set COSMOSDB_KEY=S1xcQSZiSUDWpBwhAkQ5BHo6f9QuggZgqZPhuok718ziTPe7Dawk8XgCVNrxagnqZhyCSOevgnUcntyD0q3tyg==
+set COSMOSDB_DATABASE=experiment-find-the-birdy
+set AZURE_VISION_API_KEY=8d074ae6e16d4a8aa6dff358045c5252
+set AZURE_ACN_NAME=secureappstorage
+set AZURE_ACN_STRG_KEY=xBusNj6HF7AFVldvQGKUef+aqSi/UvowgrkLP11MvIT+kdKrPe9FsraIG62m126xECovL5nZxREqkWEFOsvrsQ==
+set AZURE_EVENT_HUB_CONTAINER_NAME=eventlogcontainer
+
+set EVENT_HUB_NAMESPACE=ninadkeventhub
+set EVENT_HUB_NAME=objectdetectorevents
+set EVENT_HUB_ADDRESS=sb://ninadkeventhub.servicebus.windows.net/objectdetectorevents
+set EVENT_HUB_SENDER_SAS_POLICY=sender
+set EVENT_HUB_SENDER_SAS_KEY=jgJtaN8LAugWNbFDQDLrDu+pRDZJTCiswDhT5NygCkE=
+set EVENT_HUB_RECEIVER_SAS_POLICY=receiver
+set EVENT_HUB_RECEIVER_SAS_KEY=Zu46pTgoN3j2DmEh6jxhN0B2Zetaad1NQ2gGMlllu4Q=

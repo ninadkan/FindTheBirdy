@@ -9,7 +9,6 @@ services:
      image: computervisionproject.azurecr.io/web:0.1
      ports: 
         - "443:443"
-        - "6420:6420"
      restart: always
    messaging:
      image: computervisionproject.azurecr.io/pythonmessagingapi:0.2
