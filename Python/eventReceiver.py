@@ -41,6 +41,12 @@ dispatch={
     common._MESSAGE_TYPE_DETECTOR_MOBILE_NET:eventMessageProcessor.processImagesUsingMobileNetDetector,
     common._MESSAGE_TYPE_DETECTOR_TENSORFLOW:eventMessageProcessor.processImagesUsingTenslorFlowDetector
 }
+async def isJsonWrapper(jsonBody):
+    rValue, msg_r = common.is_json(event_data.body_as_str())
+    await asyncio.sleep(1)
+    return rValue, msg_r
+
+
 
 async def processMessages(client, partition, consumerGrp, cleanUp = False):
     global _msgType
@@ -73,7 +79,8 @@ async def processMessages(client, partition, consumerGrp, cleanUp = False):
                 last_sn = event_data.sequence_number
 
                 g_logObj.info('{} :Number of messages in the batch {}'.format(consumerGrp, len(batch)))
-                brv, loaded_r = common.is_json(event_data.body_as_str())
+                brv, loaded_r = isJsonWrapper(event_data.body_as_str())
+                
                 if (brv == True):
                     # each message has an indicator of what type it is; That defines our eventReceiver Type
                     if (loaded_r[common._MESSAGE_TYPE_TAG]== _msgType):

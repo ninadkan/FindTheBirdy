@@ -1,11 +1,9 @@
 from pathlib import Path
 import json
-import asyncio
 
 def is_json(myjson):
     json_object = None
     try:
-        await asyncio.sleep(1)
         json_object = json.loads(myjson)
     except Exception as e:
         #print("Not json")

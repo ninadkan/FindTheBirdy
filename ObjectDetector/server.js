@@ -40,7 +40,7 @@ const httpsOptions = {
 //Start the server.
 const server = https.createServer(httpsOptions, app)
     .listen(httpsPort, () => {
-        console.log('server running at ' + port)
+        console.log('server running at ' + httpsPort)
     })
 
 // app.listen(port);
