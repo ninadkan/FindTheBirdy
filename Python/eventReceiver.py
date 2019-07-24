@@ -42,7 +42,7 @@ dispatch={
     common._MESSAGE_TYPE_DETECTOR_TENSORFLOW:eventMessageProcessor.processImagesUsingTenslorFlowDetector
 }
 async def isJsonWrapper(jsonBody):
-    rValue, msg_r = common.is_json(event_data.body_as_str())
+    rValue, msg_r = common.is_json(jsonBody)
     await asyncio.sleep(1)
     return rValue, msg_r
 
