@@ -71,12 +71,12 @@ async def processExperimentImages(msgBody):
     return True
 
 # ============================ Image Processors ============================ #
-async def commonProcessImageDetector(msgBody, detectorType, callBackfn):
+#TODO:: Make this more sanitised 
+async def commonDetectorProcessing(msgBody, detectorType, callBackfn):
     global g_logObj
-    brv = False
-    g_logObj.info("{} Detector Message Received ... {} {} {}".format(   detectorType, 
+    brv  = False
+    g_logObj.info("{} Detector Message Received ... {} {}".format(   detectorType, 
                                                                         msgBody[common._MESSAGE_TYPE_DETECTOR_MESSAGE_ID], 
-                                                                        msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ],
                                                                         msgBody[common._MESSAGE_TYPE_DETECTOR_CREATION_DATE_TIME ]))
     if (msgBody[common._MESSAGE_TYPE_DETECTOR_EXPERIMENT_NAME ] is None):
         g_logObj.info("...{} Detector, Dummy message received".format(detectorType))
@@ -85,45 +85,105 @@ async def commonProcessImageDetector(msgBody, detectorType, callBackfn):
         brv = callBackfn(msgBody)
     await asyncio.sleep(dummySleep)
     g_logObj.info("...{} Detector".format(detectorType))
-    return brv
+    return bDummyMessageReceived
 
 async def processImagesUsingGoogleDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "google" , GoogleDetector)
+    # global g_logObj
+    # brv = True
+    # g_logObj.info("processImagesUsingGoogleDetector ...")
+    return await commonDetectorProcessing(msgBody, "google", GoogleDetector)
+    # if (dmsg):
+    #     pass
+    # else:
+    #     brv = GoogleDetector(msgBody)
+    # await asyncio.sleep(dummySleep)
+    # return brv
 
-async def GoogleDetector(msgBody):
+def GoogleDetector(msgBody):
+    global g_logObj
+    g_logObj.info("GoogleDetector ...")
     from googleImageDetector import processImages as googleTest
     googleTest(experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
                 messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
     return True
 
 async def processImagesUsingAzureDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "Azure" , AzureDetector  )
+    return await commonDetectorProcessing(msgBody, "Azure", AzureDetector)
+    # global g_logObj
+    # brv = True
+    # g_logObj.info("processImagesUsingAzureDetector ...")
+    # dmsg = commonDetectorProcessing(msgBody, "Azure")
+    # if (dmsg):
+    #     pass
+    # else:
+    #     brv = AzureDetector(msgBody)
+    # await asyncio.sleep(dummySleep)
+    # return brv
 
-async def AzureDetector(msgBody):
+def AzureDetector(msgBody):
+    global g_logObj
+    g_logObj.info("AzureDetector ...")
     return True
 
 async def processImagesUsingMobileNetDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "Mobile Net Detector" , MobileNetDetector )
+    return await commonDetectorProcessing(msgBody, "Mobile Net", MobileNetDetector)
+    # global g_logObj
+    # brv = True
+    # g_logObj.info("processImagesUsingMobileNetDetector ...")
+    # dmsg = commonDetectorProcessing(msgBody, "Mobile Net Detector")
+    # if (dmsg):
+    #     pass
+    # else:
+    #     brv = MobileNetDetector(msgBody)
+    # await asyncio.sleep(dummySleep)
+    # return brv
 
-async def MobileNetDetector(msgBody):
+def MobileNetDetector(msgBody):
+    global g_logObj
+    g_logObj.info("MobileNetDetector ...")
     from mobileNetImageDetector import processImages as mobileTest
     mobileTest(experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
                 messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
     return True
 
 async def processImagesUsingYoloDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "Yolo Detector" , YoloDetector )
+    return await commonDetectorProcessing(msgBody, "Yolo", YoloDetector)
+    # global g_logObj
+    # brv = True
+    # g_logObj.info("processImagesUsingYoloDetector ...")
+    # dmsg = commonDetectorProcessing(msgBody, "Yolo Detector")
+    # if (dmsg):
+    #     pass
+    # else:
+    #     brv = YoloDetector(msgBody)
+    # await asyncio.sleep(dummySleep)
+    # return brv
 
-async def YoloDetector(msgBody):
+
+def YoloDetector(msgBody):
+    global g_logObj
+    g_logObj.info("YoloDetector ...")
     from yoloBirdImageDetector import processImages as yoloTest
     yoloTest(   experimentName = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_EXPERIMENT_NAME ],
                 messageId = msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID])
     return True
 
 async def processImagesUsingTenslorFlowDetector(msgBody):
-    return commonProcessImageDetector(msgBody, "Tensor Flow Detector" , TenslorFlowDetector )
+    return await commonDetectorProcessing(msgBody, "TensorFlow", TenslorFlowDetector)
+    # global g_logObj
+    # brv = True
+    # g_logObj.info("processImagesUsingTenslorFlowDetector ...")
+    # dmsg = commonDetectorProcessing(msgBody, "Tensor Detector")
+    # if (dmsg):
+    #     pass
+    # else:
+    #     brv = TenslorFlowDetector(msgBody)
+    # await asyncio.sleep(dummySleep)
+    # return brv
 
-async def TenslorFlowDetector(msgBody):
+def TenslorFlowDetector(msgBody):
+    global g_logObj
+    g_logObj.info("TenslorFlowDetector ...")
     return True
 
 

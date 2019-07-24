@@ -46,8 +46,6 @@ dispatch={
 #     await asyncio.sleep(1)
 #     return rValue, msg_r
 
-
-
 async def processMessages(client, partition, consumerGrp, cleanUp = False):
     global _msgType
     global g_logObj
@@ -77,7 +75,7 @@ async def processMessages(client, partition, consumerGrp, cleanUp = False):
             for event_data in batch:
                 last_offset = event_data.offset
                 last_sn = event_data.sequence_number
-                g_logObj.info('{} :Number of messages in the batch {}'.format(consumerGrp, len(batch)))
+                #g_logObj.info('{} :Number of messages in the batch {}'.format(consumerGrp, len(batch)))
                 brv, loaded_r =  common.is_json(event_data.body_as_str())
                 if (brv == True):
                     # each message has an indicator of what type it is; That defines our eventReceiver Type
@@ -103,6 +101,7 @@ async def processMessages(client, partition, consumerGrp, cleanUp = False):
                             continue
                     else:
                         # nothing to do with us, ignore and continue
+                        #g_logObj.info("Message is not of type - {}".format(_msgType))
                         if (cleanUp== True):
                             g_logObj.info('{} :Incompatible message type received, updating offset'.format(consumerGrp,loaded_r[common._MESSAGE_TYPE_START_EXPERIMENT_MESSAGE_ID]))
                             msgOperations.insert_offset_document(EVENTHUB, consumerGrp,partition, last_offset.value, _msgType)
