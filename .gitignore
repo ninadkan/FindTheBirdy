@@ -40,7 +40,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 # out lib exception for the git
 !wwwroot/lib
 lib64/
