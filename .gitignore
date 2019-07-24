@@ -2,7 +2,7 @@ Data/*.jpg
 Data/outputOpenCV/*.jpg
 Data/AllBirds/*.jpg
 Python/__pycache__/
-Python/key.json
+#Python/key.json
 Python/yolo/yolov3.weights
 Python/mobileNet/MobileNetSSD_deploy.caffemodel
 Python/googleImageDetector.pyc
@@ -11,7 +11,7 @@ Python/keys
 Python/keys.sh
 # python folder changed from upperCase to lowerCase
 python/__pycache__/
-python/key.json
+#python/key.json
 python/yolo/yolov3.weights
 python/mobileNet/MobileNetSSD_deploy.caffemodel
 python/googleImageDetector.pyc
