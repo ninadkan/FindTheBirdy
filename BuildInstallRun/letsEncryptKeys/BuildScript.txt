@@ -1,0 +1,1 @@
+sudo certbot certonly --webroot -w /home/ninadk/FindTheBirdy/ObjectDetector -d computer-vision-proj.northeurope.cloudapp.azure.com
