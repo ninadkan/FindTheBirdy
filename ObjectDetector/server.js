@@ -29,18 +29,19 @@ var http = require('http')
         res.sendFile(path.join(__dirname + '/index.html'));
     });
 
+    //http.createServer(app).listen(80);
 
-// const httpsOptions = {
-//     key: fs.readFileSync('./security/cert.key'),
-//     cert: fs.readFileSync('./security/cert.pem')
-// }
+const httpsOptions = {
+    key: fs.readFileSync('./security/privkey.key'),
+    cert: fs.readFileSync('./security/fullchain.pem')
+}
 
-http.createServer(app).listen(80);
+
 //Start the server.
-// const server = https.createServer(httpsOptions, app)
-//     .listen(httpsPort, () => {
-//         console.log('server running at ' + port)
-//     })
+const server = https.createServer(httpsOptions, app)
+    .listen(httpsPort, () => {
+        console.log('server running at ' + port)
+    })
 
 // app.listen(port);
 // console.log('Listening on port ' + port + '...'); 

@@ -35,7 +35,7 @@ RUN apt-get update \
 
 WORKDIR /home/python
 
-EXPOSE 443 5555 2222
+EXPOSE 443 5555
 
 # copy python files
 # dir /b *.py > pythonFile.txt
@@ -82,8 +82,8 @@ COPY pythonWebAPI/validateJWT.py ./
 COPY pythonWebAPI/initPythonWebAPI.sh ./
 COPY pythonWebAPI/startUnicorn.sh ./
 #copy certificate file
-#COPY Docker/keys/privkey.key ./
-#COPY Docker/keys/fullchain.pem ./
+COPY pythonWebAPI/privkey.key ./
+COPY pythonWebAPI/fullchain.pem ./
 
 RUN chmod +x initPythonWebAPI.sh
 RUN chmod +x startUnicorn.sh
