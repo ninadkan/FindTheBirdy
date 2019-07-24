@@ -4,6 +4,18 @@ services:
 
    pythoncore:
      image: pythoncore:0.2
+     environment:
+      GOOGLE_APPLICATION_CREDENTIALS: key.json
+      AZURE_VISION_API_KEY: 8d074ae6e16d4a8aa6dff358045c5252
+      AZURE_ACN_NAME: secureappstorage
+      AZURE_EVENT_HUB_CONTAINER_NAME: eventlogcontainer
+      EVENT_HUB_NAMESPACE: ninadkeventhub
+      EVENT_HUB_NAME: objectdetectorevents
+      EVENT_HUB_RECEIVER_SAS_POLICY: receiver
+      EVENT_HUB_RECEIVER_SAS_KEY: Zu46pTgoN3j2DmEh6jxhN0B2Zetaad1NQ2gGMlllu4Q=      
+      EVENT_HUB_SENDER_SAS_POLICY: sender 
+      EVENT_HUB_SENDER_SAS_KEY: jgJtaN8LAugWNbFDQDLrDu+pRDZJTCiswDhT5NygCkE=
+      EVENT_HUB_ADDRESS: sb://ninadkeventhub.servicebus.windows.net/objectdetectorevents     
      restart: always
    web:
      image: web:0.2
