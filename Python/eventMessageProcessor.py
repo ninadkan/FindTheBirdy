@@ -49,8 +49,6 @@ async def processStartExperimentMessage(msgBody):
 
 
 # ============================ process Experiment Images Message ============================ #
-
-
 async def processExperimentImages(msgBody):
     global g_logObj
     g_logObj.info("Process Experiment Message Received ... {} {} {}".format( msgBody[common._MESSAGE_TYPE_PROCESS_EXPERIMENT_MESSAGE_ID], 

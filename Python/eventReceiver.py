@@ -88,8 +88,9 @@ async def processMessages(client, partition, consumerGrp, cleanUp = False):
                             if (cleanUp):
                                 brv = True
                             else:
-                                loop = asyncio.get_event_loop()
-                                brv = loop.run_until_complete(dispatch[loaded_r[common._MESSAGE_TYPE_TAG]](loaded_r))
+                                #loop = asyncio.get_event_loop()
+                                #brv = loop.run_until_complete(dispatch[loaded_r[common._MESSAGE_TYPE_TAG]](loaded_r))
+                                brv = await dispatch[loaded_r[common._MESSAGE_TYPE_TAG]](loaded_r)
                             # if we've success or its a clean-up, we increment our pointer. 
                             if (brv == True):
                                 brv = msgOperations.insert_offset_document( EVENTHUB, 
@@ -109,7 +110,6 @@ async def processMessages(client, partition, consumerGrp, cleanUp = False):
                 else:
                     g_logObj.warn('Message body is not json! {}'.format(event_data.body_as_str()))
                     continue
-                
                 timeout = time.time() + 60*receiver_timeOut # reset our timer
                 g_logObj.info('{} : checkout time increased ...{}'.format(consumerGrp, time.strftime("%H:%M:%S", time.localtime())))
     end_time = time.time()
