@@ -6,6 +6,9 @@ services:
      image: pythoncore:0.2
      environment:
       GOOGLE_APPLICATION_CREDENTIALS: key.json
+      COSMOSDB_HOST: ninadkcosmosdb
+      COSMOSDB_KEY: S1xcQSZiSUDWpBwhAkQ5BHo6f9QuggZgqZPhuok718ziTPe7Dawk8XgCVNrxagnqZhyCSOevgnUcntyD0q3tyg==
+      COSMOSDB_DATABASE: experiment-find-the-birdy      
       AZURE_VISION_API_KEY: 8d074ae6e16d4a8aa6dff358045c5252
       AZURE_ACN_NAME: secureappstorage
       AZURE_EVENT_HUB_CONTAINER_NAME: eventlogcontainer
