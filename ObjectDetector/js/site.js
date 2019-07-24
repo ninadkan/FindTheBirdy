@@ -36,7 +36,7 @@ var applicationConfig = {
 
 
     //AZURE_BASE_URL = 'http://localhost:5555/'
-    AZURE_BASE_URL = 'http://computer-vision-proj.northeurope.cloudapp.azure.com:5555'
+    AZURE_BASE_URL = 'http://computer-vision-proj.northeurope.cloudapp.azure.com:5555/'
     AZURE_PYTHON_FILE_STORAGE_WEB_API = AZURE_BASE_URL + 'azureStorage/v1.0/';
     AZURE_PYTOHN_COSMOS_WEB_API= AZURE_BASE_URL +'cosmosDB/v1.0/';
 

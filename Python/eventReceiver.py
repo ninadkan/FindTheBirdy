@@ -62,7 +62,7 @@ async def processMessages(client, partition, consumerGrp, cleanUp = False):
     
     #batch = receiver.receive(timeout=60*5)
     receiver_timeOut = 6
-    timeout = time.time() + 60*receiver_timeOut # eight statusUpdateminutes from now
+    timeout = time.time() + 60*receiver_timeOut # statusUpdateminutes from now
    
     while (time.time() < timeout):
         batch = await receiver.receive(timeout=receiver_timeOut)

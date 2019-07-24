@@ -1,5 +1,5 @@
 #!/bin/bash
-source keys.sh
+#source keys.sh
 #source processExperimentReceiver.sh
 # wonderful way to get the environment variables passed. Brilliant. 
 drain=${drain:=" "}
