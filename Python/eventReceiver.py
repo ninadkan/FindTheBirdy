@@ -79,7 +79,7 @@ async def processMessages(client, partition, consumerGrp, cleanUp = False):
                 last_sn = event_data.sequence_number
 
                 g_logObj.info('{} :Number of messages in the batch {}'.format(consumerGrp, len(batch)))
-                brv, loaded_r = isJsonWrapper(event_data.body_as_str())
+                brv, loaded_r = await isJsonWrapper(event_data.body_as_str())
                 
                 if (brv == True):
                     # each message has an indicator of what type it is; That defines our eventReceiver Type
