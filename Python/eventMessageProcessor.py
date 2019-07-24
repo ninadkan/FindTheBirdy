@@ -85,7 +85,7 @@ async def commonDetectorProcessing(msgBody, detectorType, callBackfn):
         brv = callBackfn(msgBody)
     await asyncio.sleep(dummySleep)
     g_logObj.info("...{} Detector".format(detectorType))
-    return bDummyMessageReceived
+    return brv
 
 async def processImagesUsingGoogleDetector(msgBody):
     # global g_logObj
