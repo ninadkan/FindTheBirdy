@@ -80,7 +80,7 @@ COPY processExperimentReceiver.sh ./
 # copy configuration files
 # COPY Docker/keys/keys.sh ./
 COPY key.json ./
-COPY Docker/initPythonCore.sh ./
+COPY docker/initPythonCore.sh ./
 
 RUN chmod +x processExperimentReceiver.sh
 RUN chmod +x initPythonCore.sh
