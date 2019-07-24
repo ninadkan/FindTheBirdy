@@ -11,6 +11,7 @@ services:
       COSMOSDB_DATABASE: experiment-find-the-birdy      
       AZURE_VISION_API_KEY: 8d074ae6e16d4a8aa6dff358045c5252
       AZURE_ACN_NAME: secureappstorage
+      AZURE_ACN_STRG_KEY: xBusNj6HF7AFVldvQGKUef+aqSi/UvowgrkLP11MvIT+kdKrPe9FsraIG62m126xECovL5nZxREqkWEFOsvrsQ==
       AZURE_EVENT_HUB_CONTAINER_NAME: eventlogcontainer
       EVENT_HUB_NAMESPACE: ninadkeventhub
       EVENT_HUB_NAME: objectdetectorevents
