@@ -9,7 +9,7 @@ Function removeNSG($NsgName)
     {
         #remove the NSG from the attached Subnet first
          $NSG = Remove-AzureRMNetworkSecurityGroup `
-            -ResourceGroupName $RESOURCEGROUP_NAME -Name $NsgName
+            -ResourceGroupName $RESOURCEGROUP_NAME -Name $NsgName -Force
     }
     else
     {
@@ -24,7 +24,7 @@ Function removeSubNet($SubnetName, $virtualNetwork)
     if ($Subnet)
     {
         $Subnet = Remove-AzureRMVirtualNetworkSubnetConfig -Name $SubnetName `
-        -VirtualNetwork $virtualNetwork
+        -VirtualNetwork $virtualNetwork -Force
         $virtualNetwork | Set-AzureRMVirtualNetwork
     }
     else
@@ -45,7 +45,7 @@ if ($virtualNetwork)
         -virtualNetwork $virtualNetwork
   
     Remove-AzureRMVirtualNetwork -ResourceGroupName $RESOURCEGROUP_NAME `
-        -Name $VIRTUALNETWORKNAME
+        -Name $VIRTUALNETWORKNAME -Force
 }
 else
 {

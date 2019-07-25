@@ -9,9 +9,11 @@ Function removeNetworkInterface($networkInterfaceName )
         -ErrorAction SilentlyContinue
     if ($nwInterface)
     {
+        Write-Warning  "Removing '$networkInterfaceName'"
         Remove-AzureRMNetworkInterface `
             -Name $networkInterfaceName `
-            -ResourceGroupName $RESOURCEGROUP_NAME
+            -ResourceGroupName $RESOURCEGROUP_NAME `
+            -Force
     }
     else
     {

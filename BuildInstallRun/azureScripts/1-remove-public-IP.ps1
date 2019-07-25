@@ -9,7 +9,7 @@ if ($publicIp)
 {
     Remove-AzureRMPublicIpAddress `
         -Name $PUBLIC_IP_NAME `
-        -ResourceGroupName $RESOURCEGROUP_NAME 
+        -ResourceGroupName $RESOURCEGROUP_NAME -Force
 }
 
 
