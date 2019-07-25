@@ -1,6 +1,6 @@
 ﻿. "$PSScriptRoot\login.ps1"
 
-function removeIPAddresses($nicName)
+function detachIPAddressFromNIC($nicName)
 {
     $nic = Get-AzNetworkInterface `
             -Name $nicName `
@@ -66,8 +66,8 @@ Function closeRDPPortForNSGs($NsgName)
 closeRDPPortForNSGs -NsgName $NSG_NAME
 
 
-# Remove Temporary IP addresses
-removeIPAddresses `
+# detach IP Address from NIC
+detachIPAddressFromNIC `
     -nicName $NETWORK_INTERFACE_NAME
 
 

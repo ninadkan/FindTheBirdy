@@ -17,6 +17,8 @@ $NSG_NAME = "ComputerVisionProj-VNET-NSG"
 
 $HTTP_NSG_RULE = "http_nsg_rule"
 $HTTPS_NSG_RULE = "https_nsg_rule"
+$HTTPS_NSG_5002_RULE = "https_nsg_5002_rule"
+$HTTPS_NSG_5555_RULE = "https_nsg_5555_rule"
 $SSH_NSG_RULE = "ssh_nsg_rule"
 
 

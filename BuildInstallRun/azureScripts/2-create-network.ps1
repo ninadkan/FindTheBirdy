@@ -25,8 +25,24 @@ Function createNSG($NsgName,  $addRules)
                 -SourceAddressPrefix Internet -SourcePortRange * `
                 -DestinationAddressPrefix * -DestinationPortRange 443
 
+
+            $httpsRule5002 = New-AzNetworkSecurityRuleConfig -Name $HTTPS_NSG_5002_RULE `
+                -Description "Allow HTTPS" -Access Allow `
+                -Protocol Tcp -Direction Inbound -Priority 1030 `
+                -SourceAddressPrefix Internet -SourcePortRange * `
+                -DestinationAddressPrefix * -DestinationPortRange 5002
+
+            $httpsRule5555 = New-AzNetworkSecurityRuleConfig -Name $HTTPS_NSG_5555_RULE `
+                -Description "Allow HTTPS" -Access Allow `
+                -Protocol Tcp -Direction Inbound -Priority 1030 `
+                -SourceAddressPrefix Internet -SourcePortRange * `
+                -DestinationAddressPrefix * -DestinationPortRange 5555
+
             $rules += $httpRule 
             $rules += $httpsRule 
+            $rules += $httpsRule5002
+            $rules += $httpsRule5555 
+             
             
             $NSG = New-AzNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
                 -Location $LOCATION `
