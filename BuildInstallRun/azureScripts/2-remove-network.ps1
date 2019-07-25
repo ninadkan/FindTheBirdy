@@ -45,7 +45,7 @@ if ($virtualNetwork)
         -virtualNetwork $virtualNetwork
   
     Remove-AzureRMVirtualNetwork -ResourceGroupName $RESOURCEGROUP_NAME `
-        -Name $VIRTUALNETWORKNAME -
+        -Name $VIRTUALNETWORKNAME -Force
 }
 else
 {
