@@ -65,31 +65,29 @@
         $('#dynamicTable').empty();
         output = [];
 
-
-        // arrarr.forEach(arr => {
-        //     arr.forEach(e => {
-        //       Object.keys(e).forEach(k => console.log(k))
-        //     })
-        //   })
-
         for (var i = startIndex; i < endIndex; i++) {
+            var firstRowPopulated = false
             messageId = _keysArray[i];
             //var messageId = Object.keys(resultElement)
             console.log(messageId)
-            
-            //console.log(resultElement)
-            populateFirstRowOutput(output, messageId, "dummy Experiment Name")
             arrayItems = _previousResultData[messageId]
             for (var k = 0; k < arrayItems.length; k++) {
                 innerRecord = arrayItems[k]
+                var experimentName = innerRecord["ExperimentName"]
+                if (!firstRowPopulated){
+                    populateFirstRowOutput(output, messageId, experimentName)
+                    firstRowPopulated = true
+                }
+
                 var createDateTime = innerRecord["DateTime"];
-                var dateParse = Date.parse(createDateTime)
-                if (dateParse){
-                    console.log(dateParse);
-                    var d = new Date()
-                    d.setDate(dateParse);
+                console.log(createDateTime)
+                //var dateParse = Date.parse(createDateTime)
+                if (createDateTime){
+                    console.log(createDateTime);
+                    var d = new Date(createDateTime)
+                    //d.setDate(dateParse);
                     if (d){
-                        createDateTime = (d.getMonth()+1) + '/' + d.getDate() + '/' +  d.getFullYear() + ':' +d.getHours() + '::' +d.getMinutes() + '::' + d.getSeconds()
+                        createDateTime = d.toLocaleDateString() + " " + d.toLocaleTimeString() //+ " " + d.toTimeString();//( d.getDate() + '/'+ d.getMonth()+1) + '/'  +  d.getFullYear() + ':' +d.getHours() + '::' +d.getMinutes() + '::' + d.getSeconds()
                     }
                 }
                 var id = innerRecord["id"];
@@ -99,7 +97,7 @@
                     var elapsedTime = (innerRecord["f_ElapsedTime"] == null) ? 0 : parseFloat(innerRecord["f_ElapsedTime"]).toFixed(2);
                     var result = (innerRecord["f_Result"] == null) ? 0 : innerRecord["f_Result"];
                     var totalRecords = (innerRecord["f_TotalRecords"] == null) ? 0 : innerRecord["f_TotalRecords"];
-                    populateOtherRowsOne(output, experimentName, result, totalRecords, elapsedTime, provider, time, id, createDateTime)
+                    populateOtherRowsOne(output, id, result, totalRecords, elapsedTime, provider, "", id, createDateTime)
                 }
                 else {
                     var currentCount = innerRecord["CurrentCount"];
@@ -107,7 +105,7 @@
                     var offset_Value = innerRecord["Offset_Value"];
                     var status = innerRecord["Status"];
                     var time = innerRecord["Time"];
-                    populateOtherRows(output, experimentName, currentCount, maxItems, offset_Value, status, time, id, createDateTime)
+                    populateOtherRows(output, id, currentCount, maxItems, offset_Value, status, time, id, createDateTime)
                 }
             }
         }
