@@ -7,7 +7,7 @@ Function createAttach_PublicIP_NIC($IpAddressName, `
                         )
 {
     #create a temporary public IP address
-    $IP = Get-AzPublicIpAddress `
+    $IP = Get-AzureRMPublicIpAddress `
         -Name $IpAddressName `
         -ResourceGroupName $RESOURCEGROUP_NAME `
         -ErrorAction SilentlyContinue
@@ -16,7 +16,7 @@ Function createAttach_PublicIP_NIC($IpAddressName, `
     {
         Write-Host -ForegroundColor Yellow `
             "create a new static IP address '$IpAddressName'... "
-        $IP = New-AzPublicIpAddress  `
+        $IP = New-AzureRMPublicIpAddress  `
                             -Name $IpAddressName `
                             -ResourceGroupName $RESOURCEGROUP_NAME `
                             -AllocationMethod Static `
@@ -25,7 +25,7 @@ Function createAttach_PublicIP_NIC($IpAddressName, `
     }
         
     
-    $nic = Get-AzNetworkInterface `
+    $nic = Get-AzureRMNetworkInterface `
             -Name $nicName `
             -ResourceGroupName $RESOURCEGROUP_NAME `
                
@@ -33,14 +33,14 @@ Function createAttach_PublicIP_NIC($IpAddressName, `
     {
         Write-Host -ForegroundColor Green `
             "Attaching the created public IP to NIC '$nicName'... "
-        $d =Set-AzNetworkInterfaceIpConfig `
+        $d =Set-AzureRMNetworkInterfaceIpConfig `
             -Name $nic.IpConfigurations[0].Name `
             -NetworkInterface $nic `
             -Subnet $nic.IpConfigurations[0].Subnet `
             -PrivateIpAddress $nic.IpConfigurations[0].PrivateIpAddress `
             -Primary `
             -PublicIpAddress $IP 
-         $d = Set-AzNetworkInterface -NetworkInterface $nic
+         $d = Set-AzureRMNetworkInterface -NetworkInterface $nic
     }
     $ipAddress = $IP.IpAddress
     Write-Host -ForegroundColor Cyan "IP address = '$ipAddress', NIC = '$nicName'"
@@ -49,7 +49,7 @@ Function createAttach_PublicIP_NIC($IpAddressName, `
 
 Function openRDPPortForNSGs($NsgName)
 {
-    $NSG = Get-AzNetworkSecurityGroup `
+    $NSG = Get-AzureRMNetworkSecurityGroup `
         -ResourceGroupName $RESOURCEGROUP_NAME `
         -Name $NsgName
     if ($NSG)
@@ -71,7 +71,7 @@ Function openRDPPortForNSGs($NsgName)
         if (-not $ruleExist)
         {
             # Add rdpRule to the collection
-            $d= Add-AzNetworkSecurityRuleConfig `
+            $d= Add-AzureRMNetworkSecurityRuleConfig `
                 -Access Allow `
                 -Direction Inbound `
                 -Priority 1050 `
@@ -82,7 +82,7 @@ Function openRDPPortForNSGs($NsgName)
                 -DestinationPortRange 22 `
                 -SourceAddressPrefix * `
                 -DestinationAddressPrefix *
-            $d = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $NSG
+            $d = Set-AzureRMNetworkSecurityGroup -NetworkSecurityGroup $NSG
         }
         else
         {

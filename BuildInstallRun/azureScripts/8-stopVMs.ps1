@@ -2,12 +2,12 @@
 
 Function stopLinuxVM($VMName)
 {
-    $vm = Get-AzVM –Name $VMName `
+    $vm = Get-AzureRMVM –Name $VMName `
         –ResourceGroupName $RESOURCEGROUP_NAME `
         -ErrorAction SilentlyContinue
     if ($vm)
     { 
-        Stop-AzVM `
+        Stop-AzureRMVM `
             -Name $VMName `
             -ResourceGroupName $RESOURCEGROUP_NAME
     }
