@@ -2,21 +2,21 @@
 
 function detachIPAddressFromNIC($nicName)
 {
-    $nic = Get-AzNetworkInterface `
+    $nic = Get-AzureRMNetworkInterface `
             -Name $nicName `
             -ResourceGroupName $RESOURCEGROUP_NAME `
             -ErrorAction SilentlyContinue
 
     if ($nic)
     {
-       Set-AzNetworkInterfaceIpConfig `
+       Set-AzureRMNetworkInterfaceIpConfig `
             -Name $nic.IpConfigurations[0].Name `
             -NetworkInterface $nic `
             -Subnet $nic.IpConfigurations[0].Subnet `
             -PrivateIpAddress $nic.IpConfigurations[0].PrivateIpAddress `
             -Primary 
         #$nic.Primary = $false
-        Set-AzNetworkInterface -NetworkInterface $nic
+        Set-AzureRMNetworkInterface -NetworkInterface $nic
     }
     else
     {
@@ -27,7 +27,7 @@ function detachIPAddressFromNIC($nicName)
 
 Function closeRDPPortForNSGs($NsgName)
 {
-    $NSG = Get-AzNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
+    $NSG = Get-AzureRMNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
                                  -Name $NsgName
     if ($NSG)
     {
@@ -45,9 +45,9 @@ Function closeRDPPortForNSGs($NsgName)
 
         if ($ruleExist)
         {
-            Remove-AzNetworkSecurityRuleConfig `
+            Remove-AzureRMNetworkSecurityRuleConfig `
                 -Name $SSH_NSG_RULE -NetworkSecurityGroup $NSG
-            Set-AzNetworkSecurityGroup `
+            Set-AzureRMNetworkSecurityGroup `
                 -NetworkSecurityGroup $NSG
         }
         else
