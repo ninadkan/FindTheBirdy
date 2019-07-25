@@ -28,7 +28,7 @@ function detachIPAddressFromNIC($nicName)
 Function closeRDPPortForNSGs($NsgName)
 {
     $NSG = Get-AzureRMNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
-                                 -Name $NsgName
+                                 -Name $NsgName -ErrorAction SilentlyContinue
     if ($NSG)
     {
         Write-Host -ForegroundColor Green "removing rule for '$NsgName' ... "
