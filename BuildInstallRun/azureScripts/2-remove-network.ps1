@@ -24,7 +24,7 @@ Function removeSubNet($SubnetName, $virtualNetwork)
     if ($Subnet)
     {
         $Subnet = Remove-AzureRMVirtualNetworkSubnetConfig -Name $SubnetName `
-        -VirtualNetwork $virtualNetwork -Force
+        -VirtualNetwork $virtualNetwork
         $virtualNetwork | Set-AzureRMVirtualNetwork
     }
     else
@@ -45,7 +45,7 @@ if ($virtualNetwork)
         -virtualNetwork $virtualNetwork
   
     Remove-AzureRMVirtualNetwork -ResourceGroupName $RESOURCEGROUP_NAME `
-        -Name $VIRTUALNETWORKNAME -Force
+        -Name $VIRTUALNETWORKNAME -
 }
 else
 {
