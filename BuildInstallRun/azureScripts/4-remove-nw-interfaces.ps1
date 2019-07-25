@@ -3,13 +3,13 @@
 
 Function removeNetworkInterface($networkInterfaceName )
 {
-    $nwInterface = Get-AzNetworkInterface `
+    $nwInterface = Get-AzureRMNetworkInterface `
         -Name $networkInterfaceName `
         -ResourceGroupName $RESOURCEGROUP_NAME `
         -ErrorAction SilentlyContinue
     if ($nwInterface)
     {
-        Remove-AzNetworkInterface `
+        Remove-AzureRMNetworkInterface `
             -Name $networkInterfaceName `
             -ResourceGroupName $RESOURCEGROUP_NAME
     }

@@ -1,7 +1,7 @@
 ﻿. "$PSScriptRoot\login.ps1"
 
 
-$publicIp = Get-AzPublicIpAddress `
+$publicIp = Get-AzureRMPublicIpAddress `
     -Name $PUBLIC_IP_NAME `
     -ResourceGroupName $RESOURCEGROUP_NAME `
     -ErrorAction SilentlyContinue
@@ -9,7 +9,7 @@ $publicIp = Get-AzPublicIpAddress `
 if (!$publicIp)
 {
     Write-Host -ForegroundColor Yellow "create a new static IP address ... ";
-    $publicIp = New-AzPublicIpAddress  -Name $PUBLIC_IP_NAME `
+    $publicIp = New-AzureRMPublicIpAddress  -Name $PUBLIC_IP_NAME `
         -ResourceGroupName $RESOURCEGROUP_NAME -AllocationMethod Static `
         -DomainNameLabel $DNSNAME -Location $LOCATION -Sku "Standard"
 }

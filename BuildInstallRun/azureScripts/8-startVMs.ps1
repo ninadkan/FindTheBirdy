@@ -2,12 +2,12 @@
 
 Function startLinuxVM($VMName)
 {
-    $vm = Get-AzVM –Name $VMName `
+    $vm = Get-AzureRMVM –Name $VMName `
         –ResourceGroupName $RESOURCEGROUP_NAME `
         -ErrorAction SilentlyContinue
     if ($vm)
     { 
-        Start-AzVM `
+        Start-AzureRMVM `
             -Name $VMName `
             -ResourceGroupName $RESOURCEGROUP_NAME
         

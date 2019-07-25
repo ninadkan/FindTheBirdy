@@ -2,7 +2,7 @@
 
 Function createNSG($NsgName,  $addRules)
 {
-    $NSG = Get-AzNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
+    $NSG = Get-AzureRMNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
                                  -Name $NsgName -ErrorAction SilentlyContinue
     if (-not $NSG)
     {
@@ -13,26 +13,26 @@ Function createNSG($NsgName,  $addRules)
             Write-Host -ForegroundColor Yellow "creating new rule for '$NsgName' ... "
             $rules = @()
 
-            $httpRule = New-AzNetworkSecurityRuleConfig -Name $HTTP_NSG_RULE `
+            $httpRule = New-AzureRMNetworkSecurityRuleConfig -Name $HTTP_NSG_RULE `
                 -Description "Allow HTTP" -Access Allow `
                 -Protocol Tcp -Direction Inbound -Priority 1010 `
                 -SourceAddressPrefix Internet -SourcePortRange * `
                 -DestinationAddressPrefix * -DestinationPortRange 80
 
-            $httpsRule = New-AzNetworkSecurityRuleConfig -Name $HTTPS_NSG_RULE `
+            $httpsRule = New-AzureRMNetworkSecurityRuleConfig -Name $HTTPS_NSG_RULE `
                 -Description "Allow HTTPS" -Access Allow `
                 -Protocol Tcp -Direction Inbound -Priority 1020 `
                 -SourceAddressPrefix Internet -SourcePortRange * `
                 -DestinationAddressPrefix * -DestinationPortRange 443
 
 
-            $httpsRule5002 = New-AzNetworkSecurityRuleConfig -Name $HTTPS_NSG_5002_RULE `
+            $httpsRule5002 = New-AzureRMNetworkSecurityRuleConfig -Name $HTTPS_NSG_5002_RULE `
                 -Description "Allow HTTPS" -Access Allow `
                 -Protocol Tcp -Direction Inbound -Priority 1030 `
                 -SourceAddressPrefix Internet -SourcePortRange * `
                 -DestinationAddressPrefix * -DestinationPortRange 5002
 
-            $httpsRule5555 = New-AzNetworkSecurityRuleConfig -Name $HTTPS_NSG_5555_RULE `
+            $httpsRule5555 = New-AzureRMNetworkSecurityRuleConfig -Name $HTTPS_NSG_5555_RULE `
                 -Description "Allow HTTPS" -Access Allow `
                 -Protocol Tcp -Direction Inbound -Priority 1030 `
                 -SourceAddressPrefix Internet -SourcePortRange * `
@@ -44,7 +44,7 @@ Function createNSG($NsgName,  $addRules)
             $rules += $httpsRule5555 
              
             
-            $NSG = New-AzNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
+            $NSG = New-AzureRMNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
                 -Location $LOCATION `
                 -Name $NsgName `
                 -SecurityRules $rules
@@ -52,7 +52,7 @@ Function createNSG($NsgName,  $addRules)
         else
         {
             Write-Host -ForegroundColor DarkYellow "Adding precreated NSG '$NsgName' ... "
-            $NSG = New-AzNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
+            $NSG = New-AzureRMNetworkSecurityGroup -ResourceGroupName $RESOURCEGROUP_NAME `
                     -Location $LOCATION `
                     -Name $NsgName
         }
@@ -66,12 +66,12 @@ Function createNSG($NsgName,  $addRules)
 
 Function createSubNet($SubnetName, $virtualNetwork, $AddresPrefix)
 {
-    $Subnet = Get-AzVirtualNetworkSubnetConfig -Name $SubnetName `
+    $Subnet = Get-AzureRMVirtualNetworkSubnetConfig -Name $SubnetName `
             -VirtualNetwork $virtualNetwork -ErrorAction SilentlyContinue
     if (-not $Subnet)
     {
         Write-Host -ForegroundColor Yellow "creating a new subnet '$SubnetName'... "
-        $Subnet = Add-AzVirtualNetworkSubnetConfig -Name $SubnetName `
+        $Subnet = Add-AzureRMVirtualNetworkSubnetConfig -Name $SubnetName `
                 -AddressPrefix $AddresPrefix -VirtualNetwork $virtualNetwork
     }
     else
@@ -87,12 +87,12 @@ $VnetAddressPrefix = "10.0.0.0/16"
 $SubnetAddresPrefix = "10.0.1.0/24"
 
 
-$virtualNetwork  = Get-AzVirtualNetwork -Name $VIRTUALNETWORKNAME `
+$virtualNetwork  = Get-AzureRMVirtualNetwork -Name $VIRTUALNETWORKNAME `
         -ResourceGroupName $RESOURCEGROUP_NAME -ErrorAction SilentlyContinue 
 if (-not $virtualNetwork)
 {
     Write-Host -ForegroundColor Yellow "create a new VNET ... ";
-    $virtualNetwork = New-AzVirtualNetwork `
+    $virtualNetwork = New-AzureRMVirtualNetwork `
                         -ResourceGroupName $RESOURCEGROUP_NAME `
                         -Location $LOCATION -Name $VIRTUALNETWORKNAME `
                         -AddressPrefix $VnetAddressPrefix
@@ -120,7 +120,7 @@ if ($virtualNetwork)
     else
     {
         # both subnets exist now; save status ; 
-        $dummy = Set-AzVirtualNetwork -VirtualNetwork $virtualNetwork 
+        $dummy = Set-AzureRMVirtualNetwork -VirtualNetwork $virtualNetwork 
 
         # lets update with NSGS
         $frontendNSG = createNSG -NsgName $NSG_NAME -addRules $true
@@ -128,7 +128,7 @@ if ($virtualNetwork)
 
         if ($frontendNSG)
         {
-            $dummy = Set-AzVirtualNetworkSubnetConfig -Name $SUBNET_NAME `
+            $dummy = Set-AzureRMVirtualNetworkSubnetConfig -Name $SUBNET_NAME `
                 -VirtualNetwork $virtualNetwork -NetworkSecurityGroup $frontEndNSG `
                 -AddressPrefix $SubnetAddresPrefix 
         }
@@ -136,7 +136,7 @@ if ($virtualNetwork)
         {
             Write-Host -ForegroundColor Red "Error! NSG '$SUBNET_NAME' not found"
         }
-        $dummy =  Set-AzVirtualNetwork -VirtualNetwork $virtualNetwork
+        $dummy =  Set-AzureRMVirtualNetwork -VirtualNetwork $virtualNetwork
     }
 }
 else

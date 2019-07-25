@@ -2,7 +2,7 @@
 
 Function removeLinuxVM($VMName)
 {
-    $vm = Get-AzVM –Name $VMName `
+    $vm = Get-AzureRMVM –Name $VMName `
         –ResourceGroupName $RESOURCEGROUP_NAME `
         -ErrorAction SilentlyContinue
     if ($vm)
@@ -13,7 +13,7 @@ Function removeLinuxVM($VMName)
             'ResourceType' = 'Microsoft.Compute/virtualMachines'
                 'ResourceGroupName' = $RESOURCEGROUP_NAME
         }
-        $vmResource = Get-AzResource @azResourceParams
+        $vmResource = Get-AzureRMResource @azResourceParams
         $vmId = $vmResource.Properties.VmId
 
         # Remove the boot diagnostics
@@ -21,7 +21,7 @@ Function removeLinuxVM($VMName)
 
         # Remove VM
 	    Write-Verbose -Message 'Removing the Azure VM...'
-	    $null = $vm | Remove-AzVM -Force
+	    $null = $vm | Remove-AzureRMVM -Force
 	
         removeOSDisksAndStorage($vm)
     }
@@ -47,16 +47,16 @@ Function removeBootDiagnostics($vm, $vmId)
 	    }
 
 	    $diagContainerName = ('bootdiagnostics-{0}-{1}' -f $vm.Name.ToLower().Substring(0, $i), $vmId)
-	    $diagSaRg = (Get-AzStorageAccount | `
+	    $diagSaRg = (Get-AzureRMStorageAccount | `
             where { $_.StorageAccountName -eq $diagSa }).ResourceGroupName
 	    $saParams = @{
 		    'ResourceGroupName' = $diagSaRg
 		    'Name' = $diagSa
 	    }
-	    Get-AzStorageAccount @saParams | `
-            Get-AzStorageContainer | `
+	    Get-AzureRMStorageAccount @saParams | `
+            Get-AzureRMStorageContainer | `
             where { $_.Name-eq $diagContainerName } | `
-            Remove-AzStorageContainer -Force
+            Remove-AzureRMStorageContainer -Force
     }
 }
 
@@ -69,12 +69,12 @@ Function removeOSDisksAndStorage($vm)
     
         $osDiskContainerName = $osDiskUri.Split('/')[-2]
         ## TODO: Does not account for resouce group 
-        $osDiskStorageAcct = Get-AzStorageAccount | where { $_.StorageAccountName -eq $osDiskUri.Split('/')[2].Split('.')[0] }
-        $osDiskStorageAcct | Remove-AzStorageBlob -Container $osDiskContainerName -Blob $osDiskUri.Split('/')[-1] -ea Ignore
+        $osDiskStorageAcct = Get-AzureRMStorageAccount | where { $_.StorageAccountName -eq $osDiskUri.Split('/')[2].Split('.')[0] }
+        $osDiskStorageAcct | Remove-AzureRMStorageBlob -Container $osDiskContainerName -Blob $osDiskUri.Split('/')[-1] -ea Ignore
 
         #region Remove the status blob
         Write-Verbose -Message 'Removing the OS disk status blob...'
-        $osDiskStorageAcct | Get-AzStorageBlob -Container $osDiskContainerName -Blob "$($vm.Name)*.status" | Remove-AzStorageBlob
+        $osDiskStorageAcct | Get-AzureRMStorageBlob -Container $osDiskContainerName -Blob "$($vm.Name)*.status" | Remove-AzureRMStorageBlob
         #endregion
     }
 
@@ -84,8 +84,8 @@ Function removeOSDisksAndStorage($vm)
 	    Write-Verbose -Message 'Removing data disks...'
 	    foreach ($uri in $vm.StorageProfile.DataDisks.Vhd.Uri)
 	    {
-		    $dataDiskStorageAcct = Get-AzStorageAccount -Name $uri.Split('/')[2].Split('.')[0]
-		    $dataDiskStorageAcct | Remove-AzStorageBlob -Container $uri.Split('/')[-2] -Blob $uri.Split('/')[-1] -ea Ignore
+		    $dataDiskStorageAcct = Get-AzureRMStorageAccount -Name $uri.Split('/')[2].Split('.')[0]
+		    $dataDiskStorageAcct | Remove-AzureRMStorageBlob -Container $uri.Split('/')[-2] -Blob $uri.Split('/')[-1] -ea Ignore
 	    }
     }
 }
@@ -96,14 +96,14 @@ Function removeManagedDisks()
     # Set deleteUnattachedDisks=1 if you want to delete unattached Managed Disks
     # Set deleteUnattachedDisks=0 if you want to see the Id of the unattached Managed Disks
     $deleteUnattachedDisks=1
-    $managedDisks = Get-AzDisk
+    $managedDisks = Get-AzureRMDisk
     foreach ($md in $managedDisks) {
         # ManagedBy property stores the Id of the VM to which Managed Disk is attached to
         # If ManagedBy property is $null then it means that the Managed Disk is not attached to a VM
         if($md.ManagedBy -eq $null){
             if($deleteUnattachedDisks -eq 1){
                 Write-Host "Deleting unattached Managed Disk with Id: $($md.Id)"
-                $md | Remove-AzDisk -Force
+                $md | Remove-AzureRMDisk -Force
                 Write-Host "Deleted unattached Managed Disk with Id: $($md.Id) "
             }else{
                 $md.Id
@@ -117,20 +117,20 @@ Function removeUnAttachedUnManagedDisks()
     # Set deleteUnattachedVHDs=1 if you want to delete unattached VHDs
     # Set deleteUnattachedVHDs=0 if you want to see the Uri of the unattached VHDs
     $deleteUnattachedVHDs=1
-    $storageAccounts = Get-AzStorageAccount
+    $storageAccounts = Get-AzureRMStorageAccount
     foreach($storageAccount in $storageAccounts){
-        $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $storageAccount.ResourceGroupName -Name $storageAccount.StorageAccountName)[0].Value
-        $context = New-AzStorageContext -StorageAccountName $storageAccount.StorageAccountName -StorageAccountKey $storageKey
-        $containers = Get-AzStorageContainer -Context $context
+        $storageKey = (Get-AzureRMStorageAccountKey -ResourceGroupName $storageAccount.ResourceGroupName -Name $storageAccount.StorageAccountName)[0].Value
+        $context = New-AzureRMStorageContext -StorageAccountName $storageAccount.StorageAccountName -StorageAccountKey $storageKey
+        $containers = Get-AzureRMStorageContainer -Context $context
         foreach($container in $containers){
-            $blobs = Get-AzStorageBlob -Container $container.Name -Context $context
+            $blobs = Get-AzureRMStorageBlob -Container $container.Name -Context $context
             #Fetch all the Page blobs with extension .vhd as only Page blobs can be attached as disk to Azure VMs
             $blobs | Where-Object {$_.BlobType -eq 'PageBlob' -and $_.Name.EndsWith('.vhd')} | ForEach-Object { 
                 #If a Page blob is not attached as disk then LeaseStatus will be unlocked
                 if($_.ICloudBlob.Properties.LeaseStatus -eq 'Unlocked'){
                         if($deleteUnattachedVHDs -eq 1){
                             Write-Host "Deleting unattached VHD with Uri: $($_.ICloudBlob.Uri.AbsoluteUri)"
-                            $_ | Remove-AzStorageBlob -Force
+                            $_ | Remove-AzureRMStorageBlob -Force
                             Write-Host "Deleted unattached VHD with Uri: $($_.ICloudBlob.Uri.AbsoluteUri)"
                         }
                         else{

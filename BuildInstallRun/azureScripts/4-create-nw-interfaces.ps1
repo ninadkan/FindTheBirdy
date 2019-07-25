@@ -5,7 +5,7 @@ Function createNetworkInterface($networkInterfaceName, # name of NIC
                                 $NsgGroup) # NSG where the created NIC will be placed nder
                                 
 {
-    $nwInterface = Get-AzNetworkInterface `
+    $nwInterface = Get-AzureRMNetworkInterface `
         -Name $networkInterfaceName `
         -ResourceGroupName $RESOURCEGROUP_NAME `
         -ErrorAction SilentlyContinue
@@ -15,7 +15,7 @@ Function createNetworkInterface($networkInterfaceName, # name of NIC
             -ForegroundColor Yellow  `
             "Creating Network Interface '$networkInterfaceName'"
             # create NIC with Subnet + NSG
-        $nwInterface = New-AzNetworkInterface `
+        $nwInterface = New-AzureRMNetworkInterface `
             -Name $networkInterfaceName `
             -ResourceGroupName $RESOURCEGROUP_NAME `
             -Location $LOCATION `
@@ -29,22 +29,22 @@ Function createNetworkInterface($networkInterfaceName, # name of NIC
     }
 
     $nwInterface.Primary = $true
-    $dummy = Set-AzNetworkInterface -NetworkInterface $nwInterface
+    $dummy = Set-AzureRMNetworkInterface -NetworkInterface $nwInterface
 
     return $nwInterface
 }
 
-$virtualNetwork  = Get-AzVirtualNetwork `
+$virtualNetwork  = Get-AzureRMVirtualNetwork `
     -Name $VIRTUALNETWORKNAME `
     -ResourceGroupName $RESOURCEGROUP_NAME `
     -ErrorAction Stop
 
-$Subnet = Get-AzVirtualNetworkSubnetConfig `
+$Subnet = Get-AzureRMVirtualNetworkSubnetConfig `
     -Name $SUBNET_NAME `
     -VirtualNetwork $virtualNetwork `
     -ErrorAction Stop
 
-$NSG = Get-AzNetworkSecurityGroup `
+$NSG = Get-AzureRMNetworkSecurityGroup `
     -ResourceGroupName $RESOURCEGROUP_NAME `
     -Name $NSG_NAME `
     -ErrorAction Stop

@@ -5,7 +5,7 @@ function Login
     $needLogin = $true
     Try 
     {
-        $content = Get-AzContext
+        $content = Get-AzureRMContext
         if ($content) 
         {
             $needLogin = ([string]::IsNullOrEmpty($content.Account))
@@ -13,7 +13,7 @@ function Login
     } 
     Catch 
     {
-        if ($_ -like "*Login-AzAccount to login*") 
+        if ($_ -like "*Login-AzureRMAccount to login*") 
         {
             $needLogin = $true
         } 
@@ -27,14 +27,14 @@ function Login
     {
         Write-Host -ForegroundColor White "Logging in...";
 
-        Login-AzAccount;
+        Login-AzureRMAccount;
 
         # select subscription
         Write-Host -ForegroundColor White "Selecting subscription '$SUBSCRIPTION_ID'";
-        Select-AzSubscription -Tenant $TENANT  -Subscription $SUBSCRIPTION_ID;
+        Select-AzureRMSubscription -Tenant $TENANT  -Subscription $SUBSCRIPTION_ID;
 
         #Create or check for existing resource group
-        $resourceGroup = Get-AzResourceGroup -Name $RESOURCEGROUP_NAME -ErrorAction SilentlyContinue
+        $resourceGroup = Get-AzureRMResourceGroup -Name $RESOURCEGROUP_NAME -ErrorAction SilentlyContinue
         if(!$resourceGroup)
         {
             Write-Host -ForegroundColor Yellow "Resource group '$RESOURCEGROUP_NAME' does not exist. To create a new resource group, please enter a location.";
@@ -42,7 +42,7 @@ function Login
                 $LOCATION = Read-Host "LOCATION";
             }
             Write-Host -ForegroundColor Cyan "Creating resource group '$RESOURCEGROUP_NAME' in location '$LOCATION'";
-            New-AzResourceGroup -Name $RESOURCEGROUP_NAME -Location $LOCATION
+            New-AzureRMResourceGroup -Name $RESOURCEGROUP_NAME -Location $LOCATION
         }
         else
         {
