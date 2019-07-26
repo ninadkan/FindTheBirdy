@@ -34,7 +34,7 @@ Function createNSG($NsgName,  $addRules)
 
             $httpsRule5555 = New-AzureRMNetworkSecurityRuleConfig -Name $HTTPS_NSG_5555_RULE `
                 -Description "Allow HTTPS" -Access Allow `
-                -Protocol Tcp -Direction Inbound -Priority 1030 `
+                -Protocol Tcp -Direction Inbound -Priority 1040 `
                 -SourceAddressPrefix Internet -SourcePortRange * `
                 -DestinationAddressPrefix * -DestinationPortRange 5555
 
