@@ -1,6 +1,6 @@
 #!/bin/bash
 source ./login.sh
-az.cmd vm create \
+az vm create \
     --resource-group $RESOURCEGROUP_NAME \
     --name $VIRTUAL_MACHINE_NAME \
     --image UbuntuLTS \
@@ -9,9 +9,9 @@ az.cmd vm create \
     --nics $NETWORK_INTERFACE_NAME \
     --custom-data cloud-init.txt
 
-        if [ $? -eq 0 ];
-        then
-            echo "VM creation Successful"
-        else
-            echo "VM creation Unsuccessul"
-        fi
+        # if [ $? -eq 0 ];
+        # then
+        #     echo "VM creation Successful"
+        # else
+        #     echo "VM creation Unsuccessul"
+        # fi
